@@ -1,0 +1,50 @@
+﻿// 自動生成 — 編集しないこと。
+// HLAobjectRoot.EmitterBeam.RadarBeam
+//
+// ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
+
+#ifndef ICDFOM_RADARBEAM_H
+#define ICDFOM_RADARBEAM_H
+
+#include "icd_types.h"
+
+namespace icdfom {
+
+/// FOM: HLAobjectRoot.EmitterBeam.RadarBeam
+///
+/// Members are in the ICD's row order, which is the order they occupy on the wire.
+struct RadarBeam {
+    AngleRadianFloat32 BeamAzimuthCenter;  ///< FOM: BeamAzimuthCenter : AngleRadianFloat32
+    AngleRadianFloat32 BeamAzimuthSweep;  ///< FOM: BeamAzimuthSweep : AngleRadianFloat32
+    AngleRadianFloat32 BeamElevationCenter;  ///< FOM: BeamElevationCenter : AngleRadianFloat32
+    AngleRadianFloat32 BeamElevationSweep;  ///< FOM: BeamElevationSweep : AngleRadianFloat32
+    BeamFunctionCodeEnum8 BeamFunctionCode;  ///< FOM: BeamFunctionCode : BeamFunctionCodeEnum8
+    Octet BeamIdentifier;  ///< FOM: BeamIdentifier : Octet
+    UnsignedInteger16 BeamParameterIndex;  ///< FOM: BeamParameterIndex : UnsignedInteger16
+    PowerRatioDecibelMilliwattFloat32 EffectiveRadiatedPower;  ///< FOM: EffectiveRadiatedPower : PowerRatioDecibelMilliwattFloat32
+    FrequencyHertzFloat32 EmissionFrequency;  ///< FOM: EmissionFrequency : FrequencyHertzFloat32
+    RTIobjectId EmitterSystemIdentifier;  ///< FOM: EmitterSystemIdentifier : RTIobjectId
+    EventIdentifierStruct EventIdentifier;  ///< FOM: EventIdentifier : EventIdentifierStruct
+    FrequencyHertzFloat32 FrequencyRange;  ///< FOM: FrequencyRange : FrequencyHertzFloat32
+    FrequencyHertzFloat32 PulseRepetitionFrequency;  ///< FOM: PulseRepetitionFrequency : FrequencyHertzFloat32
+    TimeMicrosecondFloat32 PulseWidth;  ///< FOM: PulseWidth : TimeMicrosecondFloat32
+    PercentFloat32 SweepSynch;  ///< FOM: SweepSynch : PercentFloat32
+    RPRboolean HighDensityTrack;  ///< FOM: HighDensityTrack : RPRboolean
+    RTIobjectIdArray TrackObjectIdentifiers;  ///< FOM: TrackObjectIdentifiers : RTIobjectIdArray
+    static constexpr std::size_t kEncodedSize = 139;
+};
+
+[[nodiscard]] icd::Result decode(icd::Reader& r, RadarBeam& v);
+void encode(icd::Writer& w, const RadarBeam& v);
+[[nodiscard]] std::size_t encodedSize(const RadarBeam& v);
+
+/// Reads the records batched into one datagram. The class id is a runtime argument:
+/// the ICD's ID column is filled in by hand, so it is not known at generation time.
+typedef icd::DatagramReader<RadarBeam> RadarBeamReader;
+
+/// Packs records into one datagram until the next one will not fit.
+typedef icd::DatagramWriter<RadarBeam> RadarBeamWriter;
+
+}  // namespace icdfom
+
+#endif  // ICDFOM_RADARBEAM_H

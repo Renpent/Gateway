@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+x64/
+Win32/
+/HLAGateway/   # MSBuild の中間ディレクトリ（プロジェクト名と同名）
+Debug/
+Release/
+*.user
+
+# CMake
+build/
+CMakeCache.txt
+CMakeFiles/
+
+# ビルド生成物
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+build_linux/

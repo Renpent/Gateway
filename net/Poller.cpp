@@ -1,0 +1,74 @@
+﻿#include "Poller.h"
+
+#include "UdpSocket.h"
+
+#ifdef _WIN32
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <winsock2.h>
+using pollfd_t = WSAPOLLFD;
+static int pollWait(pollfd_t* fds, unsigned long n, int timeoutMs) {
+    return ::WSAPoll(fds, static_cast<ULONG>(n), timeoutMs);
+}
+static int lastErrno() { return WSAGetLastError(); }
+#else
+#  include <cerrno>
+#  include <poll.h>
+using pollfd_t = struct pollfd;
+static int pollWait(pollfd_t* fds, unsigned long n, int timeoutMs) {
+    return ::poll(fds, static_cast<nfds_t>(n), timeoutMs);
+}
+static int lastErrno() { return errno; }
+#endif
+
+namespace gw {
+
+std::size_t Poller::add(const UdpSocket& sock) {
+    handles_.push_back(sock.nativeHandle());
+    ready_.push_back(0);
+    return handles_.size() - 1;
+}
+
+int Poller::wait(int timeoutMs) {
+    for (unsigned char& r : ready_) r = 0;
+
+    // WSAPoll は要素数 0 でエラーを返す。POSIX の poll は単なるタイマになるが、
+    // どちらでも「見るものが無い」の答えは 0 で同じなので、手前で返す。
+    if (handles_.empty()) return 0;
+
+    std::vector<pollfd_t> fds(handles_.size());
+    for (std::size_t i = 0; i < handles_.size(); ++i) {
+        fds[i].fd = static_cast<decltype(fds[i].fd)>(handles_[i]);
+        fds[i].events = POLLIN;
+        fds[i].revents = 0;
+    }
+
+    const int n = pollWait(fds.data(), static_cast<unsigned long>(fds.size()), timeoutMs);
+    if (n < 0) {
+#ifndef _WIN32
+        // シグナルで起こされただけ。周期ループから見れば「何も来ていない」と同じ。
+        if (lastErrno() == EINTR) return 0;
+#endif
+        error_ = "poll に失敗（errno=" + std::to_string(lastErrno()) + "）";
+        return -1;
+    }
+    if (n == 0) return 0;
+
+    int readable = 0;
+    for (std::size_t i = 0; i < fds.size(); ++i) {
+        // POLLIN 以外に POLLERR / POLLHUP でも読みに行く。recvfrom がその理由を返すので、
+        // ここで種類を判定せずに一度読ませたほうが、扱いが1箇所に集まる。
+        if (fds[i].revents & (POLLIN | POLLERR | POLLHUP)) {
+            ready_[i] = 1;
+            ++readable;
+        }
+    }
+    return readable;
+}
+
+bool Poller::readable(std::size_t index) const {
+    return index < ready_.size() && ready_[index] != 0;
+}
+
+}  // namespace gw
