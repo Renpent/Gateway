@@ -56,9 +56,4 @@ void encode(icd::Writer& w, const MinefieldData& v) {
     icd::encodeBounded(w, v.WireVertices, 16);
 }
 
-std::size_t encodedSize(const MinefieldData& v) {
-    (void)v;
-    return 1902;
-}
-
 }  // namespace icdfom

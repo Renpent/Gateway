@@ -32,14 +32,15 @@ struct RadarBeam {
     RPRboolean HighDensityTrack;  ///< FOM: HighDensityTrack : RPRboolean
     RTIobjectIdArray TrackObjectIdentifiers;  ///< FOM: TrackObjectIdentifiers : RTIobjectIdArray
     static constexpr std::size_t kEncodedSize = 139;
+    static constexpr std::uint32_t kClassId = 1;  // 抽出概要シートの ID 列
 };
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, RadarBeam& v);
 void encode(icd::Writer& w, const RadarBeam& v);
-[[nodiscard]] std::size_t encodedSize(const RadarBeam& v);
 
-/// Reads the records batched into one datagram. The class id is a runtime argument:
-/// the ICD's ID column is filled in by hand, so it is not known at generation time.
+/// Reads the records batched into one datagram.
+/// The class id stays a runtime argument so a deployment can override the ICD's number
+/// without regenerating; pass kClassId to take it.
 typedef icd::DatagramReader<RadarBeam> RadarBeamReader;
 
 /// Packs records into one datagram until the next one will not fit.

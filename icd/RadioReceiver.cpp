@@ -28,9 +28,4 @@ void encode(icd::Writer& w, const RadioReceiver& v) {
     encode(w, v.ReceiverOperationalStatus);
 }
 
-std::size_t encodedSize(const RadioReceiver& v) {
-    (void)v;
-    return 62;
-}
-
 }  // namespace icdfom

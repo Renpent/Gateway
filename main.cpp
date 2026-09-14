@@ -15,9 +15,8 @@
 #include "gateway/ClassIds.h"
 #include "gateway/Gateway.h"
 #include "hla/StubSource.h"
-#include "icd/MinefieldData.h"
-#include "icd/RadarBeam.h"
-#include "icd/RadioReceiver.h"
+// 配線はここだけが全クラスを名指しする。生成物なので、ICD にクラスを足せば自動で追随する。
+#include "icd/icd_classes.h"
 #include "platform/Platform.h"
 
 namespace {

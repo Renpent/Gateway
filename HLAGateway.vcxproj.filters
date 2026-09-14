@@ -75,6 +75,9 @@
     <ClInclude Include="hla\StubSource.h">
       <Filter>hla</Filter>
     </ClInclude>
+    <ClInclude Include="icd\icd_classes.h">
+      <Filter>icd</Filter>
+    </ClInclude>
     <ClInclude Include="icd\icd_codec.h">
       <Filter>icd</Filter>
     </ClInclude>

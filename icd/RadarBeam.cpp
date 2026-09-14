@@ -48,9 +48,4 @@ void encode(icd::Writer& w, const RadarBeam& v) {
     icd::encodeBounded(w, v.TrackObjectIdentifiers, 3, 16);
 }
 
-std::size_t encodedSize(const RadarBeam& v) {
-    (void)v;
-    return 139;
-}
-
 }  // namespace icdfom

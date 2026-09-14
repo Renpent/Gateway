@@ -18,11 +18,6 @@ void encode(icd::Writer& w, const EventIdentifierStruct& v) {
     icd::encodeBounded(w, v.IssuingObjectIdentifier, 16);
 }
 
-std::size_t encodedSize(const EventIdentifierStruct& v) {
-    (void)v;
-    return 20;
-}
-
 icd::Result decode(icd::Reader& r, FederateIdentifierStruct& v) {
     if (const icd::Result rc = decode(r, v.SiteID); rc != icd::Result::Ok) return rc;
     if (const icd::Result rc = decode(r, v.ApplicationID); rc != icd::Result::Ok) return rc;
@@ -32,11 +27,6 @@ icd::Result decode(icd::Reader& r, FederateIdentifierStruct& v) {
 void encode(icd::Writer& w, const FederateIdentifierStruct& v) {
     encode(w, v.SiteID);
     encode(w, v.ApplicationID);
-}
-
-std::size_t encodedSize(const FederateIdentifierStruct& v) {
-    (void)v;
-    return 4;
 }
 
 icd::Result decode(icd::Reader& r, EntityIdentifierStruct& v) {
@@ -50,11 +40,6 @@ void encode(icd::Writer& w, const EntityIdentifierStruct& v) {
     encode(w, v.EntityNumber);
 }
 
-std::size_t encodedSize(const EntityIdentifierStruct& v) {
-    (void)v;
-    return 6;
-}
-
 icd::Result decode(icd::Reader& r, RelativePositionStruct& v) {
     if (const icd::Result rc = decode(r, v.BodyXDistance); rc != icd::Result::Ok) return rc;
     if (const icd::Result rc = decode(r, v.BodyYDistance); rc != icd::Result::Ok) return rc;
@@ -66,11 +51,6 @@ void encode(icd::Writer& w, const RelativePositionStruct& v) {
     encode(w, v.BodyXDistance);
     encode(w, v.BodyYDistance);
     encode(w, v.BodyZDistance);
-}
-
-std::size_t encodedSize(const RelativePositionStruct& v) {
-    (void)v;
-    return 12;
 }
 
 icd::Result decode(icd::Reader& r, MineFusingStruct& v) {
@@ -88,11 +68,6 @@ void encode(icd::Writer& w, const MineFusingStruct& v) {
     encode(w, v.Padding);
 }
 
-std::size_t encodedSize(const MineFusingStruct& v) {
-    (void)v;
-    return 12;
-}
-
 icd::Result decode(icd::Reader& r, ClockTimeStruct& v) {
     if (const icd::Result rc = decode(r, v.Hours); rc != icd::Result::Ok) return rc;
     if (const icd::Result rc = decode(r, v.TimePastTheHour); rc != icd::Result::Ok) return rc;
@@ -102,11 +77,6 @@ icd::Result decode(icd::Reader& r, ClockTimeStruct& v) {
 void encode(icd::Writer& w, const ClockTimeStruct& v) {
     encode(w, v.Hours);
     encode(w, v.TimePastTheHour);
-}
-
-std::size_t encodedSize(const ClockTimeStruct& v) {
-    (void)v;
-    return 8;
 }
 
 icd::Result decode(icd::Reader& r, WorldLocationStruct& v) {
@@ -122,11 +92,6 @@ void encode(icd::Writer& w, const WorldLocationStruct& v) {
     encode(w, v.Z);
 }
 
-std::size_t encodedSize(const WorldLocationStruct& v) {
-    (void)v;
-    return 24;
-}
-
 icd::Result decode(icd::Reader& r, OrientationStruct& v) {
     if (const icd::Result rc = decode(r, v.Psi); rc != icd::Result::Ok) return rc;
     if (const icd::Result rc = decode(r, v.Theta); rc != icd::Result::Ok) return rc;
@@ -138,11 +103,6 @@ void encode(icd::Writer& w, const OrientationStruct& v) {
     encode(w, v.Psi);
     encode(w, v.Theta);
     encode(w, v.Phi);
-}
-
-std::size_t encodedSize(const OrientationStruct& v) {
-    (void)v;
-    return 12;
 }
 
 icd::Result decode(icd::Reader& r, EntityTypeStruct& v) {
@@ -164,11 +124,6 @@ void encode(icd::Writer& w, const EntityTypeStruct& v) {
     encode(w, v.Subcategory);
     encode(w, v.Specific);
     encode(w, v.Extra);
-}
-
-std::size_t encodedSize(const EntityTypeStruct& v) {
-    (void)v;
-    return 8;
 }
 
 }  // namespace icdfom

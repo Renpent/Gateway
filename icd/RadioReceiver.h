@@ -22,14 +22,15 @@ struct RadioReceiver {
     RTIobjectId ReceivedTransmitterIdentifier;  ///< FOM: ReceivedTransmitterIdentifier : RTIobjectId
     ReceiverOperationalStatusEnum16 ReceiverOperationalStatus;  ///< FOM: ReceiverOperationalStatus : ReceiverOperationalStatusEnum16
     static constexpr std::size_t kEncodedSize = 62;
+    static constexpr std::uint32_t kClassId = 2;  // 抽出概要シートの ID 列
 };
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, RadioReceiver& v);
 void encode(icd::Writer& w, const RadioReceiver& v);
-[[nodiscard]] std::size_t encodedSize(const RadioReceiver& v);
 
-/// Reads the records batched into one datagram. The class id is a runtime argument:
-/// the ICD's ID column is filled in by hand, so it is not known at generation time.
+/// Reads the records batched into one datagram.
+/// The class id stays a runtime argument so a deployment can override the ICD's number
+/// without regenerating; pass kClassId to take it.
 typedef icd::DatagramReader<RadioReceiver> RadioReceiverReader;
 
 /// Packs records into one datagram until the next one will not fit.
