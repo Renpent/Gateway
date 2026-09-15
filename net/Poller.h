@@ -34,13 +34,13 @@ public:
     /// 直前の wait() の結果。
     [[nodiscard]] bool readable(std::size_t index) const;
 
-    [[nodiscard]] std::size_t size() const noexcept { return handles_.size(); }
-    [[nodiscard]] const std::string& lastError() const noexcept { return error_; }
+    [[nodiscard]] std::size_t size() const noexcept { return m_handles.size(); }
+    [[nodiscard]] const std::string& lastError() const noexcept { return m_error; }
 
 private:
-    std::vector<std::intptr_t> handles_;
-    std::vector<unsigned char> ready_;   // vector<bool> のプロキシを避ける
-    std::string error_;
+    std::vector<std::intptr_t> m_handles;
+    std::vector<unsigned char> m_ready;   // vector<bool> のプロキシを避ける
+    std::string m_error;
 };
 
 }  // namespace gw

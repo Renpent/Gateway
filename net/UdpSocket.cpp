@@ -61,34 +61,34 @@ socket_t toNative(std::intptr_t h) { return static_cast<socket_t>(h); }
 UdpSocket::~UdpSocket() { close(); }
 
 UdpSocket::UdpSocket(UdpSocket&& other) noexcept
-    : handle_(other.handle_), error_(std::move(other.error_)),
-      peerAddr_(other.peerAddr_), peerPort_(other.peerPort_) {
-    other.handle_ = -1;
+    : m_handle(other.m_handle), m_error(std::move(other.m_error)),
+      m_peerAddr(other.m_peerAddr), m_peerPort(other.m_peerPort) {
+    other.m_handle = -1;
 }
 
 UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept {
     if (this != &other) {
         close();
-        handle_ = other.handle_;
-        error_ = std::move(other.error_);
-        peerAddr_ = other.peerAddr_;
-        peerPort_ = other.peerPort_;
-        other.handle_ = -1;
+        m_handle = other.m_handle;
+        m_error = std::move(other.m_error);
+        m_peerAddr = other.m_peerAddr;
+        m_peerPort = other.m_peerPort;
+        other.m_handle = -1;
     }
     return *this;
 }
 
 bool UdpSocket::fail(const char* what) {
-    error_ = std::string(what) + " に失敗（errno=" + std::to_string(lastErrno()) + "）";
+    m_error = std::string(what) + " に失敗（errno=" + std::to_string(lastErrno()) + "）";
     return false;
 }
 
 void UdpSocket::close() noexcept {
-    if (handle_ >= 0) {
-        closeSocket(toNative(handle_));
-        handle_ = -1;
+    if (m_handle >= 0) {
+        closeSocket(toNative(m_handle));
+        m_handle = -1;
     }
-    peerPort_ = 0;
+    m_peerPort = 0;
 }
 
 bool UdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
@@ -97,13 +97,13 @@ bool UdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
 
     in_addr peer{};
     if (!peerHost.empty() && ::inet_pton(AF_INET, peerHost.c_str(), &peer) != 1) {
-        error_ = "送信先アドレスを解釈できません: " + peerHost;
+        m_error = "送信先アドレスを解釈できません: " + peerHost;
         return false;
     }
 
     const socket_t s = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (s == kInvalidSocket) return fail("socket");
-    handle_ = static_cast<std::intptr_t>(s);
+    m_handle = static_cast<std::intptr_t>(s);
 
     if (bindPort != 0) {
         // 再起動直後に「アドレス使用中」で弾かれないように。UDP には待機状態が残らないので
@@ -131,41 +131,41 @@ bool UdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
     }
 
     if (!peerHost.empty()) {
-        std::memcpy(&peerAddr_, &peer, sizeof peerAddr_);
-        peerPort_ = ::htons(peerPort);
+        std::memcpy(&m_peerAddr, &peer, sizeof m_peerAddr);
+        m_peerPort = ::htons(peerPort);
     }
     return true;
 }
 
 bool UdpSocket::send(const unsigned char* data, std::size_t len) {
-    if (!isOpen()) { error_ = "ソケットが開いていません"; return false; }
-    if (!canSend()) { error_ = "送信先が設定されていません"; return false; }
+    if (!isOpen()) { m_error = "ソケットが開いていません"; return false; }
+    if (!canSend()) { m_error = "送信先が設定されていません"; return false; }
 
     sockaddr_in peer{};
     peer.sin_family = AF_INET;
-    std::memcpy(&peer.sin_addr, &peerAddr_, sizeof peerAddr_);
-    peer.sin_port = peerPort_;
+    std::memcpy(&peer.sin_addr, &m_peerAddr, sizeof m_peerAddr);
+    peer.sin_port = m_peerPort;
 
-    const auto sent = ::sendto(toNative(handle_),
+    const auto sent = ::sendto(toNative(m_handle),
                                reinterpret_cast<const char*>(data),
                                static_cast<int>(len), 0,
                                reinterpret_cast<sockaddr*>(&peer), sizeof peer);
     if (sent < 0) {
         // 送信バッファが一杯。ノンブロッキングなので待たずに諦め、次の周期に回す。
-        if (wouldBlock(lastErrno())) { error_ = "送信バッファが一杯です"; return false; }
+        if (wouldBlock(lastErrno())) { m_error = "送信バッファが一杯です"; return false; }
         return fail("sendto");
     }
     if (static_cast<std::size_t>(sent) != len) {
-        error_ = "データグラムが分割されました（ありえない）";
+        m_error = "データグラムが分割されました（ありえない）";
         return false;
     }
     return true;
 }
 
 long UdpSocket::receive(unsigned char* buf, std::size_t cap) {
-    if (!isOpen()) { error_ = "ソケットが開いていません"; return -1; }
+    if (!isOpen()) { m_error = "ソケットが開いていません"; return -1; }
 
-    const auto got = ::recvfrom(toNative(handle_), reinterpret_cast<char*>(buf),
+    const auto got = ::recvfrom(toNative(m_handle), reinterpret_cast<char*>(buf),
                                 static_cast<int>(cap), 0, nullptr, nullptr);
     if (got < 0) {
         if (wouldBlock(lastErrno())) return 0;

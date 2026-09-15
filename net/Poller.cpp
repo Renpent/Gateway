@@ -25,21 +25,21 @@ static int lastErrno() { return errno; }
 namespace gw {
 
 std::size_t Poller::add(const UdpSocket& sock) {
-    handles_.push_back(sock.nativeHandle());
-    ready_.push_back(0);
-    return handles_.size() - 1;
+    m_handles.push_back(sock.nativeHandle());
+    m_ready.push_back(0);
+    return m_handles.size() - 1;
 }
 
 int Poller::wait(int timeoutMs) {
-    for (unsigned char& r : ready_) r = 0;
+    for (unsigned char& r : m_ready) r = 0;
 
     // WSAPoll は要素数 0 でエラーを返す。POSIX の poll は単なるタイマになるが、
     // どちらでも「見るものが無い」の答えは 0 で同じなので、手前で返す。
-    if (handles_.empty()) return 0;
+    if (m_handles.empty()) return 0;
 
-    std::vector<pollfd_t> fds(handles_.size());
-    for (std::size_t i = 0; i < handles_.size(); ++i) {
-        fds[i].fd = static_cast<decltype(fds[i].fd)>(handles_[i]);
+    std::vector<pollfd_t> fds(m_handles.size());
+    for (std::size_t i = 0; i < m_handles.size(); ++i) {
+        fds[i].fd = static_cast<decltype(fds[i].fd)>(m_handles[i]);
         fds[i].events = POLLIN;
         fds[i].revents = 0;
     }
@@ -50,7 +50,7 @@ int Poller::wait(int timeoutMs) {
         // シグナルで起こされただけ。周期ループから見れば「何も来ていない」と同じ。
         if (lastErrno() == EINTR) return 0;
 #endif
-        error_ = "poll に失敗（errno=" + std::to_string(lastErrno()) + "）";
+        m_error = "poll に失敗（errno=" + std::to_string(lastErrno()) + "）";
         return -1;
     }
     if (n == 0) return 0;
@@ -60,7 +60,7 @@ int Poller::wait(int timeoutMs) {
         // POLLIN 以外に POLLERR / POLLHUP でも読みに行く。recvfrom がその理由を返すので、
         // ここで種類を判定せずに一度読ませたほうが、扱いが1箇所に集まる。
         if (fds[i].revents & (POLLIN | POLLERR | POLLHUP)) {
-            ready_[i] = 1;
+            m_ready[i] = 1;
             ++readable;
         }
     }
@@ -68,7 +68,7 @@ int Poller::wait(int timeoutMs) {
 }
 
 bool Poller::readable(std::size_t index) const {
-    return index < ready_.size() && ready_[index] != 0;
+    return index < m_ready.size() && m_ready[index] != 0;
 }
 
 }  // namespace gw

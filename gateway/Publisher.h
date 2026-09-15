@@ -18,46 +18,46 @@ template <class T>
 class Publisher {
 public:
     Publisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
-        : classId_(classId), buf_(payload),
-          writer_(buf_.data(), buf_.size(), classId) {}
+        : m_classId(classId), m_buf(payload),
+          m_writer(m_buf.data(), m_buf.size(), classId) {}
 
     /// 1データグラムに何件入るか。レコードが固定長なので、1件も詰める前に分かる。
     [[nodiscard]] std::size_t capacityInRecords() const noexcept {
-        return writer_.capacityInRecords();
+        return m_writer.capacityInRecords();
     }
 
     /// 1件積む。いっぱいなら先に送ってから積み直す。
     /// 1件がペイロードに収まらない場合だけ false を返す — ICD の上限設定を見直すこと。
     [[nodiscard]] bool publish(const T& record, UdpSocket& sock) {
-        if (writer_.add(record)) return true;
+        if (m_writer.add(record)) return true;
         if (!flush(sock)) return false;
-        return writer_.add(record);
+        return m_writer.add(record);
     }
 
     /// 溜まっている分を送る。空なら何もしない。
     [[nodiscard]] bool flush(UdpSocket& sock) {
-        if (writer_.empty()) return true;
+        if (m_writer.empty()) return true;
 
-        const std::uint32_t packed = writer_.count();
-        const std::size_t len = writer_.finish();
-        const bool ok = sock.send(buf_.data(), len);
+        const std::uint32_t packed = m_writer.count();
+        const std::size_t len = m_writer.finish();
+        const bool ok = sock.send(m_buf.data(), len);
 
         // DatagramWriter に reset はない。使い捨てのつもりの型なので、詰め直す。
-        writer_ = icd::DatagramWriter<T>(buf_.data(), buf_.size(), classId_);
+        m_writer = icd::DatagramWriter<T>(m_buf.data(), m_buf.size(), m_classId);
 
-        if (ok) { ++datagrams_; records_ += packed; }
+        if (ok) { ++m_datagrams; m_records += packed; }
         return ok;
     }
 
-    [[nodiscard]] std::uint64_t datagramsSent() const noexcept { return datagrams_; }
-    [[nodiscard]] std::uint64_t recordsSent() const noexcept { return records_; }
+    [[nodiscard]] std::uint64_t datagramsSent() const noexcept { return m_datagrams; }
+    [[nodiscard]] std::uint64_t recordsSent() const noexcept { return m_records; }
 
 private:
-    std::uint32_t classId_;
-    std::vector<unsigned char> buf_;
-    icd::DatagramWriter<T> writer_;
-    std::uint64_t datagrams_ = 0;
-    std::uint64_t records_ = 0;
+    std::uint32_t m_classId;
+    std::vector<unsigned char> m_buf;
+    icd::DatagramWriter<T> m_writer;
+    std::uint64_t m_datagrams = 0;
+    std::uint64_t m_records = 0;
 };
 
 }  // namespace gw

@@ -58,18 +58,18 @@ inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
 
 class StubRadarBeamSource : public Source<icdfom::RadarBeam> {
 public:
-    explicit StubRadarBeamSource(std::size_t perDrain = 4) : perDrain_(perDrain) {}
+    explicit StubRadarBeamSource(std::size_t perDrain = 4) : m_perDrain(perDrain) {}
 
     std::size_t drain(std::vector<icdfom::RadarBeam>& out) override {
-        for (std::size_t n = 0; n < perDrain_; ++n) out.push_back(makeRadarBeam(produced_++));
-        return perDrain_;
+        for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(makeRadarBeam(m_produced++));
+        return m_perDrain;
     }
 
-    [[nodiscard]] std::size_t produced() const noexcept { return produced_; }
+    [[nodiscard]] std::size_t produced() const noexcept { return m_produced; }
 
 private:
-    std::size_t perDrain_;
-    std::size_t produced_ = 0;
+    std::size_t m_perDrain;
+    std::size_t m_produced = 0;
 };
 
 /// 中身に意味を持たせない供給元。ポートが複数あって poll が正しく振り分けているかを
@@ -77,30 +77,30 @@ private:
 template <class T>
 class ConstantSource : public Source<T> {
 public:
-    explicit ConstantSource(std::size_t perDrain = 1) : perDrain_(perDrain) {}
+    explicit ConstantSource(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
 
     std::size_t drain(std::vector<T>& out) override {
-        for (std::size_t n = 0; n < perDrain_; ++n) out.push_back(T{});
-        produced_ += perDrain_;
-        return perDrain_;
+        for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(T{});
+        m_produced += m_perDrain;
+        return m_perDrain;
     }
 
-    [[nodiscard]] std::size_t produced() const noexcept { return produced_; }
+    [[nodiscard]] std::size_t produced() const noexcept { return m_produced; }
 
 private:
-    std::size_t perDrain_;
-    std::size_t produced_ = 0;
+    std::size_t m_perDrain;
+    std::size_t m_produced = 0;
 };
 
 /// 受け取った件数だけ数えるシンク。
 template <class T>
 class CountingSink : public Sink<T> {
 public:
-    void accept(const T&) override { ++count_; }
-    [[nodiscard]] std::size_t count() const noexcept { return count_; }
+    void accept(const T&) override { ++m_count; }
+    [[nodiscard]] std::size_t count() const noexcept { return m_count; }
 
 private:
-    std::size_t count_ = 0;
+    std::size_t m_count = 0;
 };
 
 }  // namespace hla

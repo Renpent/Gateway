@@ -45,9 +45,9 @@ public:
     /// hz の周期で tick を回す。seconds 秒で終わる（0 なら止まらない）。
     void run(unsigned hz, unsigned seconds);
 
-    [[nodiscard]] const LoopStats& loopStats() const noexcept { return loop_; }
+    [[nodiscard]] const LoopStats& loopStats() const noexcept { return m_loop; }
     [[nodiscard]] const std::vector<std::unique_ptr<Channel>>& channels() const noexcept {
-        return channels_;
+        return m_channels;
     }
 
     /// 開いた直後の状態。レコード長・収容数・送信レートを並べる。
@@ -56,11 +56,11 @@ public:
     void printSummary() const;
 
 private:
-    std::vector<std::unique_ptr<Channel>> channels_;
-    std::vector<std::size_t> pollIndex_;   ///< channels_ の添字 -> Poller の添字
-    Poller poller_;
-    LoopStats loop_;
-    bool opened_ = false;
+    std::vector<std::unique_ptr<Channel>> m_channels;
+    std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> Poller の添字
+    Poller m_poller;
+    LoopStats m_loop;
+    bool m_opened = false;
 };
 
 }  // namespace gw

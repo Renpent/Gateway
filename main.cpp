@@ -37,19 +37,19 @@ std::vector<unsigned char> encodedBytes(const Beam& b) {
 class VerifyingSink : public hla::Sink<Beam> {
 public:
     void accept(const Beam& b) override {
-        const Beam expected = hla::makeRadarBeam(received_);
+        const Beam expected = hla::makeRadarBeam(m_received);
         if (encodedBytes(b) != encodedBytes(expected)) {
-            if (mismatched_ < 5) {
-                std::printf("  !! %zu 件目が往復で一致しません\n", received_);
+            if (m_mismatched < 5) {
+                std::printf("  !! %zu 件目が往復で一致しません\n", m_received);
             }
-            ++mismatched_;
+            ++m_mismatched;
         }
-        if (received_ == 0) dumpFirst(b);
-        ++received_;
+        if (m_received == 0) dumpFirst(b);
+        ++m_received;
     }
 
-    [[nodiscard]] std::size_t received() const noexcept { return received_; }
-    [[nodiscard]] std::size_t mismatched() const noexcept { return mismatched_; }
+    [[nodiscard]] std::size_t received() const noexcept { return m_received; }
+    [[nodiscard]] std::size_t mismatched() const noexcept { return m_mismatched; }
 
 private:
     static void dumpFirst(const Beam& b) {
@@ -66,8 +66,8 @@ private:
         std::printf("\n");
     }
 
-    std::size_t received_ = 0;
-    std::size_t mismatched_ = 0;
+    std::size_t m_received = 0;
+    std::size_t m_mismatched = 0;
 };
 
 /// 3クラスぶんのチャネルを組み立てる。

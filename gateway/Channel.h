@@ -74,96 +74,96 @@ public:
     ClassChannel(const ClassBinding& bind,
                  hla::Source<T>* source,
                  hla::Sink<T>* sink)
-        : bind_(bind), source_(source), sink_(sink),
-          pub_(bind.classId, bind.payload), sub_(bind.classId, bind.payload) {}
+        : m_bind(bind), m_source(source), m_sink(sink),
+          m_pub(bind.classId, bind.payload), m_sub(bind.classId, bind.payload) {}
 
-    [[nodiscard]] const ClassBinding& binding() const noexcept override { return bind_; }
-    [[nodiscard]] UdpSocket& socket() noexcept override { return sock_; }
+    [[nodiscard]] const ClassBinding& binding() const noexcept override { return m_bind; }
+    [[nodiscard]] UdpSocket& socket() noexcept override { return m_sock; }
 
     [[nodiscard]] bool open(const std::string& peerHost) override {
-        return sock_.open(bind_.port, peerHost, bind_.port);
+        return m_sock.open(m_bind.port, peerHost, m_bind.port);
     }
 
     void setLoopRate(unsigned loopHz) noexcept override {
         // ICD の Rate 列がこのクラスの送信周期。ループより遅いクラスは間引く。
         // rate が 0（変化時のみ）やループより速い指定は、毎周期に落とす。
-        const unsigned rate = bind_.rateHz;
-        divisor_ = (rate == 0 || rate >= loopHz) ? 1u : (loopHz / rate);
-        phase_ = 0;
+        const unsigned rate = m_bind.rateHz;
+        m_divisor = (rate == 0 || rate >= loopHz) ? 1u : (loopHz / rate);
+        m_phase = 0;
     }
 
     std::size_t pumpOut() override {
-        if (source_ == nullptr || !sock_.canSend()) return 0;
-        if (++phase_ < divisor_) return 0;
-        phase_ = 0;
+        if (m_source == nullptr || !m_sock.canSend()) return 0;
+        if (++m_phase < m_divisor) return 0;
+        m_phase = 0;
 
         // スナップショットは前回の残りが既に古い。撮り直す前に捨てる。
         // イベントは1件ずつ意味があるので、残っているぶんの後ろに足す。
-        if (bind_.delivery == Delivery::Snapshot) outbox_.clear();
-        source_->drain(outbox_);
-        if (outbox_.empty()) return 0;
+        if (m_bind.delivery == Delivery::Snapshot) m_outbox.clear();
+        m_source->drain(m_outbox);
+        if (m_outbox.empty()) return 0;
 
         // 1周期に出すデータグラム数の上限。受信側の maxPerDrain と対になる制限で、
         // **これが無いと周期が守れない。** イベントが束で来た周期に全部出そうとすると、
         // その1周が何十 ms にもなって全クラスが遅れる。
-        const std::size_t cap = maxDatagramsPerTick_ * pub_.capacityInRecords();
-        const std::size_t want = outbox_.size() < cap ? outbox_.size() : cap;
+        const std::size_t cap = m_maxDatagramsPerTick * m_pub.capacityInRecords();
+        const std::size_t want = m_outbox.size() < cap ? m_outbox.size() : cap;
 
         std::size_t sent = 0;
-        while (sent < want && pub_.publish(outbox_[sent], sock_)) ++sent;
+        while (sent < want && m_pub.publish(m_outbox[sent], m_sock)) ++sent;
 
         // 周期の終わりに必ず出し切る。次の周期まで抱えると、その1周期ぶん遅れる。
-        (void)pub_.flush(sock_);
+        (void)m_pub.flush(m_sock);
 
-        outbox_.erase(outbox_.begin(), outbox_.begin() + static_cast<std::ptrdiff_t>(sent));
-        if (!outbox_.empty()) {
-            ++deferrals_;
-            backlog_ = outbox_.size();
+        m_outbox.erase(m_outbox.begin(), m_outbox.begin() + static_cast<std::ptrdiff_t>(sent));
+        if (!m_outbox.empty()) {
+            ++m_deferrals;
+            m_backlog = m_outbox.size();
         } else {
-            backlog_ = 0;
+            m_backlog = 0;
         }
         return sent;
     }
 
     std::size_t pumpIn() override {
-        const long got = sub_.drain(sock_, [this](const T& rec) {
-            if (sink_ != nullptr) sink_->accept(rec);
+        const long got = m_sub.drain(m_sock, [this](const T& rec) {
+            if (m_sink != nullptr) m_sink->accept(rec);
         });
         return got < 0 ? 0 : static_cast<std::size_t>(got);
     }
 
     [[nodiscard]] std::uint64_t sentTotal() const noexcept override {
-        return pub_.recordsSent();
+        return m_pub.recordsSent();
     }
-    [[nodiscard]] std::size_t backlog() const noexcept override { return backlog_; }
-    [[nodiscard]] std::uint64_t deferrals() const noexcept override { return deferrals_; }
+    [[nodiscard]] std::size_t backlog() const noexcept override { return m_backlog; }
+    [[nodiscard]] std::uint64_t deferrals() const noexcept override { return m_deferrals; }
     [[nodiscard]] const SubscriberStats& inStats() const noexcept override {
-        return sub_.stats();
+        return m_sub.stats();
     }
     [[nodiscard]] const std::string& lastError() const noexcept override {
-        return sock_.lastError();
+        return m_sock.lastError();
     }
 
     [[nodiscard]] std::size_t recordSize() const noexcept override {
         return icd::fixedSize<T>;
     }
     [[nodiscard]] std::size_t capacityInRecords() const noexcept override {
-        return pub_.capacityInRecords();
+        return m_pub.capacityInRecords();
     }
 
 private:
-    ClassBinding bind_;
-    hla::Source<T>* source_;
-    hla::Sink<T>* sink_;
-    UdpSocket sock_;
-    Publisher<T> pub_;
-    Subscriber<T> sub_;
-    std::vector<T> outbox_;
-    unsigned divisor_ = 1;
-    unsigned phase_ = 0;
-    std::size_t maxDatagramsPerTick_ = 8;
-    std::size_t backlog_ = 0;
-    std::uint64_t deferrals_ = 0;
+    ClassBinding m_bind;
+    hla::Source<T>* m_source;
+    hla::Sink<T>* m_sink;
+    UdpSocket m_sock;
+    Publisher<T> m_pub;
+    Subscriber<T> m_sub;
+    std::vector<T> m_outbox;
+    unsigned m_divisor = 1;
+    unsigned m_phase = 0;
+    std::size_t m_maxDatagramsPerTick = 8;
+    std::size_t m_backlog = 0;
+    std::uint64_t m_deferrals = 0;
 };
 
 }  // namespace gw

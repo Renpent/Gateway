@@ -35,11 +35,11 @@ public:
                             std::uint16_t peerPort);
 
     void close() noexcept;
-    [[nodiscard]] bool isOpen() const noexcept { return handle_ >= 0; }
-    [[nodiscard]] bool canSend() const noexcept { return peerPort_ != 0; }
+    [[nodiscard]] bool isOpen() const noexcept { return m_handle >= 0; }
+    [[nodiscard]] bool canSend() const noexcept { return m_peerPort != 0; }
 
     /// Poller に渡すためのハンドル。これを使うのは net/ の中だけ。
-    [[nodiscard]] std::intptr_t nativeHandle() const noexcept { return handle_; }
+    [[nodiscard]] std::intptr_t nativeHandle() const noexcept { return m_handle; }
 
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。
     [[nodiscard]] bool send(const unsigned char* data, std::size_t len);
@@ -56,17 +56,17 @@ public:
     /// **send と receive が同じ1本を書く。** ソケット自体は全二重で、送信と受信を別スレッドに
     /// 割っても OS 側は安全だが、このメンバ（と統計カウンタ）だけはそのとき競合する。
     /// 今は単一スレッドなので問題にならない。
-    [[nodiscard]] const std::string& lastError() const noexcept { return error_; }
+    [[nodiscard]] const std::string& lastError() const noexcept { return m_error; }
 
 private:
     bool fail(const char* what);
 
-    std::intptr_t handle_ = -1;
-    std::string error_;
+    std::intptr_t m_handle = -1;
+    std::string m_error;
 
     // 送信先。sockaddr_in をヘッダに出さないために生の形で持つ。
-    std::uint32_t peerAddr_ = 0;   // ネットワークバイトオーダー
-    std::uint16_t peerPort_ = 0;   // ネットワークバイトオーダー
+    std::uint32_t m_peerAddr = 0;   // ネットワークバイトオーダー
+    std::uint16_t m_peerPort = 0;   // ネットワークバイトオーダー
 };
 
 }  // namespace gw
