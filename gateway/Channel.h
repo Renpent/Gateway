@@ -103,14 +103,15 @@ public:
         m_source->drain(m_outbox);
         if (m_outbox.empty()) return 0;
 
-        // 1周期に出すデータグラム数の上限。受信側の maxPerDrain と対になる制限で、
-        // **これが無いと周期が守れない。** イベントが束で来た周期に全部出そうとすると、
-        // その1周が何十 ms にもなって全クラスが遅れる。
-        const std::size_t cap = m_maxDatagramsPerTick * m_pub.capacityInRecords();
-        const std::size_t want = m_outbox.size() < cap ? m_outbox.size() : cap;
-
+        // 件数の上限は設けない。**1周期に渡されたものはその周期で出し切る。**
+        // 止まるのはソケットが受け付けなかったときだけで、そのとき残った分が持ち越しになる。
+        //
+        // 以前は「1周期あたり8データグラム」で切っていた。それはイベント（インタラクション）が
+        // 束で来る場合を想定した制限だったが、**Snapshot には有害だった**: 次の周期の頭で
+        // 残りを捨てる設計なので、上限を超えた末尾が毎周期おなじように落ち続け、
+        // インスタンス数が上限を超えたフェデレーションでは末尾が永久に送られなかった。
         std::size_t sent = 0;
-        while (sent < want && m_pub.publish(m_outbox[sent], m_sock)) ++sent;
+        while (sent < m_outbox.size() && m_pub.publish(m_outbox[sent], m_sock)) ++sent;
 
         // 周期の終わりに必ず出し切る。次の周期まで抱えると、その1周期ぶん遅れる。
         (void)m_pub.flush(m_sock);
@@ -161,7 +162,6 @@ private:
     std::vector<T> m_outbox;
     unsigned m_divisor = 1;
     unsigned m_phase = 0;
-    std::size_t m_maxDatagramsPerTick = 8;
     std::size_t m_backlog = 0;
     std::uint64_t m_deferrals = 0;
 };

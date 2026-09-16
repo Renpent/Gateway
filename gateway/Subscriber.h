@@ -21,34 +21,33 @@ struct SubscriberStats {
     std::uint64_t wrongClass = 0;     ///< classId 不一致 — ポートの向き先を疑う
     std::uint64_t malformed = 0;      ///< ヘッダが壊れている / 短すぎる
     std::uint64_t skipped = 0;        ///< 個々のレコードが復号できなかった
-    std::uint64_t backlogged = 0;     ///< 1周期で読み切れず次に持ち越した回数
 };
 
 template <class T>
 class Subscriber {
 public:
-    /// maxPerDrain: 1周期に読むデータグラムの上限。
-    /// **この上限が無いと周期が守れない。** 相手が溢れさせてくると drain が戻らなくなり、
-    /// 20 Hz のつもりのループが何秒も1周に費やす。読み切れなかったぶんは OS の受信バッファに
-    /// 残るので、次の周期で続きから読める（統計の backlogged がその回数）。
-    explicit Subscriber(std::uint32_t classId,
-                        std::size_t payload = icd::kDefaultPayload,
-                        std::size_t maxPerDrain = 64)
-        : m_classId(classId), m_buf(payload), m_maxPerDrain(maxPerDrain) {}
+    /// **1周期に届いていたものは、その周期で読み切る。** 件数の上限は設けない。
+    ///
+    /// 無限には回らない。ソケットの受信バッファは有限なので、空になれば receive が 0 を返して
+    /// 抜ける。相手がこちらの排出より速く送り続けるなら、溢れはカーネル側で起きていて、
+    /// ここで打ち切っても救えない。
+    ///
+    /// 持ち越さないのはログのため。次の周期に回すと「このレコードはどの周期に届いたのか」が
+    /// 突き合わせで曖昧になり、周期がずれているように見える。
+    explicit Subscriber(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+        : m_classId(classId), m_buf(payload) {}
 
     /// 来ているデータグラムを読み切る。ブロックしない。
     /// 戻り値は取り出せたレコード数、ソケットエラーで -1。
     template <class Fn>
     long drain(UdpSocket& sock, Fn&& fn) {
         long delivered = 0;
-        for (std::size_t i = 0; i < m_maxPerDrain; ++i) {
+        for (;;) {
             const long got = sock.receive(m_buf.data(), m_buf.size());
             if (got < 0) return -1;
             if (got == 0) return delivered;      // もう何も来ていない
             delivered += handle(static_cast<std::size_t>(got), fn);
         }
-        ++m_stats.backlogged;
-        return delivered;
     }
 
     [[nodiscard]] const SubscriberStats& stats() const noexcept { return m_stats; }
@@ -81,7 +80,6 @@ private:
 
     std::uint32_t m_classId;
     std::vector<unsigned char> m_buf;
-    std::size_t m_maxPerDrain;
     SubscriberStats m_stats;
 };
 
