@@ -3,8 +3,7 @@
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
-#ifndef ICDFOM_RADIORECEIVER_H
-#define ICDFOM_RADIORECEIVER_H
+#pragma once
 
 #include "icd_types.h"
 
@@ -38,4 +37,3 @@ typedef icd::DatagramWriter<RadioReceiver> RadioReceiverWriter;
 
 }  // namespace icdfom
 
-#endif  // ICDFOM_RADIORECEIVER_H

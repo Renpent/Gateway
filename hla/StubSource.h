@@ -4,8 +4,7 @@
 // **決定的**（同じ i なら同じ値）にしてあるのは、ループバックで往復させた結果を
 // 元と1バイトずつ突き合わせるため。乱数だと「壊れたのか元から違うのか」が分からなくなる。
 
-#ifndef HLAGW_STUB_SOURCE_H
-#define HLAGW_STUB_SOURCE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -104,5 +103,3 @@ private:
 };
 
 }  // namespace hla
-
-#endif  // HLAGW_STUB_SOURCE_H

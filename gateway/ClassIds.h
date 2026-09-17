@@ -7,8 +7,7 @@
 // 1クラス = 1ポート。データグラムの classId はポートと情報が重複するが、
 // ポートの設定ミスを受信側で捕まえられるので両方持つ。
 
-#ifndef HLAGW_CLASS_IDS_H
-#define HLAGW_CLASS_IDS_H
+#pragma once
 
 #include <cstdint>
 
@@ -56,5 +55,3 @@ inline constexpr ClassBinding kMinefieldData{
     "HLAobjectRoot.EmbeddedSystem.MinefieldData"};
 
 }  // namespace gw
-
-#endif  // HLAGW_CLASS_IDS_H

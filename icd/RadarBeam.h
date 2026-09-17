@@ -3,8 +3,7 @@
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
-#ifndef ICDFOM_RADARBEAM_H
-#define ICDFOM_RADARBEAM_H
+#pragma once
 
 #include "icd_types.h"
 
@@ -48,4 +47,3 @@ typedef icd::DatagramWriter<RadarBeam> RadarBeamWriter;
 
 }  // namespace icdfom
 
-#endif  // ICDFOM_RADARBEAM_H

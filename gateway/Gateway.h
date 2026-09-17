@@ -8,8 +8,7 @@
 // ソケットは全部ノンブロッキングなので、tick は必ず有限時間で戻る。待つのはこのクラスの
 // 最後の sleep だけで、そこが周期を決めている。
 
-#ifndef HLAGW_GATEWAY_H
-#define HLAGW_GATEWAY_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -64,5 +63,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_GATEWAY_H

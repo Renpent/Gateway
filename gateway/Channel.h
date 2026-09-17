@@ -4,8 +4,7 @@
 // 抽象だけにしてある。型が要るのは ClassChannel<T> の内側 — つまり生成コーデックを呼ぶ
 // 場所 — だけで、そこから外には出ない。
 
-#ifndef HLAGW_CHANNEL_H
-#define HLAGW_CHANNEL_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -167,5 +166,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_CHANNEL_H

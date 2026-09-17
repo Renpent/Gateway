@@ -3,8 +3,7 @@
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
-#ifndef ICDFOM_TYPES_H
-#define ICDFOM_TYPES_H
+#pragma once
 
 #include "icd_codec.h"
 
@@ -439,4 +438,3 @@ typedef std::vector<TemperatureDegreeCelsiusFloat32> TemperatureDegreeCelsiusFlo
 
 }  // namespace icdfom
 
-#endif  // ICDFOM_TYPES_H

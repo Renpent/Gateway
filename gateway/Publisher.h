@@ -3,8 +3,7 @@
 // クラスに依存しない部分だけをここに置く。T ごとの違い（何バイトか、どう符号化するか）は
 // すべて生成コードが知っているので、このテンプレートは1つで足りる。
 
-#ifndef HLAGW_PUBLISHER_H
-#define HLAGW_PUBLISHER_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -61,5 +60,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_PUBLISHER_H

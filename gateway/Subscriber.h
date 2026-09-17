@@ -3,8 +3,7 @@
 // 受信は「捨てる判断」が仕事の半分なので、何をどう捨てたかを数えて外から見えるようにしてある。
 // 黙って落とされるパケットが一番デバッグしにくい。
 
-#ifndef HLAGW_SUBSCRIBER_H
-#define HLAGW_SUBSCRIBER_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -84,5 +83,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_SUBSCRIBER_H

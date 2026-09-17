@@ -8,8 +8,7 @@
 // 「今あるものを渡す / 今出せるものを出す」しかしない。周期実行のループから呼ばれるので、
 // 1本のソケットが待ちに入ると全クラスが止まってしまう。
 
-#ifndef HLAGW_UDP_SOCKET_H
-#define HLAGW_UDP_SOCKET_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -70,5 +69,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_UDP_SOCKET_H

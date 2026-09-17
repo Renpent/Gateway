@@ -3,8 +3,7 @@
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
-#ifndef ICDFOM_MINEFIELDDATA_H
-#define ICDFOM_MINEFIELDDATA_H
+#pragma once
 
 #include "icd_types.h"
 
@@ -52,4 +51,3 @@ typedef icd::DatagramWriter<MinefieldData> MinefieldDataWriter;
 
 }  // namespace icdfom
 
-#endif  // ICDFOM_MINEFIELDDATA_H

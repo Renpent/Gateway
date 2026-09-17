@@ -10,8 +10,7 @@
 // Windows の WSAPoll は POSIX の poll と同じ pollfd 構造・同じ意味で使えるので、
 // 分岐は .cpp の冒頭の別名定義だけで済む。
 
-#ifndef HLAGW_POLLER_H
-#define HLAGW_POLLER_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -44,5 +43,3 @@ private:
 };
 
 }  // namespace gw
-
-#endif  // HLAGW_POLLER_H

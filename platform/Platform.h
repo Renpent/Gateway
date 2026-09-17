@@ -2,8 +2,7 @@
 //
 // どちらも「無くても動くが、無いと質が落ちる」たぐいのもので、Windows でだけ効く。
 
-#ifndef HLAGW_PLATFORM_H
-#define HLAGW_PLATFORM_H
+#pragma once
 
 namespace gw {
 
@@ -24,5 +23,3 @@ void initPlatform();
 void shutdownPlatform();
 
 }  // namespace gw
-
-#endif  // HLAGW_PLATFORM_H

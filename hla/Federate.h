@@ -30,8 +30,7 @@
 // コールバック中の再入を禁じており、握ったままだと簡単にデッドロックする。
 // ─────────────────────────────────────────────────────────────────────
 
-#ifndef HLAGW_FEDERATE_H
-#define HLAGW_FEDERATE_H
+#pragma once
 
 #include <cstddef>
 #include <vector>
@@ -60,5 +59,3 @@ public:
 };
 
 }  // namespace hla
-
-#endif  // HLAGW_FEDERATE_H
