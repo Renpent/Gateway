@@ -37,8 +37,10 @@ public:
     [[nodiscard]] bool isOpen() const noexcept { return m_handle >= 0; }
     [[nodiscard]] bool canSend() const noexcept { return m_peerPort != 0; }
 
-    /// Poller に渡すためのハンドル。これを使うのは net/ の中だけ。
-    [[nodiscard]] std::intptr_t nativeHandle() const noexcept { return m_handle; }
+    /// OS が持っているハンドルの**値**。ただし型は移植用の器で、OS の型そのもの
+    /// （Windows の SOCKET、POSIX の int fd）ではない。本来の型に戻すのは .cpp の asSocket()。
+    /// 使うのは net/ の中だけ — Poller が poll に渡すため。
+    [[nodiscard]] std::intptr_t osHandle() const noexcept { return m_handle; }
 
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。
     [[nodiscard]] bool send(const unsigned char* data, std::size_t len);

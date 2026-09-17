@@ -54,7 +54,8 @@ static bool setNonBlocking(socket_t s) {
 namespace gw {
 namespace {
 
-socket_t toNative(std::intptr_t h) { return static_cast<socket_t>(h); }
+/// 器から OS の型へ戻す。osHandle() が渡してくるのは値だけなので、型はここで付け直す。
+socket_t asSocket(std::intptr_t h) { return static_cast<socket_t>(h); }
 
 }  // namespace
 
@@ -85,7 +86,7 @@ bool UdpSocket::fail(const char* what) {
 
 void UdpSocket::close() noexcept {
     if (m_handle >= 0) {
-        closeSocket(toNative(m_handle));
+        closeSocket(asSocket(m_handle));
         m_handle = -1;
     }
     m_peerPort = 0;
@@ -146,7 +147,7 @@ bool UdpSocket::send(const unsigned char* data, std::size_t len) {
     std::memcpy(&peer.sin_addr, &m_peerAddr, sizeof m_peerAddr);
     peer.sin_port = m_peerPort;
 
-    const auto sent = ::sendto(toNative(m_handle),
+    const auto sent = ::sendto(asSocket(m_handle),
                                reinterpret_cast<const char*>(data),
                                static_cast<int>(len), 0,
                                reinterpret_cast<sockaddr*>(&peer), sizeof peer);
@@ -165,7 +166,7 @@ bool UdpSocket::send(const unsigned char* data, std::size_t len) {
 long UdpSocket::receive(unsigned char* buf, std::size_t cap) {
     if (!isOpen()) { m_error = "ソケットが開いていません"; return -1; }
 
-    const auto got = ::recvfrom(toNative(m_handle), reinterpret_cast<char*>(buf),
+    const auto got = ::recvfrom(asSocket(m_handle), reinterpret_cast<char*>(buf),
                                 static_cast<int>(cap), 0, nullptr, nullptr);
     if (got < 0) {
         if (wouldBlock(lastErrno())) return 0;
