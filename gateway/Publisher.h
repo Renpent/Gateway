@@ -52,11 +52,11 @@ public:
     [[nodiscard]] std::uint64_t recordsSent() const noexcept { return m_records; }
 
 private:
-    std::uint32_t m_classId;
-    std::vector<unsigned char> m_buf;
-    icd::DatagramWriter<T> m_writer;
-    std::uint64_t m_datagrams = 0;
-    std::uint64_t m_records = 0;
+    std::uint32_t m_classId;            ///< データグラム先頭に入れる classId
+    std::vector<unsigned char> m_buf;   ///< 送信バッファ。長さは payload
+    icd::DatagramWriter<T> m_writer;    ///< m_buf に直接レコードを積む。使い捨てなので flush で作り直す
+    std::uint64_t m_datagrams = 0;      ///< 送ったデータグラム数
+    std::uint64_t m_records = 0;        ///< 送ったレコード数
 };
 
 }  // namespace gw

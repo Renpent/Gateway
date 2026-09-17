@@ -62,12 +62,12 @@ public:
 private:
     bool fail(const char* what);
 
-    std::intptr_t m_handle = -1;
-    std::string m_error;
+    std::intptr_t m_handle = -1;    ///< ソケットのハンドル値（-1 = 未オープン）
+    std::string m_error;            ///< 直近の失敗理由
 
     // 送信先。sockaddr_in をヘッダに出さないために生の形で持つ。
-    std::uint32_t m_peerAddr = 0;   // ネットワークバイトオーダー
-    std::uint16_t m_peerPort = 0;   // ネットワークバイトオーダー
+    std::uint32_t m_peerAddr = 0;   ///< 送信先アドレス（ネットワークバイトオーダー）
+    std::uint16_t m_peerPort = 0;   ///< 送信先ポート（0 = 送信先なし。ネットワークバイトオーダー）
 };
 
 }  // namespace gw
