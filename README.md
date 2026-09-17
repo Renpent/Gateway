@@ -74,7 +74,8 @@ ICD の `Rate` 列（`gateway/ClassIds.h` の `rateHz`）を「何周に1回送�
 ## 層
 
 ```
-main.cpp        モード分岐と配線。「どのクラスをどちら向きに流すか」を決める場所
+main.cpp        起動とモード分岐だけ
+app/            配線。「どのクラスをどちら向きに流すか」を決める場所
 gateway/        クラス非依存の送受信と周期ループ。ClassIds.h だけが ICD の手書き列を持つ
 hla/            HLA 側との継ぎ目。インタフェース定義とスタブ実装
 net/            ソケットと poll
@@ -93,14 +94,44 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 で、Windows の `SOCKET` と POSIX の `int fd` を1つの型で受けられる）。この向きを守っている
 限り、移植で書き換わるのは `net/` `platform/` と `hla/` の実装だけになる。
 
-クラスごとにレコード型が違うが、周期ループから見えるのは `Channel` という型を持たない抽象だけ。
-型が要るのは `ClassChannel<T>` の内側 — 生成コーデックを呼ぶ場所 — に閉じている。
+クラスごとにレコード型が違うが、周期ループから見えるのは `Channel`（`gateway/Channel.h`）という
+型を持たない抽象だけ。型が要るのは `ClassChannel<T>`（`gateway/ClassChannel.h`）の内側
+— 生成コーデックを呼ぶ場所 — に閉じている。
+
+### 1ファイル1クラス
+
+手書きのコードは**クラス1つにつきファイル1つ**。継承しているものは基底と派生で分ける
+（`Channel` / `ClassChannel`、`FromHla` / `StubRadarBeamFeed`）。入れ子クラスは例外で、
+外側と同じファイルでよい。
+
+例外は2つあり、どちらも入れ子にできない理由がある。`SubscriberStats` は
+`Channel::inStats()` がテンプレートでない参照を返すので `Subscriber<T>` の中に置けない
+（入れ子にすると `T` ごとに別の型になる）。`ClassIds.h` はクラスではなく、ICD から手で写した
+定数表を置く場所。
+
+`Federate.h` と `icd/icd_classes.h` はクラスを持たないまとめ include で、
+前者は FromHla/ToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
+
+### メンバ変数の書き方
+
+手書きクラスのメンバは **`m_` 接頭辞**を付け、**宣言行の末尾に `///<` で何の値かを短く**書く。
+
+```cpp
+std::uint32_t m_classId;            ///< 期待する classId。違えば wrongClass として捨てる
+std::vector<unsigned char> m_buf;   ///< 受信バッファ。長さは payload
+```
+
+**生成コードのレコードのフィールドは `m_` を付けない。** FOM のフィールド名そのままであることが、
+ICD の行から grep で辿れる条件であり、参照モードでツール側のメンバ名と一致する条件でもある。
+そちらには `///< FOM: <名前> : <型>` が生成時に付く。
+
+ソースは手書き・生成とも **UTF-8 BOM + CRLF** で統一している。
 
 ### 全クラスを名指しするのは配線1箇所だけ
 
-`main.cpp` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
+`app/Wiring.h` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
 このヘッダが追随するので、手で並べたリストがずれることがない。**1クラスだけを扱うコードは
-そのクラスのヘッダを直接** include すること（`hla/StubSource.h` がその例）。
+そのクラスのヘッダを直接** include すること（`hla/StubRadarBeamFeed.h` がその例）。
 
 **classId で分岐するディスパッチャは無い。** 1クラス1ポートなので、ポートが決まればクラスが
 決まり、受信側は自分の `T` で復号するだけで済む。ポートを共有していたら
@@ -111,14 +142,15 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 
 ## 移植するときに書くもの
 
-`hla/Federate.h` の2つのインタフェースを RTI の API で実装する。向きが2つあることに注意：
+`hla/Federate.h` の2つのインタフェースを RTI の API で実装する。**名前に向きが入っている**
+のは、ここが一番読み違えられるところだから — HLA の publish / subscribe とは逆に見える：
 
-| | 向き | RTI 側 |
-|---|---|---|
-| `Source<T>` | HLA → UDP | `reflectAttributeValues` で来たものを `T` に詰める |
-| `Sink<T>` | UDP → HLA | 復元した `T` を `updateAttributeValues` で出す |
+| | 向き | RTI 側 | UDP 側の相手 |
+|---|---|---|---|
+| `FromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::Publisher`（送信） |
+| `ToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::Subscriber`（受信） |
 
-`ClassChannel` は `source` / `sink` のどちらも null を許す。publish だけ、subscribe だけの
+`ClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
 クラスが実運用にはあるため。
 
 **排他が要るのはこの継ぎ目だけ。** ゲートウェイ本体は単一スレッドで、`tick()` が受信を全部
