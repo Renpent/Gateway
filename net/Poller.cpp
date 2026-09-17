@@ -30,7 +30,7 @@ std::size_t Poller::add(const UdpSocket& sock) {
     return m_handles.size() - 1;
 }
 
-int Poller::wait(int timeoutMs) {
+int Poller::poll(int timeoutMs) {
     for (unsigned char& r : m_ready) r = 0;
 
     // WSAPoll は要素数 0 でエラーを返す。POSIX の poll は単なるタイマになるが、

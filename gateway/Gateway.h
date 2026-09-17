@@ -17,17 +17,9 @@
 
 #include "../net/Poller.h"
 #include "Channel.h"
+#include "LoopStats.h"
 
 namespace gw {
-
-/// 周期が守れているかの記録。守れていないことに気づけないのが一番困るので測っておく。
-struct LoopStats {
-    std::uint64_t ticks = 0;
-    std::uint64_t overruns = 0;      ///< 1周の処理が周期を超えた回数
-    double maxTickMs = 0.0;          ///< 1周の処理時間の最大
-    double maxLateMs = 0.0;          ///< 起床が予定からどれだけ遅れたかの最大
-    double sumLateMs = 0.0;
-};
 
 class Gateway {
 public:
@@ -55,11 +47,11 @@ public:
     void printSummary() const;
 
 private:
-    std::vector<std::unique_ptr<Channel>> m_channels;
+    std::vector<std::unique_ptr<Channel>> m_channels;  ///< 登録されたチャネル。所有する
     std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> Poller の添字
-    Poller m_poller;
-    LoopStats m_loop;
-    bool m_opened = false;
+    Poller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
+    LoopStats m_loop;                       ///< 周期が守れているかの記録
+    bool m_opened = false;                  ///< openAll が成功したか。false なら tick は何もしない
 };
 
 }  // namespace gw

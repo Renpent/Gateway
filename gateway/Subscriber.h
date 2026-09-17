@@ -1,7 +1,8 @@
 ﻿// データグラムを受けてレコードに戻す側。
 //
-// 受信は「捨てる判断」が仕事の半分なので、何をどう捨てたかを数えて外から見えるようにしてある。
-// 黙って落とされるパケットが一番デバッグしにくい。
+// クラスに依存しない部分だけをここに置く。T ごとの違い（何バイトか、どう復号するか）は
+// すべて生成コードが知っているので、このテンプレートは1つで足りる。
+// 数えた結果は SubscriberStats。
 
 #pragma once
 
@@ -10,17 +11,9 @@
 
 #include "../icd/icd_codec.h"
 #include "../net/UdpSocket.h"
+#include "SubscriberStats.h"
 
 namespace gw {
-
-/// 受信側で起きたことの内訳。
-struct SubscriberStats {
-    std::uint64_t datagrams = 0;      ///< 正しく開けたデータグラム
-    std::uint64_t records = 0;        ///< 取り出せたレコード
-    std::uint64_t wrongClass = 0;     ///< classId 不一致 — ポートの向き先を疑う
-    std::uint64_t malformed = 0;      ///< ヘッダが壊れている / 短すぎる
-    std::uint64_t skipped = 0;        ///< 個々のレコードが復号できなかった
-};
 
 template <class T>
 class Subscriber {
@@ -77,9 +70,9 @@ private:
         return delivered;
     }
 
-    std::uint32_t m_classId;
-    std::vector<unsigned char> m_buf;
-    SubscriberStats m_stats;
+    std::uint32_t m_classId;            ///< 期待する classId。違えば wrongClass として捨てる
+    std::vector<unsigned char> m_buf;   ///< 受信バッファ。長さは payload
+    SubscriberStats m_stats;            ///< 受けた / 捨てた件数の内訳
 };
 
 }  // namespace gw

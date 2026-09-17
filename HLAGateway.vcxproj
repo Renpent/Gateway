@@ -155,16 +155,28 @@
     <ClCompile Include="icd\MinefieldData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\Wiring.h" />
     <ClInclude Include="platform\Platform.h" />
     <ClInclude Include="net\UdpSocket.h" />
     <ClInclude Include="net\Poller.h" />
-    <ClInclude Include="gateway\ClassIds.h" />
     <ClInclude Include="gateway\Channel.h" />
+    <ClInclude Include="gateway\ClassBinding.h" />
+    <ClInclude Include="gateway\ClassChannel.h" />
+    <ClInclude Include="gateway\ClassIds.h" />
+    <ClInclude Include="gateway\Delivery.h" />
     <ClInclude Include="gateway\Gateway.h" />
+    <ClInclude Include="gateway\LoopStats.h" />
     <ClInclude Include="gateway\Publisher.h" />
     <ClInclude Include="gateway\Subscriber.h" />
+    <ClInclude Include="gateway\SubscriberStats.h" />
+    <ClInclude Include="hla\ConstantFeed.h" />
+    <ClInclude Include="hla\CountingReceiver.h" />
     <ClInclude Include="hla\Federate.h" />
-    <ClInclude Include="hla\StubSource.h" />
+    <ClInclude Include="hla\FromHla.h" />
+    <ClInclude Include="hla\RadarBeamFixture.h" />
+    <ClInclude Include="hla\StubRadarBeamFeed.h" />
+    <ClInclude Include="hla\ToHla.h" />
+    <ClInclude Include="hla\VerifyingReceiver.h" />
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />
     <ClInclude Include="icd\icd_types.h" />

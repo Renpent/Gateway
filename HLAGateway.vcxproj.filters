@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="app">
+      <UniqueIdentifier>{1a1b0a1e-0006-4000-9000-000000000006}</UniqueIdentifier>
+    </Filter>
     <Filter Include="platform">
       <UniqueIdentifier>{1a1b0a1e-0001-4000-9000-000000000001}</UniqueIdentifier>
     </Filter>
@@ -45,6 +48,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\Wiring.h">
+      <Filter>app</Filter>
+    </ClInclude>
     <ClInclude Include="platform\Platform.h">
       <Filter>platform</Filter>
     </ClInclude>
@@ -54,13 +60,25 @@
     <ClInclude Include="net\Poller.h">
       <Filter>net</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\ClassIds.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
     <ClInclude Include="gateway\Channel.h">
       <Filter>gateway</Filter>
     </ClInclude>
+    <ClInclude Include="gateway\ClassBinding.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\ClassChannel.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\ClassIds.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\Delivery.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
     <ClInclude Include="gateway\Gateway.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\LoopStats.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\Publisher.h">
@@ -69,10 +87,31 @@
     <ClInclude Include="gateway\Subscriber.h">
       <Filter>gateway</Filter>
     </ClInclude>
+    <ClInclude Include="gateway\SubscriberStats.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\ConstantFeed.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CountingReceiver.h">
+      <Filter>hla</Filter>
+    </ClInclude>
     <ClInclude Include="hla\Federate.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\StubSource.h">
+    <ClInclude Include="hla\FromHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\RadarBeamFixture.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\StubRadarBeamFeed.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\ToHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\VerifyingReceiver.h">
       <Filter>hla</Filter>
     </ClInclude>
     <ClInclude Include="icd\icd_classes.h">

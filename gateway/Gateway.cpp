@@ -54,7 +54,7 @@ void Gateway::tick() {
 
     // 待機時間 0。全ポートを順に recvfrom で叩くのではなく、poll に一度で聞く。
     // クラスが増えても システムコールは1回のままで、空振りの recvfrom が積み上がらない。
-    const int ready = m_poller.wait(0);
+    const int ready = m_poller.poll(0);
 
     if (ready > 0) {
         for (std::size_t i = 0; i < m_channels.size(); ++i) {
