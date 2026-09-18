@@ -162,7 +162,6 @@
     <ClInclude Include="gateway\Channel.h" />
     <ClInclude Include="gateway\ClassBinding.h" />
     <ClInclude Include="gateway\ClassChannel.h" />
-    <ClInclude Include="gateway\ClassIds.h" />
     <ClInclude Include="gateway\Delivery.h" />
     <ClInclude Include="gateway\Gateway.h" />
     <ClInclude Include="gateway\LoopStats.h" />

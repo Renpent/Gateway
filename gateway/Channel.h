@@ -29,10 +29,6 @@ public:
     /// HLA 側から出てきたぶんを送る。ブロックしない。
     virtual std::size_t pumpOut() = 0;
 
-    /// 周期ループの周波数を伝える。ICD の Rate 列（クラスごとの更新レート）を
-    /// 何周に1回送るかに変換するために要る。
-    virtual void setLoopRate(unsigned loopHz) noexcept = 0;
-
     /// 来ているぶんを読み切って HLA 側へ渡す。ブロックしない。
     /// **poll が「読める」と言ったときだけ呼ぶこと。** 呼んでも害はないが、
     /// 空振りの recvfrom がポート数ぶん積み上がる。

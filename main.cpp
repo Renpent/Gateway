@@ -33,7 +33,7 @@ int runGateway(const std::string& peer, unsigned hz, unsigned seconds, bool veri
     std::printf("周期        : %u Hz（1周 %.1f ms）\n", hz, 1000.0 / hz);
     std::printf("送信先      : %s\n\n",
                 peer.empty() ? "なし（受信専用）" : peer.c_str());
-    gateway.printPlan(hz);
+    gateway.printPlan();
     std::printf("\n");
 
     gateway.run(hz, seconds);

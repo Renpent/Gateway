@@ -7,8 +7,10 @@
 
 // 配線用のまとめ include。個々のクラスだけを扱うコードは、そのクラスの
 // ヘッダを直接 include すること。
+//
+// MTU 9000 → 全クラス kPayload = icd::kJumboPayload（8900 B）
 
-#include "RadarBeam.h"  // ID 1 : HLAobjectRoot.EmitterBeam.RadarBeam
-#include "RadioReceiver.h"  // ID 2 : HLAobjectRoot.EmbeddedSystem.RadioReceiver
-#include "MinefieldData.h"  // ID 3 : HLAobjectRoot.EmbeddedSystem.MinefieldData
+#include "RadarBeam.h"  // ID 1 / Port 24001 : HLAobjectRoot.EmitterBeam.RadarBeam
+#include "RadioReceiver.h"  // ID 2 / Port 24002 : HLAobjectRoot.EmbeddedSystem.RadioReceiver
+#include "MinefieldData.h"  // ID 3 / Port 24003 : HLAobjectRoot.EmbeddedSystem.MinefieldData
 

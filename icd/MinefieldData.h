@@ -35,8 +35,15 @@ struct MinefieldData {
     DepthMeterFloat32LengthlessArray WaterBurialDepthOffset;  ///< FOM: WaterBurialDepthOffset : DepthMeterFloat32LengthlessArray
     WorldLocationStructLengthlessArray WireVertices;  ///< FOM: WireVertices : WorldLocationStructLengthlessArray
     static constexpr std::size_t kEncodedSize = 1902;
+    static constexpr std::size_t kPayload = icd::kJumboPayload;  // 1データグラムの上限。ICD の MTU 9000 より
+    static constexpr bool kIsInteraction = false;
+    static constexpr const char* kFomName = "HLAobjectRoot.EmbeddedSystem.MinefieldData";
     static constexpr std::uint32_t kClassId = 3;  // 抽出概要シートの ID 列
+    static constexpr std::uint16_t kPort = 24003;  // 抽出概要シートの Port 列
 };
+
+static_assert(MinefieldData::kEncodedSize + icd::kHeaderSize <= MinefieldData::kPayload,
+              "MinefieldData: 1件がペイロードに収まりません。ICDgenerator の MTU か配列上限を見直してください");
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, MinefieldData& v);
 void encode(icd::Writer& w, const MinefieldData& v);

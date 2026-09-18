@@ -41,8 +41,8 @@ public:
         return m_channels;
     }
 
-    /// 開いた直後の状態。レコード長・収容数・送信レートを並べる。
-    void printPlan(unsigned hz) const;
+    /// 開いた直後の状態。ポート・レコード長・収容数・ペイロード上限を並べる。
+    void printPlan() const;
 
     void printSummary() const;
 

@@ -44,18 +44,10 @@ public:
         return m_sock.open(m_bind.port, peerHost, m_bind.port);
     }
 
-    void setLoopRate(unsigned loopHz) noexcept override {
-        // ICD の Rate 列がこのクラスの送信周期。ループより遅いクラスは間引く。
-        // rate が 0（変化時のみ）やループより速い指定は、毎周期に落とす。
-        const unsigned rate = m_bind.rateHz;
-        m_divisor = (rate == 0 || rate >= loopHz) ? 1u : (loopHz / rate);
-        m_phase = 0;
-    }
-
+    /// 毎周期、渡されたものを全部出す。クラスごとの間引きは無い — 周期は tick() を叩く側が
+    /// 決めていて、それが全クラスの送信レート。
     std::size_t pumpOut() override {
         if (m_fromHla == nullptr || !m_sock.canSend()) return 0;
-        if (++m_phase < m_divisor) return 0;
-        m_phase = 0;
 
         // スナップショットは前回の残りが既に古い。撮り直す前に捨てる。
         // イベントは1件ずつ意味があるので、残っているぶんの後ろに足す。
@@ -120,8 +112,6 @@ private:
     Publisher<T> m_pub;             ///< レコード → データグラム
     Subscriber<T> m_sub;            ///< データグラム → レコード
     std::vector<T> m_outbox;        ///< 送信待ちのレコード。Events では次の周期へ持ち越す
-    unsigned m_divisor = 1;         ///< 何周に1回送るか（ループ Hz ÷ Rate）
-    unsigned m_phase = 0;           ///< 間引き用のカウンタ。m_divisor に達したら送る
     std::size_t m_backlog = 0;      ///< 出し切れず残った件数
     std::uint64_t m_deferrals = 0;  ///< 出し切れなかった周期の回数
 };

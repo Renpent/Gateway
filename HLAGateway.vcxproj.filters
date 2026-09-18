@@ -69,9 +69,6 @@
     <ClInclude Include="gateway\ClassChannel.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\ClassIds.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
     <ClInclude Include="gateway\Delivery.h">
       <Filter>gateway</Filter>
     </ClInclude>

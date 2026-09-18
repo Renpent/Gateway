@@ -74,8 +74,6 @@ void Gateway::run(unsigned hz, unsigned seconds) {
     const auto start = Clock::now();
     const auto deadline = start + std::chrono::seconds(seconds);
 
-    for (auto& ch : m_channels) ch->setLoopRate(hz);
-
     auto next = start + period;
 
     while (seconds == 0 || Clock::now() < deadline) {
@@ -105,15 +103,14 @@ void Gateway::run(unsigned hz, unsigned seconds) {
     }
 }
 
-void Gateway::printPlan(unsigned hz) const {
+void Gateway::printPlan() const {
     std::printf("%-28s %6s %8s %8s %8s %10s\n",
-                "クラス", "port", "1件(B)", "1発(件)", "送信Hz", "種別");
+                "クラス", "port", "1件(B)", "1発(件)", "上限(B)", "種別");
     for (const auto& ch : m_channels) {
         const ClassBinding& b = ch->binding();
-        std::printf("%-28s %6u %8zu %8zu %8u %10s\n",
+        std::printf("%-28s %6u %8zu %8zu %8zu %10s\n",
                     trimRoot(b.fomName), b.port,
-                    ch->recordSize(), ch->capacityInRecords(),
-                    (b.rateHz == 0 || b.rateHz >= hz) ? hz : b.rateHz,
+                    ch->recordSize(), ch->capacityInRecords(), b.payload,
                     b.delivery == Delivery::Snapshot ? "状態" : "イベント");
     }
 }
