@@ -105,6 +105,18 @@
     <ClInclude Include="hla\RadarBeamFixture.h">
       <Filter>hla</Filter>
     </ClInclude>
+    <ClInclude Include="hla\RtiEventFeed.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\RtiEventReceiver.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\RtiSnapshotFeed.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\RtiSnapshotReceiver.h">
+      <Filter>hla</Filter>
+    </ClInclude>
     <ClInclude Include="hla\StubRadarBeamFeed.h">
       <Filter>hla</Filter>
     </ClInclude>
