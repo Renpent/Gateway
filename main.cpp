@@ -41,12 +41,13 @@ int runGateway(const std::string& peer, unsigned hz, unsigned seconds, bool veri
 
     if (!verify) return 0;
 
-    std::printf("\n往復照合    : %zu 件受信 / 不一致 %zu 件\n",
-                wiring.beamToHla.received(), wiring.beamToHla.mismatched());
+    // どのクラスを照合したかを知っているのは Wiring だけ。ここは合計しか見ない。
+    const app::Wiring::VerifyResult v = wiring.verifyResult();
+    std::printf("\n往復照合    : %zu 件受信 / 不一致 %zu 件\n", v.received, v.mismatched);
 
     // 送ったぶんが全部戻るとは限らない — 最後の周期ぶんはループを抜けた後に届く。
     // 中身が1件でも壊れていないこと、受信が皆無でないことを合格条件にする。
-    const bool ok = wiring.beamToHla.mismatched() == 0 && wiring.beamToHla.received() > 0;
+    const bool ok = v.mismatched == 0 && v.received > 0;
     std::printf("\n%s\n", ok ? "OK — 受信したレコードはすべて送信時と同じバイト列でした。"
                              : "NG — 上の内訳を確認してください。");
     return ok ? 0 : 1;

@@ -4,7 +4,7 @@
 // **決定的**（同じ i なら同じ値）にしてあるのは、往復した結果を元と1バイトずつ突き合わせる
 // ため。乱数だと「壊れたのか元から違うのか」が分からなくなる。
 //
-// 供給側（StubRadarBeamFeed）と照合側（VerifyingReceiver）の両方がここを呼ぶので、
+// 供給側（FixtureFeed）と照合側（VerifyingReceiver）の両方がここを呼ぶので、
 // 「送ったはずの値」の定義が1箇所に閉じる。
 
 #pragma once
@@ -13,13 +13,9 @@
 #include <string>
 
 #include "../icd/RadarBeam.h"
+#include "ObjectId.h"
 
 namespace hla {
-
-/// FOM の RTIobjectId は null 終端の文字配列。std::string から詰め替える。
-inline icdfom::RTIobjectId objectId(const std::string& s) {
-    return icdfom::RTIobjectId(s.begin(), s.end());
-}
 
 /// i 番目の RadarBeam。
 inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {

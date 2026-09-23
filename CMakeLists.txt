@@ -20,6 +20,7 @@ add_executable(HLAGateway
     icd/RadarBeam.cpp
     icd/RadioReceiver.cpp
     icd/MinefieldData.cpp
+    icd/WeaponFire.cpp
 )
 
 target_compile_options(HLAGateway PRIVATE

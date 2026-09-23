@@ -46,6 +46,9 @@
     <ClCompile Include="icd\MinefieldData.cpp">
       <Filter>icd</Filter>
     </ClCompile>
+    <ClCompile Include="icd\WeaponFire.cpp">
+      <Filter>icd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\Wiring.h">
@@ -96,7 +99,13 @@
     <ClInclude Include="hla\Federate.h">
       <Filter>hla</Filter>
     </ClInclude>
+    <ClInclude Include="hla\FixtureFeed.h">
+      <Filter>hla</Filter>
+    </ClInclude>
     <ClInclude Include="hla\FromHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\ObjectId.h">
       <Filter>hla</Filter>
     </ClInclude>
     <ClInclude Include="hla\RadarBeamFixture.h">
@@ -114,13 +123,13 @@
     <ClInclude Include="hla\RtiSnapshotReceiver.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\StubRadarBeamFeed.h">
-      <Filter>hla</Filter>
-    </ClInclude>
     <ClInclude Include="hla\ToHla.h">
       <Filter>hla</Filter>
     </ClInclude>
     <ClInclude Include="hla\VerifyingReceiver.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\WeaponFireFixture.h">
       <Filter>hla</Filter>
     </ClInclude>
     <ClInclude Include="icd\icd_classes.h">
@@ -139,6 +148,9 @@
       <Filter>icd</Filter>
     </ClInclude>
     <ClInclude Include="icd\MinefieldData.h">
+      <Filter>icd</Filter>
+    </ClInclude>
+    <ClInclude Include="icd\WeaponFire.h">
       <Filter>icd</Filter>
     </ClInclude>
   </ItemGroup>

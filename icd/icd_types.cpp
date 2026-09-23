@@ -126,4 +126,17 @@ void encode(icd::Writer& w, const EntityTypeStruct& v) {
     encode(w, v.Extra);
 }
 
+icd::Result decode(icd::Reader& r, VelocityVectorStruct& v) {
+    if (const icd::Result rc = decode(r, v.XVelocity); rc != icd::Result::Ok) return rc;
+    if (const icd::Result rc = decode(r, v.YVelocity); rc != icd::Result::Ok) return rc;
+    if (const icd::Result rc = decode(r, v.ZVelocity); rc != icd::Result::Ok) return rc;
+    return icd::Result::Ok;
+}
+
+void encode(icd::Writer& w, const VelocityVectorStruct& v) {
+    encode(w, v.XVelocity);
+    encode(w, v.YVelocity);
+    encode(w, v.ZVelocity);
+}
+
 }  // namespace icdfom

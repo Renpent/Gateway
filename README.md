@@ -49,7 +49,7 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 
 以前は `Rate` 列を「何周に1回送るか」に変換して間引いていた。外した理由は、本番では周期処理側が
 `tick()` を呼ぶので全クラスがその周期に沿うことになり、クラスごとの値を持つ意味が無くなったため。
-帯域は増える — この3クラスで間引きありの 7.6 KB/s が 49 KB/s になり、ほぼ `MinefieldData`（1件
+帯域は増える — 測ったときの3クラスで間引きありの 7.6 KB/s が 49 KB/s になり、ほぼ `MinefieldData`（1件
 1902 B）が毎周期出るぶん — が、それを承知のうえでの判断。必要になったら `Rate` を生成に戻せばよい。
 
 ### 状態とイベントは backlog の扱いが正反対
@@ -106,7 +106,7 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 ### 1ファイル1クラス
 
 手書きのコードは**クラス1つにつきファイル1つ**。継承しているものは基底と派生で分ける
-（`Channel` / `ClassChannel`、`FromHla` / `StubRadarBeamFeed`）。入れ子クラスは例外で、
+（`Channel` / `ClassChannel`、`FromHla` / `FixtureFeed`）。入れ子クラスは例外で、
 外側と同じファイルでよい。
 
 例外は1つ。`SubscriberStats` は `Channel::inStats()` がテンプレートでない参照を返すので
@@ -134,7 +134,7 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 
 `app/Wiring.h` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
 このヘッダが追随するので、手で並べたリストがずれることがない。**1クラスだけを扱うコードは
-そのクラスのヘッダを直接** include すること（`hla/StubRadarBeamFeed.h` がその例）。
+そのクラスのヘッダを直接** include すること（`hla/WeaponFireFixture.h` がその例）。
 
 **classId で分岐するディスパッチャは無い。** 1クラス1ポートなので、ポートが決まればクラスが
 決まり、受信側は自分の `T` で復号するだけで済む。ポートを共有していたら
@@ -248,11 +248,16 @@ ID・ポート・MTU は生成物が持っている（各クラスの `kClassId`
 | `EmitterBeam.RadarBeam` | 1 | 24001 | 139 B | 63 件 | 8900 B | 状態 |
 | `EmbeddedSystem.RadioReceiver` | 2 | 24002 | 62 B | 143 件 | 8900 B | 状態 |
 | `EmbeddedSystem.MinefieldData` | 3 | 24003 | 1902 B | 4 件 | 8900 B | 状態 |
+| `WeaponFire` | 4 | 24004 | 134 B | 66 件 | 8900 B | イベント |
 
 MTU は ICDgenerator の GUI で 1500 か 9000 を選ぶ（全クラス共通）。この表は 9000。
 
-**インタラクションのチャネルはまだ無い。** 仕組み（`Delivery::Events`・積み残しの持ち越し・
-`hla/RtiEventFeed.h` / `hla/RtiEventReceiver.h` の器）は入っているが、実際に流すクラスは選んでいない。
+**種別はここで選んでいない。** `Delivery` は生成された `kIsInteraction` から決まるので、
+`WeaponFire` がイベントになるのは FOM でインタラクションだからであって、配線に書いた結果ではない。
+
+`WeaponFire` を選んだのは、公開可能な73インタラクションのうち RPR FOM で最も素直なものだから。
+`MunitionDetonation` が対になる候補だが `ParameterValueVariantStruct` を含むので生成器が拒否する
+（73件中この1件だけ）。
 
 **`MinefieldData` は 1500 MTU に収まらない。** 1件 1902 B で、1500 MTU のペイロード 1400 B では
 1件も送れない。同種のことは配列上限を上げれば簡単に起きるので、三段で止まる：

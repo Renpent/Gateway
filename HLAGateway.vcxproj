@@ -153,6 +153,7 @@
     <ClCompile Include="icd\RadarBeam.cpp" />
     <ClCompile Include="icd\RadioReceiver.cpp" />
     <ClCompile Include="icd\MinefieldData.cpp" />
+    <ClCompile Include="icd\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\Wiring.h" />
@@ -171,21 +172,24 @@
     <ClInclude Include="hla\ConstantFeed.h" />
     <ClInclude Include="hla\CountingReceiver.h" />
     <ClInclude Include="hla\Federate.h" />
+    <ClInclude Include="hla\FixtureFeed.h" />
     <ClInclude Include="hla\FromHla.h" />
+    <ClInclude Include="hla\ObjectId.h" />
     <ClInclude Include="hla\RadarBeamFixture.h" />
     <ClInclude Include="hla\RtiEventFeed.h" />
     <ClInclude Include="hla\RtiEventReceiver.h" />
     <ClInclude Include="hla\RtiSnapshotFeed.h" />
     <ClInclude Include="hla\RtiSnapshotReceiver.h" />
-    <ClInclude Include="hla\StubRadarBeamFeed.h" />
     <ClInclude Include="hla\ToHla.h" />
     <ClInclude Include="hla\VerifyingReceiver.h" />
+    <ClInclude Include="hla\WeaponFireFixture.h" />
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />
     <ClInclude Include="icd\icd_types.h" />
     <ClInclude Include="icd\RadarBeam.h" />
     <ClInclude Include="icd\RadioReceiver.h" />
     <ClInclude Include="icd\MinefieldData.h" />
+    <ClInclude Include="icd\WeaponFire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
