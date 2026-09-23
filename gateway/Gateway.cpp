@@ -104,19 +104,20 @@ void Gateway::run(unsigned hz, unsigned seconds) {
 }
 
 void Gateway::printPlan() const {
-    std::printf("%-28s %6s %8s %8s %8s %10s\n",
+    // 最終列だけ幅を指定しない。printf の幅はバイト数で数えるので、CJK を混ぜると揃わない。
+    std::printf("%-28s %6s %8s %8s %8s  %s\n",
                 "クラス", "port", "1件(B)", "1発(件)", "上限(B)", "種別");
     for (const auto& ch : m_channels) {
         const ClassBinding& b = ch->binding();
-        std::printf("%-28s %6u %8zu %8zu %8zu %10s\n",
+        std::printf("%-28s %6u %8zu %8zu %8zu  %s\n",
                     trimRoot(b.fomName), b.port,
                     ch->recordSize(), ch->capacityInRecords(), b.payload,
-                    b.delivery == Delivery::Snapshot ? "状態" : "イベント");
+                    b.kind == ClassKind::Object ? "オブジェクト" : "インタラクション");
     }
 }
 
 void Gateway::printSummary() const {
-    // 持ち越し回数を出しているのは、**Delivery によって意味が正反対**だから。イベントなら
+    // 持ち越し回数を出しているのは、**ClassKind によって意味が正反対**だから。イベントなら
     // その回数だけ次の周期へ繰り越しており、状態なら同じ回数だけ捨てている。積み残しは
     // 終わった瞬間の残り件数、持ち越しは出し切れなかった周期の数。
     std::printf("\n%-28s %10s %10s %10s %8s %8s %8s %8s\n",

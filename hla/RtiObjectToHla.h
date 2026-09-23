@@ -16,7 +16,7 @@
 // ICD に削除を表すフィールドを足すか）。
 //
 // **インタラクションをこの器で受けないこと。** 宛先を探す必要がないので、対応表がまるごと
-// 無駄になる。あちらは RtiEventReceiver — accept() で詰め替えて sendInteraction を呼ぶだけ。
+// 無駄になる。あちらは RtiInteractionToHla — accept() で詰め替えて sendInteraction を呼ぶだけ。
 //
 // 未決のまま残っていること：**部分更新の扱い。** ICD は常に全属性ぶんの箱を送るので、
 // 送信側が持っていなかった属性はゼロで届く。それを前回値で埋めるか既定値で埋めるかは
@@ -36,7 +36,7 @@
 namespace hla {
 
 template <class T, class ObjPtr, class Key = std::string>
-class RtiSnapshotReceiver : public ToHla<T> {
+class RtiObjectToHla : public ToHla<T> {
 public:
     /// このレコードがどのインスタンスのものかを決める。**ICD 側の設計判断。**
     /// 1つの装置が複数の子を持つ型なら、鍵は複数フィールドの組になる。
@@ -50,7 +50,7 @@ public:
     /// セッタが即反映のツールキットもあるので、update を呼ぶかどうかはここに委ねる。
     using Write = void (*)(const T&, const ObjPtr&);
 
-    RtiSnapshotReceiver(KeyOf keyOf, Create create, Write write)
+    RtiObjectToHla(KeyOf keyOf, Create create, Write write)
         : m_keyOf(keyOf), m_create(std::move(create)), m_write(write) {}
 
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれる。

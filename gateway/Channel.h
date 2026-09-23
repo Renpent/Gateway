@@ -42,7 +42,7 @@ public:
     [[nodiscard]] virtual std::uint64_t sentTotal() const noexcept = 0;
 
     /// 送り切れずに次の周期へ回した件数と、そうなった周期の回数。
-    /// **Events で backlog が減らないなら、そのクラスは供給に追いついていない。**
+    /// **インタラクションで backlog が減らないなら、そのクラスは供給に追いついていない。**
     /// 上げるのは Rate か payload（＝1発の件数）で、放っておくとメモリが伸び続ける。
     [[nodiscard]] virtual std::size_t backlog() const noexcept = 0;
     [[nodiscard]] virtual std::uint64_t deferrals() const noexcept = 0;

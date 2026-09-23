@@ -1,6 +1,6 @@
 ﻿// 復元したインタラクションを HLA へ送る器。**探さない。詰め替えて送るだけ。**
 //
-// オブジェクト（RtiSnapshotReceiver）は「このレコードはどのインスタンスのものか」を鍵で探して
+// オブジェクト（RtiObjectToHla）は「このレコードはどのインスタンスのものか」を鍵で探して
 // 属性を書き、update する。インタラクションにその段は無い — 宛先というものが存在せず、
 // sendInteraction を1回呼べば終わる。だから対応表も鍵も持たない、完全にステートレスな器になる。
 //
@@ -21,12 +21,12 @@
 namespace hla {
 
 template <class T>
-class RtiEventReceiver : public ToHla<T> {
+class RtiInteractionToHla : public ToHla<T> {
 public:
     /// 詰め替えて sendInteraction まで行う。フェデレートを掴む必要があるので std::function。
     using Send = std::function<void(const T&)>;
 
-    explicit RtiEventReceiver(Send send) : m_send(std::move(send)) {}
+    explicit RtiInteractionToHla(Send send) : m_send(std::move(send)) {}
 
     /// **record は使い回されている。** send の中で保持するならコピーすること。
     void accept(const T& record) override {

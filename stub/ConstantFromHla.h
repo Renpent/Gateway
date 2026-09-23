@@ -1,4 +1,8 @@
-﻿// 中身に意味を持たせない供給元。
+﻿// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
+// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
+// 直す先は app/Wiring.h の1ファイルで済む。
+//
+// 中身に意味を持たせない供給元。
 //
 // ポートが複数あって poll が正しく振り分けているかを見るためだけのもので、
 // 値は既定構築のまま（可変長配列は 0 要素）。**毎回まったく同じ値**なので、
@@ -9,14 +13,14 @@
 #include <cstddef>
 #include <vector>
 
-#include "FromHla.h"
+#include "../hla/FromHla.h"
 
-namespace hla {
+namespace stub {
 
 template <class T>
-class ConstantFeed : public FromHla<T> {
+class ConstantFromHla : public hla::FromHla<T> {
 public:
-    explicit ConstantFeed(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
+    explicit ConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
 
     std::size_t drain(std::vector<T>& out) override {
         for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(T{});
@@ -31,4 +35,4 @@ private:
     std::size_t m_produced = 0;     ///< これまでに作った累計件数
 };
 
-}  // namespace hla
+}  // namespace stub

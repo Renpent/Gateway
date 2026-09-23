@@ -27,7 +27,7 @@
 namespace hla {
 
 template <class T, class ObjPtr>
-class RtiSnapshotFeed : public FromHla<T> {
+class RtiObjectFromHla : public FromHla<T> {
 public:
     /// getRemoteXXX() を呼ぶだけ。フェデレートを掴む必要があるので std::function。
     using Fetch = std::function<std::vector<ObjPtr>()>;
@@ -36,11 +36,11 @@ public:
     /// クラスごとに1本書く（ICDgenerator で生成できる見込み）。
     using Convert = T (*)(const ObjPtr&);
 
-    RtiSnapshotFeed(Fetch fetch, Convert convert)
+    RtiObjectFromHla(Fetch fetch, Convert convert)
         : m_fetch(std::move(fetch)), m_convert(convert) {}
 
     /// **out はクリアしない。** 末尾に足すだけで、捨てるかどうかは ClassChannel が
-    /// Delivery を見て決める。ここでクリアすると Events の持ち越しが消える。
+    /// ClassKind を見て決める。ここでクリアするとインタラクションの持ち越しが消える。
     ///
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれるので、ここで待つと
     /// その周期ぶん全クラスが遅れる。

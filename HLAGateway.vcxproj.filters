@@ -16,6 +16,9 @@
     <Filter Include="hla">
       <UniqueIdentifier>{1a1b0a1e-0004-4000-9000-000000000004}</UniqueIdentifier>
     </Filter>
+    <Filter Include="stub">
+      <UniqueIdentifier>{9c1f7a52-3b6d-4e08-8a41-2f7d5c0b6e93}</UniqueIdentifier>
+    </Filter>
     <Filter Include="icd">
       <UniqueIdentifier>{1a1b0a1e-0005-4000-9000-000000000005}</UniqueIdentifier>
     </Filter>
@@ -72,7 +75,7 @@
     <ClInclude Include="gateway\ClassChannel.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\Delivery.h">
+    <ClInclude Include="gateway\ClassKind.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\Gateway.h">
@@ -90,47 +93,47 @@
     <ClInclude Include="gateway\SubscriberStats.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="hla\ConstantFeed.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\ConstantFromHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CountingReceiver.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\CountingToHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="hla\Federate.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\FixtureFeed.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\FixtureFromHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="hla\FromHla.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\ObjectId.h">
+    <ClInclude Include="stub\ObjectId.h">
+      <Filter>stub</Filter>
+    </ClInclude>
+    <ClInclude Include="stub\RadarBeamFixture.h">
+      <Filter>stub</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\RtiInteractionFromHla.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\RadarBeamFixture.h">
+    <ClInclude Include="hla\RtiInteractionToHla.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\RtiEventFeed.h">
+    <ClInclude Include="hla\RtiObjectFromHla.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\RtiEventReceiver.h">
-      <Filter>hla</Filter>
-    </ClInclude>
-    <ClInclude Include="hla\RtiSnapshotFeed.h">
-      <Filter>hla</Filter>
-    </ClInclude>
-    <ClInclude Include="hla\RtiSnapshotReceiver.h">
+    <ClInclude Include="hla\RtiObjectToHla.h">
       <Filter>hla</Filter>
     </ClInclude>
     <ClInclude Include="hla\ToHla.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\VerifyingReceiver.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\VerifyingToHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="hla\WeaponFireFixture.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\WeaponFireFixture.h">
+      <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="icd\icd_classes.h">
       <Filter>icd</Filter>

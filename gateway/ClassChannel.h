@@ -16,7 +16,7 @@
 #include "../net/UdpSocket.h"
 #include "Channel.h"
 #include "ClassBinding.h"
-#include "Delivery.h"
+#include "ClassKind.h"
 #include "Publisher.h"
 #include "Subscriber.h"
 
@@ -49,11 +49,11 @@ public:
     std::size_t pumpOut() override {
         if (m_fromHla == nullptr || !m_sock.canSend()) return 0;
 
-        // スナップショットは前回の残りが既に古い。撮り直す前に捨てる。
-        // イベントは1件ずつ意味があるので、残っているぶんの後ろに足す。
-        if (m_bind.delivery == Delivery::Snapshot) m_outbox.clear();
+        // オブジェクトは前回の残りが既に古い。撮り直す前に捨てる。
+        // インタラクションは1件ずつ意味があるので、残っているぶんの後ろに足す。
+        if (m_bind.kind == ClassKind::Object) m_outbox.clear();
         m_fromHla->drain(m_outbox);
-        // ここで m_backlog を戻しておくこと。Snapshot が上の clear() で残りを捨てた周期は
+        // ここで m_backlog を戻しておくこと。オブジェクトが上の clear() で残りを捨てた周期は
         // ここを通って抜けるので、書き直さないと**捨てたはずの件数を積み残しとして
         // 報告し続ける**。実際に消えているのに「まだ手元にある」と読める表示になる。
         if (m_outbox.empty()) { m_backlog = 0; return 0; }
@@ -62,7 +62,7 @@ public:
         // 止まるのはソケットが受け付けなかったときだけで、そのとき残った分が持ち越しになる。
         //
         // 以前は「1周期あたり8データグラム」で切っていた。それはイベント（インタラクション）が
-        // 束で来る場合を想定した制限だったが、**Snapshot には有害だった**: 次の周期の頭で
+        // 束で来る場合を想定した制限だったが、**オブジェクトには有害だった**: 次の周期の頭で
         // 残りを捨てる設計なので、上限を超えた末尾が毎周期おなじように落ち続け、
         // インスタンス数が上限を超えたフェデレーションでは末尾が永久に送られなかった。
         //
@@ -125,7 +125,7 @@ private:
     UdpSocket m_sock;               ///< このクラス専用のソケット（送受信とも1本）
     Publisher<T> m_pub;             ///< レコード → データグラム
     Subscriber<T> m_sub;            ///< データグラム → レコード
-    std::vector<T> m_outbox;        ///< 送信待ちのレコード。Events では次の周期へ持ち越す
+    std::vector<T> m_outbox;        ///< 送信待ちのレコード。インタラクションは次の周期へ持ち越す
     std::size_t m_backlog = 0;      ///< 出し切れず残った件数
     std::uint64_t m_deferrals = 0;  ///< 出し切れなかった周期の回数
 };

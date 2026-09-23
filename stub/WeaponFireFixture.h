@@ -1,14 +1,18 @@
-﻿// ループバックで往復させる WeaponFire の「送ったはずの値」。
+﻿// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
+// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
+// 直す先は app/Wiring.h の1ファイルで済む。
+//
+// ループバックで往復させる WeaponFire の「送ったはずの値」。
 //
 // **このゲートウェイで最初のインタラクション。** オブジェクト（RadarBeam ほか）と違い、
-// Delivery::Events で流れる — 送り残しを次の周期に持ち越す経路は、このクラスが来るまで
+// ClassKind::Interaction で流れる — 送り残しを次の周期に持ち越す経路は、このクラスが来るまで
 // 一度も実行されていなかった。
 //
 // 作り方の約束は RadarBeamFixture.h と同じで、**決定的**であること。同じ i なら同じ値に
 // なるので、往復した結果を1バイトずつ突き合わせられる。
 //
 // EventIdentifier.EventCount に通し番号を入れてあるのは、レコード自身に順番を持たせるため。
-// VerifyingReceiver は「n 件目の受信」を「n 件目の送信」と比べるので途中の欠落に弱いが、
+// VerifyingToHla は「n 件目の受信」を「n 件目の送信」と比べるので途中の欠落に弱いが、
 // この番号があれば、落ちたのか壊れたのかを人が後から読める。
 
 #pragma once
@@ -19,7 +23,7 @@
 #include "../icd/WeaponFire.h"
 #include "ObjectId.h"
 
-namespace hla {
+namespace stub {
 
 /// i 番目の WeaponFire。RPR FOM の「誰が何を何に向けて撃ったか」を一通り埋める。
 inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
@@ -64,4 +68,4 @@ inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
     return v;
 }
 
-}  // namespace hla
+}  // namespace stub

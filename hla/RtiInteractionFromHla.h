@@ -30,9 +30,9 @@
 namespace hla {
 
 template <class T>
-class RtiEventFeed : public FromHla<T> {
+class RtiInteractionFromHla : public FromHla<T> {
 public:
-    explicit RtiEventFeed(std::size_t maxQueued = 1024) : m_maxQueued(maxQueued) {}
+    explicit RtiInteractionFromHla(std::size_t maxQueued = 1024) : m_maxQueued(maxQueued) {}
 
     /// **RTI のスレッドから呼ばれる。** コールバックの中で T に詰め替えたものを渡す。
     /// 溢れていたら捨てて false。捨てた数は dropped() に出る。
@@ -49,7 +49,7 @@ public:
 
     /// 周期ループのスレッドから。**ロックの中でやるのはキューの差し替えだけ**で、
     /// out への挿入はロックの外。ここを雑にすると RTI のスレッドが周期ループに引きずられる。
-    /// out はクリアしない（Events は持ち越すのが正しく、捨てる判断は ClassChannel のもの）。
+    /// out はクリアしない（インタラクションは持ち越すのが正しく、捨てる判断は ClassChannel のもの）。
     std::size_t drain(std::vector<T>& out) override {
         std::vector<T> taken;
         {

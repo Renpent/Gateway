@@ -7,8 +7,13 @@
 // ので、別クラスの値を渡し間違える余地が無く、ICD を更新して再生成すればここは変わらない。
 // **オブジェクトかインタラクションかもここには書かない** — kIsInteraction から決まる。
 //
-// メンバは向きで命名してある（xxxFromHla / xxxToHla）。クラス名のほうに Receiver のような
-// 語が入ることがあるので、役割を型名から取ると receiverReceiver のような名前が出てしまう。
+// **`stub::` が付いているものは本番には無い。** いま繋いでいる供給元と受け口はすべて
+// `stub/` の代用品で、実 RTI に繋ぐときは `hla::RtiObjectFromHla` などに差し替える。
+// `stub/` を見ているファイルは他に無いので、**書き換え対象はこのファイルだけ**になる。
+//
+// メンバは向きで命名してある（xxxFromHla / xxxToHla）。型の側も同じ規則で、`FromHla<T>` の
+// 実装はすべて `〜FromHla`、`ToHla<T>` の実装はすべて `〜ToHla`。派生の名前から基底が読めるので、
+// Feed や Receiver のような「どちら向きか分からない語」を覚える必要がない。
 //
 // 継ぎ目の実体を**値で持っている**のは、ClassChannel が生ポインタで借りるだけだから。
 // ここが所有者で、Gateway より長生きする必要がある（main.cpp の宣言順を参照）。
@@ -28,12 +33,12 @@
 #include "../gateway/ClassBinding.h"
 #include "../gateway/ClassChannel.h"
 #include "../gateway/Gateway.h"
-#include "../hla/ConstantFeed.h"
-#include "../hla/CountingReceiver.h"
-#include "../hla/FixtureFeed.h"
-#include "../hla/RadarBeamFixture.h"
-#include "../hla/VerifyingReceiver.h"
-#include "../hla/WeaponFireFixture.h"
+#include "../stub/ConstantFromHla.h"
+#include "../stub/CountingToHla.h"
+#include "../stub/FixtureFromHla.h"
+#include "../stub/RadarBeamFixture.h"
+#include "../stub/VerifyingToHla.h"
+#include "../stub/WeaponFireFixture.h"
 // ここだけが全クラスを名指しする。生成物なので、ICD にクラスを足せば自動で追随する。
 #include "../icd/icd_classes.h"
 
@@ -47,23 +52,23 @@ struct Wiring {
     };
 
     // HLA → UDP（送信側の供給元）
-    hla::FixtureFeed<icdfom::RadarBeam>       beamFromHla{hla::makeRadarBeam, 4};   ///< RadarBeam の供給元
-    hla::ConstantFeed<icdfom::RadioReceiver>  radioFromHla{1};                      ///< RadioReceiver の供給元
-    hla::ConstantFeed<icdfom::MinefieldData>  minefieldFromHla{1};                  ///< MinefieldData の供給元
-    hla::FixtureFeed<icdfom::WeaponFire>      fireFromHla{hla::makeWeaponFire, 3};  ///< WeaponFire の供給元
+    stub::FixtureFromHla<icdfom::RadarBeam>       beamFromHla{stub::makeRadarBeam, 4};   ///< RadarBeam の供給元
+    stub::ConstantFromHla<icdfom::RadioReceiver>  radioFromHla{1};                      ///< RadioReceiver の供給元
+    stub::ConstantFromHla<icdfom::MinefieldData>  minefieldFromHla{1};                  ///< MinefieldData の供給元
+    stub::FixtureFromHla<icdfom::WeaponFire>      fireFromHla{stub::makeWeaponFire, 3};  ///< WeaponFire の供給元
 
     // UDP → HLA（受信側の受け口）
-    hla::VerifyingReceiver<icdfom::RadarBeam>    beamToHla{hla::makeRadarBeam};   ///< RadarBeam の受け口。往復照合もする
-    hla::CountingReceiver<icdfom::RadioReceiver> radioToHla;                      ///< RadioReceiver の受け口。数えるだけ
-    hla::CountingReceiver<icdfom::MinefieldData> minefieldToHla;                  ///< MinefieldData の受け口。数えるだけ
-    hla::VerifyingReceiver<icdfom::WeaponFire>   fireToHla{hla::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
+    stub::VerifyingToHla<icdfom::RadarBeam>    beamToHla{stub::makeRadarBeam};   ///< RadarBeam の受け口。往復照合もする
+    stub::CountingToHla<icdfom::RadioReceiver> radioToHla;                      ///< RadioReceiver の受け口。数えるだけ
+    stub::CountingToHla<icdfom::MinefieldData> minefieldToHla;                  ///< MinefieldData の受け口。数えるだけ
+    stub::VerifyingToHla<icdfom::WeaponFire>   fireToHla{stub::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
 
     /// verify が false なら照合するクラスの受信は捨てる（照合はループバックのときだけ）。
     void build(gw::Gateway& g, bool verify) {
         add<icdfom::RadarBeam>    (g, &beamFromHla,      verify ? &beamToHla : nullptr);
         add<icdfom::RadioReceiver>(g, &radioFromHla,     &radioToHla);
         add<icdfom::MinefieldData>(g, &minefieldFromHla, &minefieldToHla);
-        // **唯一のインタラクション。** Delivery::Events になるのは kIsInteraction=true だから
+        // **唯一のインタラクション。** ClassKind::Interaction になるのは kIsInteraction=true だから
         // で、ここには何も書いていない。送り残しを次の周期へ持ち越すのはこのクラスだけ。
         add<icdfom::WeaponFire>   (g, &fireFromHla,      verify ? &fireToHla : nullptr);
     }
@@ -80,7 +85,7 @@ struct Wiring {
 
 private:
     template <class T>
-    static VerifyResult tally(const hla::VerifyingReceiver<T>& v) {
+    static VerifyResult tally(const stub::VerifyingToHla<T>& v) {
         return VerifyResult{v.received(), v.mismatched()};
     }
 

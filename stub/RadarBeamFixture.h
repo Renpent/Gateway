@@ -1,10 +1,14 @@
-﻿// ループバックで往復させる RadarBeam の「送ったはずの値」。
+﻿// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
+// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
+// 直す先は app/Wiring.h の1ファイルで済む。
+//
+// ループバックで往復させる RadarBeam の「送ったはずの値」。
 //
 // 本番では RTI が reflectAttributeValues で運んでくるものを、ここでは決まった手順で作る。
 // **決定的**（同じ i なら同じ値）にしてあるのは、往復した結果を元と1バイトずつ突き合わせる
 // ため。乱数だと「壊れたのか元から違うのか」が分からなくなる。
 //
-// 供給側（FixtureFeed）と照合側（VerifyingReceiver）の両方がここを呼ぶので、
+// 供給側（FixtureFromHla）と照合側（VerifyingToHla）の両方がここを呼ぶので、
 // 「送ったはずの値」の定義が1箇所に閉じる。
 
 #pragma once
@@ -15,7 +19,7 @@
 #include "../icd/RadarBeam.h"
 #include "ObjectId.h"
 
-namespace hla {
+namespace stub {
 
 /// i 番目の RadarBeam。
 inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
@@ -51,4 +55,4 @@ inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
     return b;
 }
 
-}  // namespace hla
+}  // namespace stub

@@ -1,4 +1,8 @@
-﻿// 受け取ったレコードを「送ったはずの値」と1バイトずつ突き合わせる受け口。
+﻿// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
+// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
+// 直す先は app/Wiring.h の1ファイルで済む。
+//
+// 受け取ったレコードを「送ったはずの値」と1バイトずつ突き合わせる受け口。
 //
 // 比較を**再符号化したバイト列**で行うのは、可変長配列の未使用部分がゼロ埋めされる約束が
 // あるから。同じ値なら必ず同じバイト列になるので、構造体を1メンバずつ比べる必要がない。
@@ -15,18 +19,18 @@
 #include <vector>
 
 #include "../icd/icd_codec.h"
-#include "ToHla.h"
+#include "../hla/ToHla.h"
 
-namespace hla {
+namespace stub {
 
 template <class T>
-class VerifyingReceiver : public ToHla<T> {
+class VerifyingToHla : public hla::ToHla<T> {
 public:
-    /// **供給側（FixtureFeed）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
+    /// **供給側（FixtureFromHla）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
     /// 分かれると、往復照合は何も確かめていないのと同じになる。
     using Fixture = T (*)(std::size_t);
 
-    explicit VerifyingReceiver(Fixture make) : m_make(make) {}
+    explicit VerifyingToHla(Fixture make) : m_make(make) {}
 
     void accept(const T& rec) override {
         if (encodedBytes(rec) != encodedBytes(m_make(m_received))) {
@@ -72,4 +76,4 @@ private:
     std::size_t m_mismatched = 0;   ///< 往復で元とバイト列が違った件数
 };
 
-}  // namespace hla
+}  // namespace stub
