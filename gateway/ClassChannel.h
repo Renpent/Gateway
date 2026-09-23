@@ -53,7 +53,10 @@ public:
         // イベントは1件ずつ意味があるので、残っているぶんの後ろに足す。
         if (m_bind.delivery == Delivery::Snapshot) m_outbox.clear();
         m_fromHla->drain(m_outbox);
-        if (m_outbox.empty()) return 0;
+        // ここで m_backlog を戻しておくこと。Snapshot が上の clear() で残りを捨てた周期は
+        // ここを通って抜けるので、書き直さないと**捨てたはずの件数を積み残しとして
+        // 報告し続ける**。実際に消えているのに「まだ手元にある」と読める表示になる。
+        if (m_outbox.empty()) { m_backlog = 0; return 0; }
 
         // 件数の上限は設けない。**1周期に渡されたものはその周期で出し切る。**
         // 止まるのはソケットが受け付けなかったときだけで、そのとき残った分が持ち越しになる。
@@ -62,12 +65,23 @@ public:
         // 束で来る場合を想定した制限だったが、**Snapshot には有害だった**: 次の周期の頭で
         // 残りを捨てる設計なので、上限を超えた末尾が毎周期おなじように落ち続け、
         // インスタンス数が上限を超えたフェデレーションでは末尾が永久に送られなかった。
-        std::size_t sent = 0;
-        while (sent < m_outbox.size() && m_pub.publish(m_outbox[sent], m_sock)) ++sent;
+        //
+        // **出せた件数は Publisher に数えさせること。publish が true を返した回数ではない。**
+        // publish はレコードをデータグラムに積んだ時点で true を返すが、積まれたぶんが
+        // 実際に出るのは flush のときで、そこで断られると writer ごと捨てられる。
+        // true の回数を「送った件数」として outbox から消すと、**持ち越すはずのイベントが
+        // 毎回きっかり1データグラムぶん静かに消える**（500件のバーストで 434件しか届かない）。
+        // recordsSent() は送信が成功したときしか増えないので、これが唯一の正しい件数になる。
+        const std::uint64_t before = m_pub.recordsSent();
+        for (const T& record : m_outbox) {
+            if (!m_pub.publish(record, m_sock)) break;
+        }
 
         // 周期の終わりに必ず出し切る。次の周期まで抱えると、その1周期ぶん遅れる。
         (void)m_pub.flush(m_sock);
 
+        // 出たのは outbox の先頭から連続したぶんなので、その件数だけ削れば順序は保たれる。
+        const std::size_t sent = static_cast<std::size_t>(m_pub.recordsSent() - before);
         m_outbox.erase(m_outbox.begin(), m_outbox.begin() + static_cast<std::ptrdiff_t>(sent));
         if (!m_outbox.empty()) {
             ++m_deferrals;

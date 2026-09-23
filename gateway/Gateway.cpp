@@ -116,18 +116,23 @@ void Gateway::printPlan() const {
 }
 
 void Gateway::printSummary() const {
-    std::printf("\n%-28s %10s %10s %10s %8s %8s %8s\n",
-                "クラス", "port", "送信件数", "受信件数", "class違い", "異常", "積み残し");
+    // 持ち越し回数を出しているのは、**Delivery によって意味が正反対**だから。イベントなら
+    // その回数だけ次の周期へ繰り越しており、状態なら同じ回数だけ捨てている。積み残しは
+    // 終わった瞬間の残り件数、持ち越しは出し切れなかった周期の数。
+    std::printf("\n%-28s %10s %10s %10s %8s %8s %8s %8s\n",
+                "クラス", "port", "送信件数", "受信件数", "class違い", "異常",
+                "積み残し", "持ち越し");
     for (const auto& ch : m_channels) {
         const SubscriberStats& s = ch->inStats();
-        std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu\n",
+        std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu %8llu\n",
                     trimRoot(ch->binding().fomName),
                     ch->binding().port,
                     static_cast<unsigned long long>(ch->sentTotal()),
                     static_cast<unsigned long long>(s.records),
                     static_cast<unsigned long long>(s.wrongClass),
                     static_cast<unsigned long long>(s.malformed + s.skipped),
-                    ch->backlog());
+                    ch->backlog(),
+                    static_cast<unsigned long long>(ch->deferrals()));
     }
 
     const double avgLate = m_loop.ticks ? m_loop.sumLateMs / static_cast<double>(m_loop.ticks) : 0.0;
