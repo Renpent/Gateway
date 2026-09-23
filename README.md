@@ -52,13 +52,13 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 帯域は増える — 測ったときの3クラスで間引きありの 7.6 KB/s が 49 KB/s になり、ほぼ `MinefieldData`（1件
 1902 B）が毎周期出るぶん — が、それを承知のうえでの判断。必要になったら `Rate` を生成に戻せばよい。
 
-### 状態とイベントは backlog の扱いが正反対
+### オブジェクトとインタラクションは backlog の扱いが正反対
 
 `ClassBinding::kind` で区別する。**取り違えると静かに壊れる**ので型にしてある。
 
 | | `ClassKind::Object` | `ClassKind::Interaction` |
 |---|---|---|
-| 何 | オブジェクト属性 | インタラクション |
+| 何 | オブジェクトクラスの属性 | インタラクションクラス |
 | HLA 側 | `getRemoteXXX()` でその瞬間の全体像が取れる | コールバックでイベントとして飛んでくる |
 | 落ちたら | 次の周期が現在値を運ぶ。**自己回復する** | **二度と戻らない** |
 | 送り残し | 次の周期には古い。**捨てて撮り直す** | **持ち越す** |
@@ -176,6 +176,112 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 
 コストは実測で1クラスあたり前処理40行（`icd_types.h` を共有する薄い殻なので）。
 `<vector>` 単体が 14,404 行なので、50クラスでも埋もれる。
+
+## クラスを1つ足す
+
+**触るのは `app/Wiring.h` だけ。** ID もポートも種別も生成物から決まるので、配線に数字は出てこない。
+
+### ① ICDgenerator 側
+
+GUI で対象クラスにチェック → ID/Port ダイアログで番号を振る（`連番を振る` は見えている行に効く）
+→ MTU を選ぶ → C++ 生成。これで `icd/<Class>.h` に `kClassId` `kPort` `kPayload`
+`kIsInteraction` `kFomName` が入り、まとめ include の `icd/icd_classes.h` も追随する。
+**Wiring に include を足す必要はない。**
+
+生成が止まるのは2通りだけで、どちらもクラス名と理由を出す — 可変レコードを含む場合と、
+1件が MTU に収まらない場合。
+
+### ② メンバを2本
+
+いま（RTI が無い状態）なら `stub/` の代用品を繋ぐ：
+
+```cpp
+// HLA → UDP
+stub::FixtureFromHla<icdfom::Aircraft> aircraftFromHla{stub::makeAircraft, 4};
+// UDP → HLA
+stub::CountingToHla<icdfom::Aircraft>  aircraftToHla;
+```
+
+値に意味が要らないなら `stub::ConstantFromHla<T>{1}` で足りる（既定構築の値を毎周期1件）。
+バイト単位で往復照合したいときだけ `stub::VerifyingToHla<T>{stub::makeAircraft}` にし、
+`stub/<Class>Fixture.h` に `makeAircraft(i)` を1本書く（`stub/WeaponFireFixture.h` が雛形）。
+**照合器を足したら `Wiring::verifyResult()` の合計にも1つ加えること** — 配線で2箇所書くのは
+ここだけ。
+
+### ③ `build()` に1行
+
+```cpp
+add<icdfom::Aircraft>(g, &aircraftFromHla, &aircraftToHla);
+```
+
+片方向のクラスは、要らないほうのメンバを作らず `nullptr` を渡す。`T` は必ず明示すること
+（`nullptr` からは型が決まらない）。
+
+```cpp
+add<icdfom::Foo>(g, &fooFromHla, nullptr);    // 送信のみ
+add<icdfom::Bar>(g, nullptr,     &barToHla);  // 受信のみ
+```
+
+### 本番（RTI）での形
+
+`stub::` が `hla::Rti...` に変わる。**オブジェクトとインタラクションで形が違う**のは、
+前者が毎周期こちらから取りに行く（pull）のに対し、後者は RTI のコールバックから
+押し込まれる（push）から。
+
+```cpp
+// オブジェクト
+hla::RtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
+    [this] { return m_fed.getRemoteAircraft(); },   // Fetch: getRemoteXXX() を呼ぶだけ
+    &toIcd                                          // Convert: 1インスタンス → 1レコード
+};
+hla::RtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
+    &keyOf,                                                              // どのインスタンスか
+    [this](const std::string& k) { return m_fed.registerAircraft(k); },  // 初見なら登録
+    &writeBack                                                           // 属性を書いて update
+};
+
+// インタラクション
+hla::RtiInteractionFromHla<icdfom::WeaponFire> fireFromHla{2048};
+hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
+    [this](const icdfom::WeaponFire& r) { m_fed.sendWeaponFire(toRti(r)); }
+};
+```
+
+`Fetch` と `Create` だけ `std::function`（フェデレートを掴む必要がある）、残りは状態を持たない
+自由関数の想定で関数ポインタ。**クラスごとに書く中身はこの関数だけ** — オブジェクトなら
+`toIcd` / `keyOf` / `writeBack` の3本、インタラクションなら `toIcd` / `toRti` の2本。
+
+`fireFromHla` は Fetch を取らない代わりに、**`receiveInteraction` のコールバック側にこの
+ポインタを渡して、その中で `push()` を呼ぶ**配線が別に要る。ゲートウェイで唯一ロックを持つ
+場所がここ。
+
+### コンストラクタの数字
+
+どちらも既定値があるので省略できる。意味はまったく別物。
+
+| | 何の数 | 既定 | 誰が決める |
+|---|---|---|---|
+| `FixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷。好きに変えてよい |
+| `RtiInteractionFromHla{2048}` | **キューに何件まで溜めるか** | 1024 | 本番の容量設計 |
+
+前者は `stub/` の中だけの話で、本番には存在しない。増やせばそのクラスの送信件数がそのまま増える。
+
+後者は本物の判断。RTI のコールバックスレッドが `push()` し、周期ループが毎回全部 `drain()`
+するので、**キューが伸びるのは「RTI が1周期のあいだに渡してくる件数」がこれを超えたときだけ**。
+20 Hz なら 50 ms に 2048 件を超えて初めて捨て始める。超えたぶんは `push()` が false を返して
+`dropped()` に計上される — 黙っては捨てない。上げるコストはメモリ（件数 × レコード長）だけ
+なので、取りこぼしが起きるくらいなら大きめでよい。
+
+### 増えたときにどこが伸びるか
+
+```
+1クラス            → Wiring.h に3行（メンバ2 + build 1）
+往復照合もするなら  → + verifyResult() に1つ
+本番用の変換関数    → オブジェクト3本 / インタラクション2本
+```
+
+50クラスでも `Wiring.h` は150行程度で、`main.cpp` と `gateway/` は一切変わらない。
+伸びるのは変換関数のほうで、そこは ICDgenerator で生成したい（アクセサの綴りが決まり次第）。
 
 ## 移植するときに書くもの
 
