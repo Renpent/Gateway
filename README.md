@@ -241,7 +241,7 @@ hla::RtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
 };
 
 // インタラクション
-hla::RtiInteractionFromHla<icdfom::WeaponFire> fireFromHla{2048};
+hla::RtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
 hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
     [this](const icdfom::WeaponFire& r) { m_fed.sendWeaponFire(toRti(r)); }
 };
@@ -257,20 +257,29 @@ hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
 
 ### コンストラクタの数字
 
-どちらも既定値があるので省略できる。意味はまったく別物。
+**どちらも書かなくてよい。** 見た目は似ているが意味は別物で、片方は試験の都合、
+もう片方は全クラス共通の定数になっている。
 
-| | 何の数 | 既定 | 誰が決める |
+| | 何の数 | 既定 | 書くとき |
 |---|---|---|---|
-| `FixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷。好きに変えてよい |
-| `RtiInteractionFromHla{2048}` | **キューに何件まで溜めるか** | 1024 | 本番の容量設計 |
+| `FixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷を変えたいとき |
+| `RtiInteractionFromHla{}` | キューの深さの上限 | `hla::kInteractionQueueDepth`（2048） | まず無い（下記） |
 
 前者は `stub/` の中だけの話で、本番には存在しない。増やせばそのクラスの送信件数がそのまま増える。
 
-後者は本物の判断。RTI のコールバックスレッドが `push()` し、周期ループが毎回全部 `drain()`
-するので、**キューが伸びるのは「RTI が1周期のあいだに渡してくる件数」がこれを超えたときだけ**。
-20 Hz なら 50 ms に 2048 件を超えて初めて捨て始める。超えたぶんは `push()` が false を返して
-`dropped()` に計上される — 黙っては捨てない。上げるコストはメモリ（件数 × レコード長）だけ
-なので、取りこぼしが起きるくらいなら大きめでよい。
+後者は **`hla/RtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
+クラスごとに流量を見積もって数値を入れる運用にはしない。**
+
+- **使わなければ1バイトも要らない。** キューは普通の `std::vector` で積まれたぶんしか確保せず、
+  `drain()` が swap で持っていくので毎周期 capacity ごと 0 に戻る。この定数は天井であって
+  確保量ではない。idle のクラスを50個並べても消費はゼロ（確認済み）。
+- **効くのは1つの状況だけ。** `drain()` が毎周期空にするので、深さが伸びるのは「RTI が1周期の
+  あいだに渡してくる件数」がこの値を超えたときだけ。20 Hz なら 50 ms に 2048 件。
+- **超えても黙って壊れない。** 溢れた `push()` は false を返して `dropped()` に載る。
+  **`maxDepth()` が到達した最大の深さを覚えている**ので、見積もるのではなく流してから確かめられる。
+  これが `maxQueued()` に届いていないクラスは、調整しなくてよいと分かる。
+
+個別に数値を渡す価値が出るのは、実際に天井へ張り付いたクラスが出てきたときだけ。
 
 ### 増えたときにどこが伸びるか
 
