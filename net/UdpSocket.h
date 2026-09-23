@@ -1,4 +1,4 @@
-﻿// UDP ソケット。
+// UDP ソケット。
 //
 // このプロジェクトで OS を知っているのは net/ と platform/ の .cpp だけで、ヘッダには
 // winsock も <sys/socket.h> も現れない。ハンドルを std::intptr_t で持っているのはそのためで、

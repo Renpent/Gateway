@@ -1,4 +1,4 @@
-﻿// icd_codec.h — runtime support for the generated ICD codecs.
+// icd_codec.h — runtime support for the generated ICD codecs.
 //
 // Hand-written and copied out verbatim by the generator; nothing here is derived from a FOM.
 // C++17, no dependencies beyond the standard library, no platform headers.

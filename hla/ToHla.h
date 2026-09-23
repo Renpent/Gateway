@@ -1,4 +1,4 @@
-﻿// UDP → HLA 向きの継ぎ目。UDP から復元した T を HLA に押し込む。
+// UDP → HLA 向きの継ぎ目。UDP から復元した T を HLA に押し込む。
 //
 // 名前に向きが入っている理由は FromHla.h と同じ。HLA の用語では **これを実装するとき
 // RTI に対してやるのは publish** で、UDP 側の相手は gw::Subscriber（受信）になる。

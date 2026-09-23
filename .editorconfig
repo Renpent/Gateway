@@ -1,0 +1,24 @@
+# ソースは UTF-8（BOM なし）+ CRLF。
+#
+# **これが BOM の代わり。** 以前はソースに BOM を付けていたが、それは「BOM 無しの UTF-8 を
+# Visual Studio で開いて保存し直すと CP932 に落ちることがある」ための保険だった。
+# charset を明示すれば VS も VS Code も UTF-8 のまま保存するので、保険のほうが要らなくなる。
+# コンパイラ側は元から BOM を必要としていない — MSVC には .vcxproj と CMakeLists.txt の
+# 両方から /utf-8 を渡してあり、gcc は既定で UTF-8 として読む。
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# ドキュメントとビルド定義は元から LF。Linux 側で読み書きすることが多いのでそのまま。
+[{*.md,CMakeLists.txt}]
+end_of_line = lf
+
+# .sln だけは BOM を残してある。Visual Studio が自分で書き戻すので、剥がしても次の保存で
+# 復活する。ソースではないので揃える意味もない。
+[*.sln]
+charset = utf-8-bom

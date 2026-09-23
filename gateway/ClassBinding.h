@@ -1,4 +1,4 @@
-﻿// ICD の「抽出概要」シート1行ぶん — ただし**もう手で写さない**。
+// ICD の「抽出概要」シート1行ぶん — ただし**もう手で写さない**。
 //
 // ID・ポート・ペイロード・種別・FOM 名は、すべて生成された各クラスの定数
 // （kClassId / kPort / kPayload / kIsInteraction / kFomName）から bindingOf<T>() が組み立てる。

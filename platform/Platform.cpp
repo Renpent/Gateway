@@ -1,4 +1,4 @@
-﻿#include "Platform.h"
+#include "Platform.h"
 
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN

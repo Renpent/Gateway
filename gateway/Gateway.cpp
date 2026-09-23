@@ -1,4 +1,4 @@
-﻿#include "Gateway.h"
+#include "Gateway.h"
 
 #include <chrono>
 #include <cstdio>

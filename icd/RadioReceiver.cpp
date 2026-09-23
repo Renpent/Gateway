@@ -1,4 +1,4 @@
-﻿// 自動生成 — 編集しないこと。
+// 自動生成 — 編集しないこと。
 // HLAobjectRoot.EmbeddedSystem.RadioReceiver
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
