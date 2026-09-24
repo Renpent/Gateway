@@ -1,4 +1,4 @@
-#include "Gateway.h"
+#include "CGateway.h"
 
 #include <chrono>
 #include <cstdio>
@@ -15,12 +15,12 @@ double toMs(Clock::duration d) {
 
 }  // namespace
 
-void Gateway::add(std::unique_ptr<Channel> channel) {
+void CGateway::add(std::unique_ptr<CChannel> channel) {
     m_channels.push_back(std::move(channel));
 }
 
-bool Gateway::openAll(const std::string& peerHost) {
-    // **ポートの重複は bind では捕まらない。** UdpSocket は SO_REUSEADDR を立てているので
+bool CGateway::openAll(const std::string& peerHost) {
+    // **ポートの重複は bind では捕まらない。** CUdpSocket は SO_REUSEADDR を立てているので
     // 2本目の bind も成功し、データグラムはどちらか一方にしか届かない。しかも**どちらに
     // 届くかが OS で逆**で、Windows は先に bind したほう、Linux は後のほうが受け取る
     // （両方で実測）。片方が黙って飢えるうえに、飢えるほうが環境で変わるので、開く前に止める。
@@ -60,7 +60,7 @@ bool Gateway::openAll(const std::string& peerHost) {
     return true;
 }
 
-void Gateway::tick() {
+void CGateway::tick() {
     if (!m_opened) return;
 
     // 待機時間 0。全ポートを順に recvfrom で叩くのではなく、poll に一度で聞く。
@@ -81,7 +81,7 @@ void Gateway::tick() {
     if (m_tickEnd) m_tickEnd();
 }
 
-void Gateway::run(unsigned hz, unsigned seconds) {
+void CGateway::run(unsigned hz, unsigned seconds) {
     if (hz == 0) hz = 1;
 
     const auto period = std::chrono::nanoseconds(1000000000LL / hz);
@@ -117,7 +117,7 @@ void Gateway::run(unsigned hz, unsigned seconds) {
     }
 }
 
-void Gateway::printPlan() const {
+void CGateway::printPlan() const {
     // 最終列だけ幅を指定しない。printf の幅はバイト数で数えるので、CJK を混ぜると揃わない。
     std::printf("%-28s %6s %8s %8s %8s  %s\n",
                 "クラス", "port", "1件(B)", "1発(件)", "上限(B)", "種別");
@@ -133,15 +133,15 @@ void Gateway::printPlan() const {
     }
 }
 
-void Gateway::printSummary() const {
-    // 持ち越し回数を出しているのは、**ClassKind によって意味が正反対**だから。インタラクション
+void CGateway::printSummary() const {
+    // 持ち越し回数を出しているのは、**TClassKind によって意味が正反対**だから。インタラクション
     // ならその回数だけ次の周期へ繰り越しており、オブジェクトなら同じ回数だけ捨てている。
     // 積み残しは終わった瞬間の残り件数、持ち越しは出し切れなかった周期の数。
     std::printf("\n%-28s %10s %10s %10s %8s %8s %8s %8s\n",
                 "クラス", "port", "送信件数", "受信件数", "class違い", "異常",
                 "積み残し", "持ち越し");
     for (const auto& ch : m_channels) {
-        const SubscriberStats& s = ch->inStats();
+        const TSubscriberStats& s = ch->inStats();
         std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu %8llu\n",
                     ch->name(),
                     ch->port(),

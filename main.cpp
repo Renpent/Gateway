@@ -7,25 +7,25 @@
 //   HLAGateway loopback [Hz] [秒]         自分宛に送って自分で受け、往復後の値を元と照合
 //   HLAGateway run <宛先IP|none> [Hz] [秒]  実運用の形。none なら受信専用
 //
-// **配線は app/Wiring.h。** クラスを増やすときに触るのはそちらで、このファイルではない。
+// **配線は app/CWiring.h。** クラスを増やすときに触るのはそちらで、このファイルではない。
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 
-#include "app/Wiring.h"
-#include "gateway/Gateway.h"
+#include "app/CWiring.h"
+#include "gateway/CGateway.h"
 #include "platform/Platform.h"
 
 namespace {
 
 int runGateway(const std::string& peer, unsigned hz, unsigned seconds, bool verify) {
-    // **Wiring を先に宣言すること。** 破棄は宣言の逆順なので、この順なら gateway が先に
-    // 消え、そのチャネルが借りている継ぎ目（FromHla / ToHla の実体）はあとから消える。
+    // **CWiring を先に宣言すること。** 破棄は宣言の逆順なので、この順なら gateway が先に
+    // 消え、そのチャネルが借りている継ぎ目（TCFromHla / TCToHla の実体）はあとから消える。
     // 逆にすると、チャネルより先に参照先が無くなる。今はチャネルのデストラクタが
     // それらを参照しないので実害は出ていないが、それに頼っている状態をなくしておく。
-    app::Wiring wiring;
-    gw::Gateway gateway;
+    app::CWiring wiring;
+    gw::CGateway gateway;
     wiring.build(gateway, verify);
 
     if (!gateway.openAll(peer)) return 1;
@@ -41,8 +41,8 @@ int runGateway(const std::string& peer, unsigned hz, unsigned seconds, bool veri
 
     if (!verify) return 0;
 
-    // どのクラスを照合したかを知っているのは Wiring だけ。ここは合計しか見ない。
-    const app::Wiring::VerifyResult v = wiring.verifyResult();
+    // どのクラスを照合したかを知っているのは CWiring だけ。ここは合計しか見ない。
+    const app::CWiring::TVerifyResult v = wiring.verifyResult();
     std::printf("\n往復照合    : %zu 件受信 / 不一致 %zu 件\n", v.received, v.mismatched);
 
     // 送ったぶんが全部戻るとは限らない — 最後の周期ぶんはループを抜けた後に届く。

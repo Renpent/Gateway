@@ -1,11 +1,12 @@
 // UDP → アプリ 向きの継ぎ目。FOM に無い独自データを、それを使う側のロジックへ渡す。
 //
-// 形は hla::ToHla と同じ（accept が1本）だが、**別の型にしてある。** 独自データは RTI を
-// 1ミリも通らないので、hla::ToHla を実装させると「HLA へ」という嘘の名前が1つ増える。
-// 向きの付け方は hla/ と同じ規則 — 相手側の名前で呼び、実装はすべて 〜ToApp で終える。
+// 形は hla::TCToHla と同じ（accept が1本）だが、**別の型にしてある。** 独自データは RTI を
+// 1ミリも通らないので、hla::TCToHla を実装させると「HLA へ」という嘘の名前が1つ増える。
+// 向きの付け方は hla/ と同じ規則 — 相手側の名前で呼び、実装の名前はすべて ToApp で終える
+// （CCommandToApp など）。
 //
 // **ゲートウェイ自身の制御に使うときの注意。** accept は周期ループのスレッドで、tick() の
-// **途中**（前半の UDP 受信）に呼ばれる。ここで Gateway のチャネル一覧を変えたり止めたりすると、
+// **途中**（前半の UDP 受信）に呼ばれる。ここで CGateway のチャネル一覧を変えたり止めたりすると、
 // いま回しているループそのものが壊れる。アプリのロジックへ渡すだけならこの制約は無い。
 //
 // **決めてある形：accept ではキューに積むだけ。反映は tick() の最後に1箇所でまとめて行う。**
@@ -16,10 +17,10 @@
 // 効き始めるのは次の周期から（20 Hz なら 50 ms 後）。前半・後半のあいだで反映すれば同じ周期の
 // 送信から効くが、そこでチャネルやソケットを変えると後半のループと poll の対応表がずれる。
 // 積むのも反映するのも周期ループのスレッドなので、このキューにロックは要らない
-// （RTI スレッドから積まれる RtiInteractionFromHla とはそこが違う）。
+// （RTI スレッドから積まれる TCRtiInteractionFromHla とはそこが違う）。
 //
-// 反映する場所は Gateway::setTickEnd で登録する。実例は CommandToApp（accept で積み、
-// applyPending で処理する）と、それを登録している app/Wiring.h。
+// 反映する場所は CGateway::setTickEnd で登録する。実例は CCommandToApp（accept で積み、
+// applyPending で処理する）と、それを登録している app/CWiring.h。
 //
 // 送る向き（アプリ → UDP）が要るようになったら、対になる FromApp をここに足す。
 
@@ -28,9 +29,9 @@
 namespace app {
 
 template <class T>
-class ToApp {
+class TCToApp {
 public:
-    virtual ~ToApp() = default;
+    virtual ~TCToApp() = default;
 
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれ、ここで待つと全ポートが遅れる。
     /// message はこの呼び出しの間だけ有効。後で使うならコピーすること。

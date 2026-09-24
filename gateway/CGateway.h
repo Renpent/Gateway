@@ -17,16 +17,16 @@
 #include <string>
 #include <vector>
 
-#include "../net/Poller.h"
-#include "Channel.h"
-#include "LoopStats.h"
+#include "../net/CPoller.h"
+#include "CChannel.h"
+#include "TLoopStats.h"
 
 namespace gw {
 
-class Gateway {
+class CGateway {
 public:
     /// チャネルを登録する。open は openAll でまとめて行う。
-    void add(std::unique_ptr<Channel> channel);
+    void add(std::unique_ptr<CChannel> channel);
 
     /// 全チャネルの受信ポートを bind し、送信先を設定する。
     /// peerHost が空なら受信専用で立ち上がる。
@@ -35,7 +35,7 @@ public:
     /// tick() の最後に1回呼ぶ処理を登録する。**制御コマンドはここで反映する。**
     ///
     /// 受信（2）と送信（3）のループがどちらも終わったあとなので、ループの途中で状態を変えて
-    /// 壊す心配が無い。受信中に届いたコマンドはその場ではキューに積むだけにして（app/ToApp.h）、
+    /// 壊す心配が無い。受信中に届いたコマンドはその場ではキューに積むだけにして（app/TCToApp.h）、
     /// ここでまとめて処理する。効くのは次の周期の送信から。
     ///
     /// 1つだけ登録できる。登録しなければ何もしない。
@@ -47,8 +47,8 @@ public:
     /// hz の周期で tick を回す。seconds 秒で終わる（0 なら止まらない）。
     void run(unsigned hz, unsigned seconds);
 
-    [[nodiscard]] const LoopStats& loopStats() const noexcept { return m_loop; }
-    [[nodiscard]] const std::vector<std::unique_ptr<Channel>>& channels() const noexcept {
+    [[nodiscard]] const TLoopStats& loopStats() const noexcept { return m_loop; }
+    [[nodiscard]] const std::vector<std::unique_ptr<CChannel>>& channels() const noexcept {
         return m_channels;
     }
 
@@ -58,10 +58,10 @@ public:
     void printSummary() const;
 
 private:
-    std::vector<std::unique_ptr<Channel>> m_channels;  ///< 登録されたチャネル。所有する
-    std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> Poller の添字
-    Poller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
-    LoopStats m_loop;                       ///< 周期が守れているかの記録
+    std::vector<std::unique_ptr<CChannel>> m_channels;  ///< 登録されたチャネル。所有する
+    std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> CPoller の添字
+    CPoller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
+    TLoopStats m_loop;                       ///< 周期が守れているかの記録
     std::function<void()> m_tickEnd;        ///< tick() の最後に呼ぶ処理。空なら何もしない
     bool m_opened = false;                  ///< openAll が成功したか。false なら tick は何もしない
 };

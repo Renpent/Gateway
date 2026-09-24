@@ -1,6 +1,6 @@
-#include "Poller.h"
+#include "CPoller.h"
 
-#include "UdpSocket.h"
+#include "CUdpSocket.h"
 
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
@@ -24,13 +24,13 @@ static int lastErrno() { return errno; }
 
 namespace gw {
 
-std::size_t Poller::add(const UdpSocket& sock) {
+std::size_t CPoller::add(const CUdpSocket& sock) {
     m_handles.push_back(sock.osHandle());
     m_ready.push_back(0);
     return m_handles.size() - 1;
 }
 
-int Poller::poll(int timeoutMs) {
+int CPoller::poll(int timeoutMs) {
     for (unsigned char& r : m_ready) r = 0;
 
     // WSAPoll は要素数 0 でエラーを返す。POSIX の poll は単なるタイマになるが、
@@ -67,7 +67,7 @@ int Poller::poll(int timeoutMs) {
     return readable;
 }
 
-bool Poller::readable(std::size_t index) const {
+bool CPoller::readable(std::size_t index) const {
     return index < m_ready.size() && m_ready[index] != 0;
 }
 

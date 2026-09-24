@@ -9,7 +9,7 @@
 
 namespace gw {
 
-struct LoopStats {
+struct TLoopStats {
     std::uint64_t ticks = 0;         ///< 回した周期の数
     std::uint64_t overruns = 0;      ///< 1周の処理が周期を超えた回数
     double maxTickMs = 0.0;          ///< 1周の処理時間の最大

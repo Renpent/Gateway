@@ -1,10 +1,10 @@
-// UdpSocket の実装。
+// CUdpSocket の実装。
 //
 // Windows と POSIX の差は4つしかない。初期化（WSAStartup）、閉じ方、ノンブロッキングの
 // 設定の仕方、そして「今は何も無い」を表すエラー値。冒頭の薄い層に閉じ込めて、
 // 以降の本体は1つのコードで書いてある。
 
-#include "UdpSocket.h"
+#include "CUdpSocket.h"
 
 #include <cstring>
 
@@ -59,15 +59,15 @@ socket_t asSocket(std::intptr_t h) { return static_cast<socket_t>(h); }
 
 }  // namespace
 
-UdpSocket::~UdpSocket() { close(); }
+CUdpSocket::~CUdpSocket() { close(); }
 
-UdpSocket::UdpSocket(UdpSocket&& other) noexcept
+CUdpSocket::CUdpSocket(CUdpSocket&& other) noexcept
     : m_handle(other.m_handle), m_error(std::move(other.m_error)),
       m_peerAddr(other.m_peerAddr), m_peerPort(other.m_peerPort) {
     other.m_handle = -1;
 }
 
-UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept {
+CUdpSocket& CUdpSocket::operator=(CUdpSocket&& other) noexcept {
     if (this != &other) {
         close();
         m_handle = other.m_handle;
@@ -79,12 +79,12 @@ UdpSocket& UdpSocket::operator=(UdpSocket&& other) noexcept {
     return *this;
 }
 
-bool UdpSocket::fail(const char* what) {
+bool CUdpSocket::fail(const char* what) {
     m_error = std::string(what) + " に失敗（errno=" + std::to_string(lastErrno()) + "）";
     return false;
 }
 
-void UdpSocket::close() noexcept {
+void CUdpSocket::close() noexcept {
     if (m_handle >= 0) {
         closeSocket(asSocket(m_handle));
         m_handle = -1;
@@ -92,7 +92,7 @@ void UdpSocket::close() noexcept {
     m_peerPort = 0;
 }
 
-bool UdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
+bool CUdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
                      std::uint16_t peerPort) {
     close();
 
@@ -138,7 +138,7 @@ bool UdpSocket::open(std::uint16_t bindPort, const std::string& peerHost,
     return true;
 }
 
-bool UdpSocket::send(const unsigned char* data, std::size_t len) {
+bool CUdpSocket::send(const unsigned char* data, std::size_t len) {
     if (!isOpen()) { m_error = "ソケットが開いていません"; return false; }
     if (!canSend()) { m_error = "送信先が設定されていません"; return false; }
 
@@ -163,7 +163,7 @@ bool UdpSocket::send(const unsigned char* data, std::size_t len) {
     return true;
 }
 
-long UdpSocket::receive(unsigned char* buf, std::size_t cap) {
+long CUdpSocket::receive(unsigned char* buf, std::size_t cap) {
     if (!isOpen()) { m_error = "ソケットが開いていません"; return -1; }
 
     const auto got = ::recvfrom(asSocket(m_handle), reinterpret_cast<char*>(buf),

@@ -8,7 +8,7 @@
 // 複製される。そこに間違いが入ると直す場所が50箇所になる。
 //
 // **この環境に RTI は無いので、ここは実体化されない。** 形を先に決めておくためのもので、
-// 本番では app/Wiring.h がこれを実体化する。
+// 本番では app/CWiring.h がこれを実体化する。
 //
 // ObjPtr に求めるのは2つだけ：bool 文脈で空かどうか判定できること（生ポインタ・shared_ptr
 // のどちらでもよい）と、コピーできること。**中身の触り方は知らない** — 参照を渡すので、
@@ -22,12 +22,12 @@
 #include <utility>
 #include <vector>
 
-#include "FromHla.h"
+#include "TCFromHla.h"
 
 namespace hla {
 
 template <class T, class ObjPtr>
-class RtiObjectFromHla : public FromHla<T> {
+class TCRtiObjectFromHla : public TCFromHla<T> {
 public:
     /// getRemoteXXX() を呼ぶだけ。フェデレートを掴む必要があるので std::function。
     using Fetch = std::function<std::vector<ObjPtr>()>;
@@ -36,11 +36,11 @@ public:
     /// クラスごとに1本書く（ICDgenerator で生成できる見込み）。
     using Convert = T (*)(const ObjPtr&);
 
-    RtiObjectFromHla(Fetch fetch, Convert convert)
+    TCRtiObjectFromHla(Fetch fetch, Convert convert)
         : m_fetch(std::move(fetch)), m_convert(convert) {}
 
-    /// **out はクリアしない。** 末尾に足すだけで、捨てるかどうかは ClassChannel が
-    /// ClassKind を見て決める。ここでクリアするとインタラクションの持ち越しが消える。
+    /// **out はクリアしない。** 末尾に足すだけで、捨てるかどうかは TCClassChannel が
+    /// TClassKind を見て決める。ここでクリアするとインタラクションの持ち越しが消える。
     ///
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれるので、ここで待つと
     /// その周期ぶん全クラスが遅れる。

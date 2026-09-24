@@ -12,7 +12,7 @@
 // どれも "STOP" として渡す。**最初の NUL で切り、末尾の改行を落とす。** 残りが空なら形式違反。
 //
 // 文字の中身は見ない — 0x80 以上（日本語の Shift_JIS や UTF-8）もそのまま通す。何が正しい
-// コマンドかを判断するのは受け取った側（app/CommandToApp.h）で、ここは「文字列として
+// コマンドかを判断するのは受け取った側（app/CCommandToApp.h）で、ここは「文字列として
 // 取り出せるか」だけを決める。
 
 #pragma once
@@ -23,7 +23,7 @@
 
 namespace raw {
 
-struct Command {
+struct TCommand {
     std::string text;   ///< コマンド本体。NUL と末尾の改行は除いてある
 
     static constexpr const char*   kName = "Command";   ///< 統計表に出る名前
@@ -31,8 +31,8 @@ struct Command {
 };
 
 /// 1データグラムをコマンド1つとして読む。空なら false（統計の「異常」に数えられる）。
-/// RawChannel が ADL で拾うので、Command と同じ名前空間に置いてある。
-inline bool parse(const unsigned char* data, std::size_t len, Command& out) {
+/// TCRawChannel が ADL で拾うので、TCommand と同じ名前空間に置いてある。
+inline bool parse(const unsigned char* data, std::size_t len, TCommand& out) {
     // 最初の NUL まで。固定長の char 配列を丸ごと送ってくる相手は、後ろが NUL で埋まっている。
     std::size_t n = 0;
     while (n < len && data[n] != '\0') ++n;

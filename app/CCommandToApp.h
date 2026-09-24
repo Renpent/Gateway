@@ -3,7 +3,7 @@
 // 受け取るのと処理するのを分けてある：
 //
 //   accept()        tick() の途中（UDP 受信の最中）に呼ばれる。**キューに積むだけ。**
-//   applyPending()  tick() の最後に呼ばれる（Gateway::setTickEnd で登録）。積まれた順に handle する
+//   applyPending()  tick() の最後に呼ばれる（CGateway::setTickEnd で登録）。積まれた順に handle する
 //
 // 分けているのは、コマンドがゲートウェイの動きを変えるものでも安全にするため。受信の最中に
 // 状態を変えると、回しているループが壊れる。**効くのは次の周期から**（20 Hz なら 50 ms 後）。
@@ -17,15 +17,15 @@
 #include <string>
 #include <vector>
 
-#include "../raw/Command.h"
-#include "ToApp.h"
+#include "../raw/TCommand.h"
+#include "TCToApp.h"
 
 namespace app {
 
-class CommandToApp : public ToApp<raw::Command> {
+class CCommandToApp : public TCToApp<raw::TCommand> {
 public:
     /// tick() の途中で呼ばれる。ここでは積むだけで、何も実行しない。
-    void accept(const raw::Command& command) override {
+    void accept(const raw::TCommand& command) override {
         m_pending.push_back(command.text);
         ++m_received;
     }
@@ -54,7 +54,7 @@ private:
     }
 
     std::vector<std::string> m_pending;  ///< accept が積み、applyPending が空にする
-    std::uint64_t m_received = 0;        ///< 受け取った件数（形式違反は RawChannel 側で数える）
+    std::uint64_t m_received = 0;        ///< 受け取った件数（形式違反は TCRawChannel 側で数える）
     std::uint64_t m_handled = 0;         ///< 処理した件数
 };
 

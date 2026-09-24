@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "../icd/icd_codec.h"
-#include "../net/UdpSocket.h"
+#include "../net/CUdpSocket.h"
 
 namespace gw {
 
 template <class T>
-class Publisher {
+class TCPublisher {
 public:
-    Publisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+    TCPublisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
         : m_classId(classId), m_buf(payload),
           m_writer(m_buf.data(), m_buf.size(), classId) {}
 
@@ -27,14 +27,14 @@ public:
 
     /// 1件積む。いっぱいなら先に送ってから積み直す。
     /// 1件がペイロードに収まらない場合だけ false を返す — ICD の上限設定を見直すこと。
-    [[nodiscard]] bool publish(const T& record, UdpSocket& sock) {
+    [[nodiscard]] bool publish(const T& record, CUdpSocket& sock) {
         if (m_writer.add(record)) return true;
         if (!flush(sock)) return false;
         return m_writer.add(record);
     }
 
     /// 溜まっている分を送る。空なら何もしない。
-    [[nodiscard]] bool flush(UdpSocket& sock) {
+    [[nodiscard]] bool flush(CUdpSocket& sock) {
         if (m_writer.empty()) return true;
 
         const std::uint32_t packed = m_writer.count();

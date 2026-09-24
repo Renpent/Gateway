@@ -35,7 +35,7 @@ HLAGateway run <宛先IP|none> [Hz] [秒]  実運用の形。none なら受信�
 
 **全ポートを順に recvfrom で叩かない。** クラスが増えても poll は1回で、空振りの recvfrom が
 積み上がらない。Windows の `WSAPoll` は POSIX の `poll` と同じ `pollfd` 構造・同じ意味で
-使えるので、分岐は `net/Poller.cpp` 冒頭の別名定義だけで済んでいる。
+使えるので、分岐は `net/CPoller.cpp` 冒頭の別名定義だけで済んでいる。
 
 ### 周期がずれたら
 
@@ -55,9 +55,9 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 
 ### オブジェクトとインタラクションは backlog の扱いが正反対
 
-`ClassBinding::kind` で区別する。**取り違えると静かに壊れる**ので型にしてある。
+`TClassBinding::kind` で区別する。**取り違えると静かに壊れる**ので型にしてある。
 
-| | `ClassKind::Object` | `ClassKind::Interaction` |
+| | `TClassKind::Object` | `TClassKind::Interaction` |
 |---|---|---|
 | 何 | オブジェクトクラスの属性 | インタラクションクラス |
 | HLA 側 | `getRemoteXXX()` でその瞬間の全体像が取れる | コールバックでイベントとして飛んでくる |
@@ -73,10 +73,10 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 
 **この分岐は長いあいだ一度も実行されていなかった**（インタラクションのクラスが無かったため）。
 `WeaponFire` を通したときに、そこに2つ不具合が出た。**ソケットに断られた周期で、持ち越すはずの
-イベントがきっかり1データグラムぶん消えていた** — `Publisher::publish` はレコードを
+イベントがきっかり1データグラムぶん消えていた** — `TCPublisher::publish` はレコードを
 データグラムに積んだ時点で true を返すので、その後の flush が断られると積んだぶんは捨てられる
 のに、outbox からは「送った」ものとして削られていた（500件のバーストで 434件しか届かない）。
-いまは `Publisher::recordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
+いまは `TCPublisher::recordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
 残りを捨てた周期に `積み残し` を書き戻しておらず、**捨てたはずの件数を残り続けているかのように
 報告していた**。どちらもループバックでは出ない — OS はループバックの送信を断らないので、
 検出には送信失敗を人為的に起こす必要がある。
@@ -93,7 +93,7 @@ MTU（＝1発の件数）で、放っておくとキューが伸び続ける。
 
 ```
 main.cpp        起動とモード分岐だけ
-app/            配線。「どのクラスをどちら向きに流すか」を決める場所と、アプリ側への継ぎ目（ToApp）
+app/            配線。「どのクラスをどちら向きに流すか」を決める場所と、アプリ側への継ぎ目（TCToApp）
 gateway/        型に依存しない送受信と周期ループ。ICD のクラス用と、FOM に無い独自データ用の2種類のチャネル
 hla/            HLA 側との継ぎ目。インタフェースと、RTI を呼ぶ実装
 stub/           RTI が無い環境で動かすための代用品。**本番には持っていかない**
@@ -111,55 +111,76 @@ icd/            ICDgenerator の生成物。手で編集しない（共有ファ
 **実 RTI に繋ぐときはディレクトリごと消せる**。名前空間も `stub::` に分けてあるので、
 どこで代用品を使っているかは型を見れば分かる。
 
-`stub/` を include しているのは `app/Wiring.h` だけなので、**消したときに直すのはそのファイル
-1つ**。`hla::RtiObjectFromHla` などの本番用の器はすでに `hla/` にあり、配線の右辺を
+`stub/` を include しているのは `app/CWiring.h` だけなので、**消したときに直すのはそのファイル
+1つ**。`hla::TCRtiObjectFromHla` などの本番用の器はすでに `hla/` にあり、配線の右辺を
 差し替えるだけで繋がる形にしてある。
 
 `main.cpp` の `loopback` モードも検証用（自分宛に送って往復を照合する）。実運用で使うのは
 `run` のほうで、こちらは照合せず `stub/` の照合器も繋がない。
 
-- `gateway/` と `hla/` はソケットの型を知らない（`UdpSocket` と `Poller` しか見えない）
+- `gateway/` と `hla/` はソケットの型を知らない（`CUdpSocket` と `CPoller` しか見えない）
 - `gateway/` `net/` は RTI の型を知らない
 - `icd/` は何も知らない。OS ヘッダも RTI も include していない
 
 OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッダには winsock も
-`<sys/socket.h>` も現れない（`UdpSocket` がハンドルを `std::intptr_t` で持っているのはそのため
+`<sys/socket.h>` も現れない（`CUdpSocket` がハンドルを `std::intptr_t` で持っているのはそのため
 で、Windows の `SOCKET` と POSIX の `int fd` を1つの型で受けられる）。この向きを守っている
 限り、移植で書き換わるのは `net/` `platform/` と `hla/` の実装だけになる。
 
-ポートごとにデータの型が違うが、周期ループから見えるのは `Channel`（`gateway/Channel.h`）という
+ポートごとにデータの型が違うが、周期ループから見えるのは `CChannel`（`gateway/CChannel.h`）という
 型を持たない抽象だけ。型が要るのは実装の内側に閉じていて、実装は2つある。
 
-| | `ClassChannel<T>` | `RawChannel<T>` |
+| | `TCClassChannel<T>` | `TCRawChannel<T>` |
 |---|---|---|
 | 何 | ICD のクラス | FOM に無い独自データ |
 | 形式を決めたのは | こちら（ICD） | **相手** |
 | バイト列 | 12バイトヘッダ + 固定長レコード | ヘッダ無し。1データグラム = 1メッセージ |
 | 型の出どころ | ICDgenerator の生成物（`icd/`） | 手書き |
-| 手元の相手 | HLA（`hla::FromHla` / `ToHla`） | アプリ（`app::ToApp`） |
+| 手元の相手 | HLA（`hla::TCFromHla` / `TCToHla`） | アプリ（`app::TCToApp`） |
 | 向き | 送受信 | いまは受信のみ |
 
-`Channel` は以前 `binding()` で `ClassBinding`（classId・`ClassKind`・FOM 名）をそのまま見せていたが、
+`CChannel` は以前 `binding()` で `TClassBinding`（classId・`TClassKind`・FOM 名）をそのまま見せていたが、
 独自データにはそのどれも当てはまらないので、周期ループが本当に使う4つ — 名前・ポート・上限・
 種別の表示 — だけを出す形にした。
+
+### 型の名前の接頭辞
+
+手書きのコードの型には、種類を表す接頭辞を付ける。**ファイル名も同じ名前にする。**
+
+| 種類 | 接頭辞 | 例 |
+|---|---|---|
+| クラス | `C` | `CGateway`（`gateway/CGateway.h`）、`CUdpSocket`、`CCommandToApp` |
+| クラステンプレート | `TC` | `TCClassChannel<T>`、`TCFromHla<T>`、`TCRtiObjectFromHla<T, Ptr>` |
+| 構造体・列挙 | `T` | `TClassBinding`、`TClassKind`、`TLoopStats`、`raw::TCommand` |
+
+振る舞いを持つものはクラス（`CWiring` は以前 `struct` だったが、配線を持って動くので
+`class` にした）、値の入れ物は構造体。関数だけのファイル（`platform/Platform.h`、
+`stub/RadarBeamFixture.h` など）と `main.cpp` には型が無いので、名前はそのまま。
+
+**生成物（`icd/`）は対象外。** `icdfom::RadarBeam` のようにレコードの型名は FOM のクラス名そのままで、
+ICD の行から grep で辿れることと、参照モードで HLA ツールの型名と一致することを優先している。
+
+表示名は型名と別。`raw::TCommand` の統計表の名前は `"Command"` のまま（ICD のクラスも、表示は
+C++ の型名ではなく FOM 名）。
 
 ### 1ファイル1クラス
 
 手書きのコードは**クラス1つにつきファイル1つ**。継承しているものは基底と派生で分ける
-（`Channel` / `ClassChannel`、`FromHla` / `RtiObjectFromHla`）。入れ子クラスは例外で、
+（`CChannel` / `TCClassChannel`、`TCFromHla` / `TCRtiObjectFromHla`）。入れ子クラスは例外で、
 外側と同じファイルでよい。
 
-**派生の名前は基底で終える。** `FromHla<T>` の実装はすべて `〜FromHla`、`ToHla<T>` の実装は
-すべて `〜ToHla`。`RtiObjectFromHla` を見れば「RTI のオブジェクトクラスを HLA から汲み出す
-FromHla」と読めるので、Feed や Receiver のような語を別に覚えなくてよい。以前は
+**派生の名前は、基底の名前（接頭辞を除いた部分）で終える。** `TCFromHla<T>` の実装はすべて
+名前が `FromHla` で終わり、`TCToHla<T>` の実装はすべて `ToHla` で終わる。`TCRtiObjectFromHla` を
+見れば「RTI のオブジェクトクラスを HLA から汲み出す FromHla」と読めるので、Feed や Receiver の
+ような語を別に覚えなくてよい。以前は
 `RtiSnapshotFeed` / `RtiEventReceiver` だったが、Feed がどちら向きか読めないうえ、
 Snapshot / Event はオブジェクト / インタラクションへの訳が毎回必要だった。
 
-例外は1つ。`SubscriberStats` は `Channel::inStats()` がテンプレートでない参照を返すので
-`Subscriber<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
+例外は1つ。`TSubscriberStats` は `CChannel::inStats()` がテンプレートでない参照を返すので
+`TCSubscriber<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
 
 `Federate.h` と `icd/icd_classes.h` はクラスを持たないまとめ include で、
-前者は FromHla/ToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
+前者は TCFromHla/TCToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
 
 ### メンバ変数の書き方
 
@@ -180,7 +201,7 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 
 ### 全クラスを名指しするのは配線1箇所だけ
 
-`app/Wiring.h` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
+`app/CWiring.h` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
 このヘッダが追随するので、手で並べたリストがずれることがない。**1クラスだけを扱うコードは
 そのクラスのヘッダを直接** include すること（`stub/WeaponFireFixture.h` がその例）。
 
@@ -193,7 +214,7 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 
 ## クラスを1つ足す
 
-**触るのは `app/Wiring.h` だけ。** ID もポートも種別も生成物から決まるので、配線に数字は出てこない。
+**触るのは `app/CWiring.h` だけ。** ID もポートも種別も生成物から決まるので、配線に数字は出てこない。
 
 ### ① ICDgenerator 側
 
@@ -201,7 +222,7 @@ GUI で対象クラスにチェック → ID/Port ダイアログで番号を振
 → MTU を選ぶ → C++ 生成。これで `icd/object/<Class>.h`（インタラクションなら
 `icd/interaction/<Class>.h`）に `kClassId` `kPort` `kPayload`
 `kIsInteraction` `kFomName` が入り、まとめ include の `icd/icd_classes.h` も追随する。
-**Wiring に include を足す必要はない。**
+**CWiring に include を足す必要はない。**
 
 生成が止まるのは2通りだけで、どちらもクラス名と理由を出す — 可変レコードを含む場合と、
 1件が MTU に収まらない場合。
@@ -212,15 +233,15 @@ GUI で対象クラスにチェック → ID/Port ダイアログで番号を振
 
 ```cpp
 // HLA → UDP
-stub::FixtureFromHla<icdfom::Aircraft> aircraftFromHla{stub::makeAircraft, 4};
+stub::TCFixtureFromHla<icdfom::Aircraft> aircraftFromHla{stub::makeAircraft, 4};
 // UDP → HLA
-stub::CountingToHla<icdfom::Aircraft>  aircraftToHla;
+stub::TCCountingToHla<icdfom::Aircraft>  aircraftToHla;
 ```
 
-値に意味が要らないなら `stub::ConstantFromHla<T>{1}` で足りる（既定構築の値を毎周期1件）。
-バイト単位で往復照合したいときだけ `stub::VerifyingToHla<T>{stub::makeAircraft}` にし、
+値に意味が要らないなら `stub::TCConstantFromHla<T>{1}` で足りる（既定構築の値を毎周期1件）。
+バイト単位で往復照合したいときだけ `stub::TCVerifyingToHla<T>{stub::makeAircraft}` にし、
 `stub/<Class>Fixture.h` に `makeAircraft(i)` を1本書く（`stub/WeaponFireFixture.h` が雛形）。
-**照合器を足したら `Wiring::verifyResult()` の合計にも1つ加えること** — 配線で2箇所書くのは
+**照合器を足したら `CWiring::verifyResult()` の合計にも1つ加えること** — 配線で2箇所書くのは
 ここだけ。
 
 ### ③ `build()` に1行
@@ -245,19 +266,19 @@ add<icdfom::Bar>(g, nullptr,     &barToHla);  // 受信のみ
 
 ```cpp
 // オブジェクト
-hla::RtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
+hla::TCRtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
     [this] { return m_fed.getRemoteAircraft(); },   // Fetch: getRemoteXXX() を呼ぶだけ
     &toIcd                                          // Convert: 1インスタンス → 1レコード
 };
-hla::RtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
+hla::TCRtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
     &keyOf,                                                              // どのインスタンスか
     [this](const std::string& k) { return m_fed.registerAircraft(k); },  // 初見なら登録
     &writeBack                                                           // 属性を書いて update
 };
 
 // インタラクション
-hla::RtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
-hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
+hla::TCRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
+hla::TCRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
     [this](const icdfom::WeaponFire& r) { m_fed.sendWeaponFire(toRti(r)); }
 };
 ```
@@ -277,12 +298,12 @@ hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
 
 | | 何の数 | 既定 | 書くとき |
 |---|---|---|---|
-| `FixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷を変えたいとき |
-| `RtiInteractionFromHla{}` | キューの深さの上限 | `hla::kInteractionQueueDepth`（2048） | まず無い（下記） |
+| `TCFixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷を変えたいとき |
+| `TCRtiInteractionFromHla{}` | キューの深さの上限 | `hla::kInteractionQueueDepth`（2048） | まず無い（下記） |
 
 前者は `stub/` の中だけの話で、本番には存在しない。増やせばそのクラスの送信件数がそのまま増える。
 
-後者は **`hla/RtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
+後者は **`hla/TCRtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
 クラスごとに流量を見積もって数値を入れる運用にはしない。**
 
 - **使わなければ1バイトも要らない。** キューは普通の `std::vector` で積まれたぶんしか確保せず、
@@ -299,12 +320,12 @@ hla::RtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
 ### 増えたときにどこが伸びるか
 
 ```
-1クラス            → Wiring.h に3行（メンバ2 + build 1）
+1クラス            → CWiring.h に3行（メンバ2 + build 1）
 往復照合もするなら  → + verifyResult() に1つ
 本番用の変換関数    → オブジェクト3本 / インタラクション2本
 ```
 
-50クラスでも `Wiring.h` は150行程度で、`main.cpp` と `gateway/` は一切変わらない。
+50クラスでも `CWiring.h` は150行程度で、`main.cpp` と `gateway/` は一切変わらない。
 伸びるのは変換関数のほうで、そこは ICDgenerator で生成したい（アクセサの綴りが決まり次第）。
 
 ## FOM に無いデータを受ける
@@ -320,12 +341,12 @@ FOM のクラスではない UDP データ — たとえば別のシステムが
 
 **① 型を1つ手書きする。** 置き場所は `raw/<名前>.h`、名前空間は `raw`（`icd/` は再生成で丸ごと
 差し替わるので、手書きを置いてはいけない）。求めるのは定数2つと関数1つ。
-実例は `raw/Command.h`（下の「コマンド文字列」）。
+実例は `raw/TCommand.h`（下の「コマンド文字列」）。
 
 ```cpp
 namespace raw {
 
-struct Command {
+struct TCommand {
     std::string text;
 
     static constexpr const char*   kName = "Command";   // 統計表に出る名前
@@ -334,29 +355,29 @@ struct Command {
 
 /// 相手の仕様どおりに読む。形式に合わなければ false。例外は投げない。
 /// len は常に 1 以上（空のデータグラムは来ない前提）。
-bool parse(const unsigned char* data, std::size_t len, Command& out);
+bool parse(const unsigned char* data, std::size_t len, TCommand& out);
 
 }  // namespace raw
 ```
 
-`parse` は `Command` と同じ名前空間に置くこと（`RawChannel` が ADL で拾う）。相手の形式が
+`parse` は `TCommand` と同じ名前空間に置くこと（`TCRawChannel` が ADL で拾う）。相手の形式が
 ビッグエンディアンのバイナリなら、`icd/icd_codec.h` の `icd::Reader` がそのまま使える。
 
-**② 受け口を1つ書く。** `app::ToApp<T>` を実装する。名前は `〜ToApp` で終える。
-実例は `app/CommandToApp.h`。
+**② 受け口を1つ書く。** `app::TCToApp<T>` を実装する。名前は `ToApp` で終える。
+実例は `app/CCommandToApp.h`。
 
 **③ 配線に1行。**
 
 ```cpp
-addRaw<raw::Command>(g, &commandToApp);
+addRaw<raw::TCommand>(g, &commandToApp);
 ```
 
 ポートも名前も `T` の定数から決まるので、配線に数字は出てこない（ICD のクラスと同じ）。
 
-### コマンド文字列（`raw::Command`）
+### コマンド文字列（`raw::TCommand`）
 
 いま配線してある独自データはこれ1つ。**1データグラム = 1コマンドで、中身は char の並び**、
-ヘッダも長さの前置も無い、という仮の形式。相手の仕様が固まったら `raw/Command.h` の `parse` と
+ヘッダも長さの前置も無い、という仮の形式。相手の仕様が固まったら `raw/TCommand.h` の `parse` と
 `kPort`（いまは 24100）を合わせる。
 
 C/C++ の送信側でよくある3つの送り方を、どれも同じコマンドとして受ける：
@@ -371,7 +392,7 @@ C/C++ の送信側でよくある3つの送り方を、どれも同じコマン�
 文字の中身は見ない。0x80 以上（日本語の Shift_JIS や UTF-8）もそのまま通す。何が正しいコマンドか
 を判断するのは受け取った側。
 
-**処理は `app/CommandToApp.h` の `handle()` に書く。** いまは受け取ったことを表示するだけ：
+**処理は `app/CCommandToApp.h` の `handle()` に書く。** いまは受け取ったことを表示するだけ：
 
 ```
 コマンド受信: "START"
@@ -398,11 +419,11 @@ python -c "import socket; socket.socket(2,2).sendto(b'STOP', ('127.0.0.1', 24100
 
 **空のデータグラム（0バイト）は来ない前提。** `receive()` は 0 を「何も来ていない」の意味にも
 使っているので、もし届いても parse には渡らず、数えられずに読み捨てられる（そのポートに続いて
-届いていたぶんは次の周期に回る）。区別が要るようになったら `net/UdpSocket.h` のコメントに戻し方を
+届いていたぶんは次の周期に回る）。区別が要るようになったら `net/CUdpSocket.h` のコメントに戻し方を
 書いてある。
 
 **ポートは ICD のクラスと同じ番号空間。** 手書きの番号は ICDgenerator のダイアログの重複検出を
-通らないので、`Gateway::openAll` が開く前に全チャネルを突き合わせ、重複があれば開かない。
+通らないので、`CGateway::openAll` が開く前に全チャネルを突き合わせ、重複があれば開かない。
 これは実測で必要と分かったもので、**重複しても bind は失敗しない**（`SO_REUSEADDR` のため）うえに、
 どちらが受け取るかが **Windows では先に bind したほう、Linux では後のほう**と逆になる。
 
@@ -424,7 +445,7 @@ tick():  [UDP 受信 → HLA へ]  [HLA から → UDP 送信]  [制御コマン
 効くが、そこでチャネルやソケットを変えると、後半のループと poll の対応表がずれる。積むのも反映
 するのも周期ループのスレッドなので、このキューにロックは要らない。
 
-反映する場所は `Gateway::setTickEnd` で登録する（1つだけ）。`app/Wiring.h` がコマンドの受け口の
+反映する場所は `CGateway::setTickEnd` で登録する（1つだけ）。`app/CWiring.h` がコマンドの受け口の
 `applyPending()` を登録している。
 
 前半（UDP→HLA）と後半（HLA→UDP）の順番は、**データの中継に関しては意味がほぼ無い**。2つの流れは
@@ -441,10 +462,10 @@ tick():  [UDP 受信 → HLA へ]  [HLA から → UDP 送信]  [制御コマン
 
 | | 向き | RTI 側 | UDP 側の相手 |
 |---|---|---|---|
-| `FromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::Publisher`（送信） |
-| `ToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::Subscriber`（受信） |
+| `TCFromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::TCPublisher`（送信） |
+| `TCToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::TCSubscriber`（受信） |
 
-`ClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
+`TCClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
 クラスが実運用にはあるため。
 
 **排他が要るのはこの継ぎ目だけ。** ゲートウェイ本体は単一スレッドで、`tick()` が受信を全部
@@ -547,7 +568,7 @@ icd/
 クラスのヘッダは1つ上の `../icd_types.h` を include する。**生成器は既存のファイルを消さない**ので、
 選択から外したクラスや、フォルダを分ける前（すべてルートに並んでいた頃）のファイルは手で消すこと。
 ID・ポート・MTU は生成物が持っている（各クラスの `kClassId` / `kPort` / `kPayload`）ので、
-ゲートウェイ側に写す作業は無い。`app/Wiring.h` の `bindingOf<T>()` がそこから組み立てる。
+ゲートウェイ側に写す作業は無い。`app/CWiring.h` の `bindingOf<T>()` がそこから組み立てる。
 
 ### RPR FOM で生成できないクラスがある
 
@@ -567,7 +588,7 @@ ID・ポート・MTU は生成物が持っている（各クラスの `kClassId`
 
 MTU は ICDgenerator の GUI で 1500 か 9000 を選ぶ（全クラス共通）。この表は 9000。
 
-**種別はここで選んでいない。** `ClassKind` は生成された `kIsInteraction` から決まるので、
+**種別はここで選んでいない。** `TClassKind` は生成された `kIsInteraction` から決まるので、
 `WeaponFire` がイベントになるのは FOM でインタラクションだからであって、配線に書いた結果ではない。
 
 `WeaponFire` を選んだのは、公開可能な73インタラクションのうち RPR FOM で最も素直なものだから。

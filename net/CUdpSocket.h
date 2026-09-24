@@ -4,7 +4,7 @@
 // winsock も <sys/socket.h> も現れない。ハンドルを std::intptr_t で持っているのはそのためで、
 // Windows の SOCKET（符号なし整数ハンドル）と POSIX の int fd を1つの型で受けられる。
 //
-// **常にノンブロッキング。** 待つかどうかを決めるのは Poller の仕事で、ソケット自身は
+// **常にノンブロッキング。** 待つかどうかを決めるのは CPoller の仕事で、ソケット自身は
 // 「今あるものを渡す / 今出せるものを出す」しかしない。周期実行のループから呼ばれるので、
 // 1本のソケットが待ちに入ると全クラスが止まってしまう。
 
@@ -16,15 +16,15 @@
 
 namespace gw {
 
-class UdpSocket {
+class CUdpSocket {
 public:
-    UdpSocket() = default;
-    ~UdpSocket();
+    CUdpSocket() = default;
+    ~CUdpSocket();
 
-    UdpSocket(const UdpSocket&) = delete;
-    UdpSocket& operator=(const UdpSocket&) = delete;
-    UdpSocket(UdpSocket&& other) noexcept;
-    UdpSocket& operator=(UdpSocket&& other) noexcept;
+    CUdpSocket(const CUdpSocket&) = delete;
+    CUdpSocket& operator=(const CUdpSocket&) = delete;
+    CUdpSocket(CUdpSocket&& other) noexcept;
+    CUdpSocket& operator=(CUdpSocket&& other) noexcept;
 
     /// 受信ポートと送信先をまとめて設定する。UDP なので1本で両方できる。
     ///   bindPort  0 なら bind しない（送信専用）
@@ -39,7 +39,7 @@ public:
 
     /// OS が持っているハンドルの**値**。ただし型は移植用の器で、OS の型そのもの
     /// （Windows の SOCKET、POSIX の int fd）ではない。本来の型に戻すのは .cpp の asSocket()。
-    /// 使うのは net/ の中だけ — Poller が poll に渡すため。
+    /// 使うのは net/ の中だけ — CPoller が poll に渡すため。
     [[nodiscard]] std::intptr_t osHandle() const noexcept { return m_handle; }
 
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。

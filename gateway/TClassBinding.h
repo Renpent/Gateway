@@ -18,29 +18,29 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "ClassKind.h"
+#include "TClassKind.h"
 
 namespace gw {
 
-struct ClassBinding {
+struct TClassBinding {
     std::uint32_t classId;      ///< データグラム先頭に入るクラス識別子
     std::uint16_t port;         ///< このクラス専用の UDP ポート（送受信とも同じ番号）
     std::size_t   payload;      ///< 1データグラムの上限。ICD の MTU から生成された値
-    ClassKind     kind;         ///< オブジェクトかインタラクションか。送り残しの扱いが正反対
+    TClassKind     kind;         ///< オブジェクトかインタラクションか。送り残しの扱いが正反対
     const char*   fomName;      ///< FOM 上の完全名。ログ表示用
 };
 
-/// 生成されたクラス T の定数から、その ClassBinding を組み立てる。
+/// 生成されたクラス T の定数から、その TClassBinding を組み立てる。
 ///
 /// T を明示するのは呼び側で、値は T から決まる。別クラスの binding を渡し間違える余地が無い。
-/// 配備先でポートを変えたいときは、これを使わず ClassBinding を直接書いて ClassChannel に渡せばよい。
+/// 配備先でポートを変えたいときは、これを使わず TClassBinding を直接書いて TCClassChannel に渡せばよい。
 template <class T>
-constexpr ClassBinding bindingOf() noexcept {
-    return ClassBinding{
+constexpr TClassBinding bindingOf() noexcept {
+    return TClassBinding{
         T::kClassId,
         T::kPort,
         T::kPayload,
-        T::kIsInteraction ? ClassKind::Interaction : ClassKind::Object,
+        T::kIsInteraction ? TClassKind::Interaction : TClassKind::Object,
         T::kFomName,
     };
 }

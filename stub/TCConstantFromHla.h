@@ -1,6 +1,6 @@
 // **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
 // 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
-// 直す先は app/Wiring.h の1ファイルで済む。
+// 直す先は app/CWiring.h の1ファイルで済む。
 //
 // 中身に意味を持たせない供給元。
 //
@@ -13,14 +13,14 @@
 #include <cstddef>
 #include <vector>
 
-#include "../hla/FromHla.h"
+#include "../hla/TCFromHla.h"
 
 namespace stub {
 
 template <class T>
-class ConstantFromHla : public hla::FromHla<T> {
+class TCConstantFromHla : public hla::TCFromHla<T> {
 public:
-    explicit ConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
+    explicit TCConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
 
     std::size_t drain(std::vector<T>& out) override {
         for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(T{});

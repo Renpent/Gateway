@@ -1,6 +1,6 @@
 // **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
 // 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
-// 直す先は app/Wiring.h の1ファイルで済む。
+// 直す先は app/CWiring.h の1ファイルで済む。
 //
 // 受け取ったレコードを「送ったはずの値」と1バイトずつ突き合わせる受け口。
 //
@@ -19,18 +19,18 @@
 #include <vector>
 
 #include "../icd/icd_codec.h"
-#include "../hla/ToHla.h"
+#include "../hla/TCToHla.h"
 
 namespace stub {
 
 template <class T>
-class VerifyingToHla : public hla::ToHla<T> {
+class TCVerifyingToHla : public hla::TCToHla<T> {
 public:
-    /// **供給側（FixtureFromHla）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
+    /// **供給側（TCFixtureFromHla）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
     /// 分かれると、往復照合は何も確かめていないのと同じになる。
     using Fixture = T (*)(std::size_t);
 
-    explicit VerifyingToHla(Fixture make) : m_make(make) {}
+    explicit TCVerifyingToHla(Fixture make) : m_make(make) {}
 
     void accept(const T& rec) override {
         if (encodedBytes(rec) != encodedBytes(m_make(m_received))) {

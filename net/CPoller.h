@@ -19,12 +19,12 @@
 
 namespace gw {
 
-class UdpSocket;
+class CUdpSocket;
 
-class Poller {
+class CPoller {
 public:
     /// 監視対象に加え、その添字を返す。readable() にはこの添字を渡す。
-    std::size_t add(const UdpSocket& sock);
+    std::size_t add(const CUdpSocket& sock);
 
     /// 読めるソケットの数を返す。0 は「今は何も来ていない」、-1 はエラー。
     /// timeoutMs = 0 なら待たずに即座に戻る。
