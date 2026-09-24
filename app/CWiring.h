@@ -29,11 +29,9 @@
 // 名前・ポート・parse を持つ（gateway/CTRawChannel.h）。受け口は hla::CTToHla ではなく gw::CTMessageHandler：
 //   受信のみ addRaw<T>(g, &commandHandler);
 //
-// **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、CGateway の
-// setTickEnd で登録した処理がまとめて実行する（app/CCommandHandler.h）。
-//
-// setTickEnd に渡すラムダは this（CWiring）を掴む。CWiring が CGateway より長生きするのが前提で、
-// main.cpp の宣言順がそれを保証している。
+// **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、周期の最後に
+// ハンドラの onTickEnd() がまとめて実行する（app/CCommandHandler.h）。onTickEnd() は addRaw で
+// 繋いだチャネルが毎周期呼ぶので、**ハンドラを足しても、ここに登録する行は増えない。**
 
 #pragma once
 
@@ -93,9 +91,6 @@ public:
 
         // FOM に無い独自データ。受信のみ。
         addRaw<app::TCommand>(g, &commandHandler);
-
-        // 周期の終わりにコマンドを処理する。受信中は積むだけ、ここでまとめて実行。
-        g.setTickEnd([this] { commandHandler.applyPending(); });
     }
 
     /// 照合する受け口ぜんぶの合計。クラスが増えたらここに1行足す。

@@ -2,12 +2,17 @@
 //
 // 受け取るのと処理するのを分けてある：
 //
-//   accept()        tick() の途中（UDP 受信の最中）に呼ばれる。**キューに積むだけ。**
-//   applyPending()  tick() の最後に呼ばれる（CGateway::setTickEnd で登録）。積まれた順に handle する
+//   accept()     tick() の途中（UDP 受信の最中）に呼ばれる。**キューに積むだけ。**
+//   onTickEnd()  tick() の最後に毎周期呼ばれる（登録は要らない）。積まれた順に handle する
 //
 // 分けているのは、コマンドがゲートウェイの動きを変えるものでも安全にするため。受信の最中に
 // 状態を変えると、回しているループが壊れる。**効くのは次の周期から**（20 Hz なら 50 ms 後）。
 // 積むのも処理するのも周期ループのスレッドなので、キューにロックは要らない。
+//
+// 処理を書ける場所は3段ある：
+//   1コマンドずつ        handle()
+//   その周期に届いた全部  onTickEnd()（m_pending に届いた順に並んでいる）
+//   周期をまたぐ状態      このクラスのメンバ
 
 #pragma once
 
@@ -30,8 +35,9 @@ public:
         ++m_received;
     }
 
-    /// tick() の最後に呼ぶ。受け取った順に処理して、キューを空にする。
-    void applyPending() {
+    /// tick() の最後に毎周期呼ばれる。受け取った順に処理して、キューを空にする。
+    /// その周期に届いた分をまとめて見たい処理（同じコマンドの重複を捨てる、など）はここに書く。
+    void onTickEnd() override {
         for (const std::string& text : m_pending) {
             handle(text);
             ++m_handled;
@@ -53,7 +59,7 @@ private:
         std::printf("コマンド受信: \"%s\"\n", text.c_str());
     }
 
-    std::vector<std::string> m_pending;  ///< accept が積み、applyPending が空にする
+    std::vector<std::string> m_pending;  ///< accept が積み、onTickEnd が空にする
     std::uint64_t m_received = 0;        ///< 受け取った件数（形式違反は CTRawChannel 側で数える）
     std::uint64_t m_handled = 0;         ///< 処理した件数
 };

@@ -108,6 +108,10 @@ public:
         return got < 0 ? 0 : static_cast<std::size_t>(got);
     }
 
+    /// ICD のクラスは周期の終わりにやることが無い。受信したレコードは pumpIn の中で
+    /// そのまま HLA 側へ渡し終えている。
+    void onTickEnd() override {}
+
     [[nodiscard]] std::uint64_t getSentTotal() const noexcept override {
         return m_sender.getRecordsSent();
     }
