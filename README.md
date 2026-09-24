@@ -225,6 +225,22 @@ hla::CTRtiObjectFromHla<icdfom::RadarBeam, their::RadarBeamPtr> beamFromHla{
 python -c "import socket; socket.socket(2,2).sendto(b'STOP', ('127.0.0.1', 24100))"
 ```
 
+### 制御文字列（`app::TControl`）
+
+形式は `TCommand` と同じ（仮）で、ポートは 24101（仮）。受け口は `app/CControlHandler.h`。
+
+**`handle()` はモック。** 知っている制御を受けたら、表示してモックの状態（`running`）を切り替えるだけ：
+
+| 制御 | モックの動き |
+|---|---|
+| `START` | `running` を 1 にする |
+| `STOP` | `running` を 0 にする |
+| `RESET` | `running` を 0 に戻す |
+| `STATUS` | `running` を表示する |
+| それ以外 | 「知らない制御」と表示して何もしない |
+
+本物の処理が決まったら `handle()` の中身を差し替える。
+
 ### 気をつけること
 
 - **ポートは ICD のクラスと同じ番号空間。** 重複していると `openAll` が開く前に断る。重複しても

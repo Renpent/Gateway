@@ -157,8 +157,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\CCommandHandler.h" />
+    <ClInclude Include="app\CControlHandler.h" />
     <ClInclude Include="app\CWiring.h" />
     <ClInclude Include="app\TCommand.h" />
+    <ClInclude Include="app\TControl.h" />
     <ClInclude Include="gateway\CChannel.h" />
     <ClInclude Include="gateway\CGateway.h" />
     <ClInclude Include="gateway\CTClassChannel.h" />

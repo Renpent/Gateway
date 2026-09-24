@@ -28,7 +28,9 @@
 #include "../stub/RadarBeamFixture.h"
 #include "../stub/WeaponFireFixture.h"
 #include "CCommandHandler.h"
+#include "CControlHandler.h"
 #include "TCommand.h"
+#include "TControl.h"
 
 namespace app {
 
@@ -42,6 +44,7 @@ public:
 
     // UDP → アプリ（FOM に無い独自データ）
     CCommandHandler commandHandler;   ///< コマンド文字列の受け口
+    CControlHandler controlHandler;   ///< 制御文字列の受け口
 
     void build(gw::CGateway& g) {
         add<icdfom::RadarBeam>    (g, &beamFromHla,      nullptr);
@@ -50,6 +53,7 @@ public:
         add<icdfom::WeaponFire>   (g, &fireFromHla,      nullptr);
 
         addRaw<app::TCommand>(g, &commandHandler);
+        addRaw<app::TControl>(g, &controlHandler);
     }
 
 private:

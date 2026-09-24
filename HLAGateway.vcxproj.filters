@@ -63,10 +63,16 @@
     <ClInclude Include="app\CCommandHandler.h">
       <Filter>app</Filter>
     </ClInclude>
+    <ClInclude Include="app\CControlHandler.h">
+      <Filter>app</Filter>
+    </ClInclude>
     <ClInclude Include="app\CWiring.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="app\TCommand.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="app\TControl.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="gateway\CChannel.h">
