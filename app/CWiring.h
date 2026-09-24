@@ -10,7 +10,8 @@
 //   受信のみ  add<T>(g, nullptr,  &toHla);
 //   独自データ addRaw<T>(g, &handler);
 //
-// いまは RTI が無いので、送信側は stub/ の代用品、受信側は繋いでいない（受けた分は捨てる）。
+// いまは RTI が無いので、送信側は stub/ の代用品。受信側は Designator（サンプル）だけ表示する
+// モックを繋ぎ、ほかは繋いでいない（受けた分は捨てる）。
 // 本番では hla::CTRtiObjectFromHla などに差し替える（README の「本番（RTI）での形」）。
 
 #pragma once
@@ -24,7 +25,9 @@
 #include "../gateway/TClassBinding.h"
 #include "../icd/icd_classes.h"
 #include "../stub/CTConstantFromHla.h"
+#include "../stub/CDesignatorToHla.h"
 #include "../stub/CTFixtureFromHla.h"
+#include "../stub/DesignatorFixture.h"
 #include "../stub/RadarBeamFixture.h"
 #include "../stub/WeaponFireFixture.h"
 #include "CCommandHandler.h"
@@ -41,6 +44,10 @@ public:
     stub::CTConstantFromHla<icdfom::RadioReceiver> radioFromHla{1};                      ///< RadioReceiver の供給元
     stub::CTConstantFromHla<icdfom::MinefieldData> minefieldFromHla{1};                  ///< MinefieldData の供給元
     stub::CTFixtureFromHla<icdfom::WeaponFire>     fireFromHla{stub::makeWeaponFire, 3};  ///< WeaponFire の供給元
+    stub::CTFixtureFromHla<icdfom::Designator>     designatorFromHla{stub::makeDesignator, 1};  ///< Designator の供給元（サンプル）
+
+    // UDP → HLA
+    stub::CDesignatorToHla designatorToHla;   ///< Designator の受け口（サンプル。受けたものを表示する）
 
     // UDP → アプリ（FOM に無い独自データ）
     CCommandHandler commandHandler;   ///< コマンド文字列の受け口
@@ -51,6 +58,7 @@ public:
         add<icdfom::RadioReceiver>(g, &radioFromHla,     nullptr);
         add<icdfom::MinefieldData>(g, &minefieldFromHla, nullptr);
         add<icdfom::WeaponFire>   (g, &fireFromHla,      nullptr);
+        add<icdfom::Designator>   (g, &designatorFromHla, &designatorToHla);   // サンプル：送受信
 
         addRaw<app::TCommand>(g, &commandHandler);
         addRaw<app::TControl>(g, &controlHandler);

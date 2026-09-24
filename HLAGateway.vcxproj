@@ -150,6 +150,7 @@
     <ClCompile Include="gateway\udp\CUdpSocket.cpp" />
     <ClCompile Include="platform\Platform.cpp" />
     <ClCompile Include="icd\icd_types.cpp" />
+    <ClCompile Include="icd\object\Designator.cpp" />
     <ClCompile Include="icd\object\MinefieldData.cpp" />
     <ClCompile Include="icd\object\RadarBeam.cpp" />
     <ClCompile Include="icd\object\RadioReceiver.cpp" />
@@ -177,8 +178,10 @@
     <ClInclude Include="gateway\udp\CTUdpReceiver.h" />
     <ClInclude Include="gateway\udp\CTUdpSender.h" />
     <ClInclude Include="gateway\udp\CUdpSocket.h" />
+    <ClInclude Include="stub\CDesignatorToHla.h" />
     <ClInclude Include="stub\CTConstantFromHla.h" />
     <ClInclude Include="stub\CTFixtureFromHla.h" />
+    <ClInclude Include="stub\DesignatorFixture.h" />
     <ClInclude Include="stub\ObjectId.h" />
     <ClInclude Include="stub\RadarBeamFixture.h" />
     <ClInclude Include="stub\WeaponFireFixture.h" />
@@ -186,6 +189,7 @@
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />
     <ClInclude Include="icd\icd_types.h" />
+    <ClInclude Include="icd\object\Designator.h" />
     <ClInclude Include="icd\object\MinefieldData.h" />
     <ClInclude Include="icd\object\RadarBeam.h" />
     <ClInclude Include="icd\object\RadioReceiver.h" />

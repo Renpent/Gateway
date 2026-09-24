@@ -17,6 +17,7 @@ add_executable(HLAGateway
     gateway/udp/CUdpSocket.cpp
     platform/Platform.cpp
     icd/icd_types.cpp
+    icd/object/Designator.cpp
     icd/object/MinefieldData.cpp
     icd/object/RadarBeam.cpp
     icd/object/RadioReceiver.cpp

@@ -14,4 +14,5 @@
 #include "object/RadioReceiver.h"  // ID 2 / Port 24002 : HLAobjectRoot.EmbeddedSystem.RadioReceiver
 #include "object/MinefieldData.h"  // ID 3 / Port 24003 : HLAobjectRoot.EmbeddedSystem.MinefieldData
 #include "interaction/WeaponFire.h"  // ID 4 / Port 24004 : HLAinteractionRoot.WeaponFire
+#include "object/Designator.h"  // ID 5 / Port 24005 : HLAobjectRoot.EmbeddedSystem.Designator
 

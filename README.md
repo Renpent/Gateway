@@ -8,7 +8,8 @@ HLA と UDP を橋渡しするゲートウェイの参照実装。
 監視と、送れなかったインタラクションの持ち越しは入っていない。送れなかったもの・形式に合わない
 ものは、数えずに捨てる。
 
-**この環境に RTI は無い。** HLA 側の送信元は `stub/` の代用品で、受信した分は捨てている。
+**この環境に RTI は無い。** HLA 側の送信元は `stub/` の代用品。受信した分は、サンプルの
+`Designator` だけモックが表示し、ほかは捨てている。
 Windows と Linux のどちらでもビルドでき、同じように動く。
 
 ## 動かす
@@ -99,25 +100,114 @@ icd/              ICDgenerator の生成物。手で編集しない
 
 ## クラスを1つ足す
 
-**触るのは `app/CWiring.h` だけ。** ID・ポート・ペイロードは生成物の定数から決まる。
+**手で書くのは配線（`app/CWiring.h`）と、RTI が無い間の代用品だけ。** ID・ポート・ペイロードは
+生成物の定数から決まるので、どこにも数字を書かない。
 
-1. **ICDgenerator で生成する。** クラスにチェックを入れ、ID/Port を振り、MTU を選んで C++ 生成する。
-   `icd/icd_classes.h` も追随するので、include を足す必要はない
-2. **メンバを足す。** 送信元を足す（いまは `stub/` の代用品）：
+サンプルとして `Designator`（レーザー指示器、1件 115 B、ID 5 / port 24005）を足してある。
+以下はその手順。
 
-   ```cpp
-   stub::CTConstantFromHla<icdfom::Aircraft> aircraftFromHla{1};
-   ```
+### ① ICDgenerator で生成する
 
-3. **`build()` に1行足す。**
+1. GUI で FOM を開き、対象クラス（`EmbeddedSystem.Designator`）にチェックを入れる
+2. ID/Port/Rate ダイアログで ID と Port を振る（ほかのクラス・独自データと重ならない番号）
+3. MTU を選ぶ（1500 / 9000）
+4. C++ 生成の出力先をこのリポジトリの `icd/` にして生成する
 
-   ```cpp
-   add<icdfom::Aircraft>(g, &aircraftFromHla, nullptr);   // 送信のみ
-   add<icdfom::Bar>(g, nullptr, &barToHla);               // 受信のみ
-   add<icdfom::Foo>(g, &fooFromHla, &fooToHla);           // 送受信
-   ```
+これで次のものが出る。include を手で足す必要はない。
 
-   `T` は必ず明示すること（`nullptr` からは型が決まらない）。
+- `icd/object/Designator.h/.cpp`（インタラクションなら `icd/interaction/`）
+- `icd/icd_types.h/.cpp` に、このクラスが使う型が足される
+- `icd/icd_classes.h` にこのクラスの include が足される
+
+**生成が止まるのは2通り：** 可変レコードを含むクラスと、1件が MTU に収まらないクラス。
+どちらもクラス名と理由が出る。
+
+### ② ビルド設定に `.cpp` を足す
+
+`icd/object/Designator.cpp` を `HLAGateway.vcxproj`（と `.filters`）と `CMakeLists.txt` に足す。
+ヘッダは `.vcxproj` と `.filters` にだけ足す。
+
+### ③ 送信元と受け口を用意する
+
+RTI が無い間は `stub/` に代用品を置く。
+
+**送信元（HLA → UDP）：** 値を作る関数を1本書き、`stub::CTFixtureFromHla` に渡す。
+値に意味が要らなければ、関数を書かずに `stub::CTConstantFromHla<T>{1}`（既定構築の値を毎周期1件）でもよい。
+
+```cpp
+// stub/DesignatorFixture.h
+inline icdfom::Designator makeDesignator(std::size_t i) {
+    icdfom::Designator d{};
+    d.HostObjectIdentifier = objectId("DSG-" + std::to_string(i % 2));
+    d.DesignatorSpotLocation.X = 4.0e6 + 10.0 * static_cast<double>(i / 2);
+    ...
+    return d;
+}
+```
+
+**受け口（UDP → HLA）：** `hla::CTToHla<T>` を実装する。名前は `〜ToHla` で終える。
+サンプルの `stub/CDesignatorToHla.h` はモックで、本番の `hla::CTRtiObjectToHla` と同じ流れ
+（鍵でインスタンスを決める → 初見なら登録 → 属性を書く）を、HLA に書く代わりに表示で真似している。
+
+```cpp
+class CDesignatorToHla : public hla::CTToHla<icdfom::Designator> {
+public:
+    void accept(const icdfom::Designator& d) override {
+        const std::string key(d.HostObjectIdentifier.begin(), d.HostObjectIdentifier.end());
+        if (m_registered.insert(key).second) std::printf("[HLA・モック] 登録: %s\n", key.c_str());
+        std::printf("[HLA・モック] 更新: %s  照射点=(...)\n", key.c_str());
+    }
+private:
+    std::set<std::string> m_registered;
+};
+```
+
+- **`accept()` はブロックしないこと。** 周期ループのスレッドから呼ばれる
+- **レコードはこの呼び出しの間だけ有効。** 後で使うならコピーする
+
+### ④ 配線に足す（`app/CWiring.h`）
+
+メンバを足す：
+
+```cpp
+stub::CTFixtureFromHla<icdfom::Designator> designatorFromHla{stub::makeDesignator, 1};
+stub::CDesignatorToHla designatorToHla;
+```
+
+`build()` に1行足す：
+
+```cpp
+add<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // 送受信
+```
+
+片方向のクラスは、要らないほうに `nullptr` を渡す。
+
+```cpp
+add<icdfom::Foo>(g, &fooFromHla, nullptr);   // 送信のみ
+add<icdfom::Bar>(g, nullptr, &barToHla);     // 受信のみ
+```
+
+**`T`（`<icdfom::Designator>`）は必ず明示すること。** `nullptr` からは型が決まらない。
+
+### ⑤ 動かす
+
+自分宛てに送れば、送ったものを自分で受けてモックが表示する：
+
+```
+HLAGateway 127.0.0.1 20 1
+```
+
+```
+[HLA・モック] 登録: DSG-0
+[HLA・モック] 更新: DSG-0  照射点=(4000000.0, 2000000.0, 4500000.0)  出力=10.0 W
+[HLA・モック] 登録: DSG-1
+[HLA・モック] 更新: DSG-1  照射点=(4000000.0, 2001000.0, 4500000.0)  出力=11.0 W
+[HLA・モック] 更新: DSG-0  照射点=(4000010.0, 2000000.0, 4500000.0)  出力=10.0 W
+```
+
+### 本番では
+
+`stub::` の2つを `hla::CTRti...` の器に差し替える（次の節）。クラスごとに書くのは変換関数だけ。
 
 ## 本番（RTI）での形
 
@@ -285,6 +375,7 @@ icd/
 | `EmbeddedSystem.RadioReceiver` | 2 | 24002 | 62 B | オブジェクト |
 | `EmbeddedSystem.MinefieldData` | 3 | 24003 | 1902 B | オブジェクト |
 | `WeaponFire` | 4 | 24004 | 134 B | インタラクション |
+| `EmbeddedSystem.Designator`（サンプル） | 5 | 24005 | 115 B | オブジェクト |
 
 RPR FOM の `BaseEntity` 配下（Aircraft など）は可変レコードを含むので、生成器が拒否する。
 実運用の FOM には可変レコードが無い。

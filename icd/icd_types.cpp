@@ -139,4 +139,17 @@ void encode(icd::Writer& w, const VelocityVectorStruct& v) {
     encode(w, v.ZVelocity);
 }
 
+icd::Result decode(icd::Reader& r, AccelerationVectorStruct& v) {
+    if (const icd::Result rc = decode(r, v.XAcceleration); rc != icd::Result::Ok) return rc;
+    if (const icd::Result rc = decode(r, v.YAcceleration); rc != icd::Result::Ok) return rc;
+    if (const icd::Result rc = decode(r, v.ZAcceleration); rc != icd::Result::Ok) return rc;
+    return icd::Result::Ok;
+}
+
+void encode(icd::Writer& w, const AccelerationVectorStruct& v) {
+    encode(w, v.XAcceleration);
+    encode(w, v.YAcceleration);
+    encode(w, v.ZAcceleration);
+}
+
 }  // namespace icdfom

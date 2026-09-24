@@ -664,5 +664,103 @@ template <> struct FixedSize<icdfom::WarheadTypeEnum16> { static constexpr std::
 }
 namespace icdfom {
 
+/// FOM: DesignatorCodeNameEnum16
+/// 値は DesignatorCodeNameEnum16::<列挙子名>。
+enum class DesignatorCodeNameEnum16 : uint16_t {
+    Other = 0,
+};
+
+[[nodiscard]] inline icd::Result decode(icd::Reader& r, DesignatorCodeNameEnum16& v) {
+    uint16_t raw = 0;
+    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
+    v = static_cast<DesignatorCodeNameEnum16>(raw);
+    return icd::Result::Ok;
+}
+
+inline void encode(icd::Writer& w, DesignatorCodeNameEnum16 v) {
+    icd::encode(w, static_cast<uint16_t>(v));
+}
+
+}  // namespace icdfom
+namespace icd {
+template <> struct FixedSize<icdfom::DesignatorCodeNameEnum16> { static constexpr std::size_t value = 2; };
+}
+namespace icdfom {
+
+/// FOM: DesignatorCodeEnum16
+/// 値は DesignatorCodeEnum16::<列挙子名>。
+enum class DesignatorCodeEnum16 : uint16_t {
+    Other = 0,
+};
+
+[[nodiscard]] inline icd::Result decode(icd::Reader& r, DesignatorCodeEnum16& v) {
+    uint16_t raw = 0;
+    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
+    v = static_cast<DesignatorCodeEnum16>(raw);
+    return icd::Result::Ok;
+}
+
+inline void encode(icd::Writer& w, DesignatorCodeEnum16 v) {
+    icd::encode(w, static_cast<uint16_t>(v));
+}
+
+}  // namespace icdfom
+namespace icd {
+template <> struct FixedSize<icdfom::DesignatorCodeEnum16> { static constexpr std::size_t value = 2; };
+}
+namespace icdfom {
+
+/// FOM: WavelengthMicronFloat32  [micron]
+typedef float WavelengthMicronFloat32;
+
+/// FOM: PowerWattFloat32  [watt (W)]
+typedef float PowerWattFloat32;
+
+/// FOM: DeadReckoningAlgorithmEnum8
+/// 値は DeadReckoningAlgorithmEnum8::<列挙子名>。
+enum class DeadReckoningAlgorithmEnum8 : uint8_t {
+    Other = 0,
+    Static = 1,
+    DRM_FPW = 2,
+    DRM_RPW = 3,
+    DRM_RVW = 4,
+    DRM_FVW = 5,
+    DRM_FPB = 6,
+    DRM_RPB = 7,
+    DRM_RVB = 8,
+    DRM_FVB = 9,
+};
+
+[[nodiscard]] inline icd::Result decode(icd::Reader& r, DeadReckoningAlgorithmEnum8& v) {
+    uint8_t raw = 0;
+    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
+    v = static_cast<DeadReckoningAlgorithmEnum8>(raw);
+    return icd::Result::Ok;
+}
+
+inline void encode(icd::Writer& w, DeadReckoningAlgorithmEnum8 v) {
+    icd::encode(w, static_cast<uint8_t>(v));
+}
+
+}  // namespace icdfom
+namespace icd {
+template <> struct FixedSize<icdfom::DeadReckoningAlgorithmEnum8> { static constexpr std::size_t value = 1; };
+}
+namespace icdfom {
+
+/// FOM: AccelerationMeterPerSecondSquaredFloat32  [meter per second squared (m/(s^2))]
+typedef float AccelerationMeterPerSecondSquaredFloat32;
+
+/// FOM: AccelerationVectorStruct
+struct AccelerationVectorStruct {
+    AccelerationMeterPerSecondSquaredFloat32 XAcceleration;  ///< FOM: XAcceleration : AccelerationMeterPerSecondSquaredFloat32
+    AccelerationMeterPerSecondSquaredFloat32 YAcceleration;  ///< FOM: YAcceleration : AccelerationMeterPerSecondSquaredFloat32
+    AccelerationMeterPerSecondSquaredFloat32 ZAcceleration;  ///< FOM: ZAcceleration : AccelerationMeterPerSecondSquaredFloat32
+    static constexpr std::size_t kEncodedSize = 12;
+};
+
+[[nodiscard]] icd::Result decode(icd::Reader& r, AccelerationVectorStruct& v);
+void encode(icd::Writer& w, const AccelerationVectorStruct& v);
+
 }  // namespace icdfom
 

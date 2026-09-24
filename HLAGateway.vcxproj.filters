@@ -46,6 +46,9 @@
     <ClCompile Include="icd\icd_types.cpp">
       <Filter>icd</Filter>
     </ClCompile>
+    <ClCompile Include="icd\object\Designator.cpp">
+      <Filter>icd\object</Filter>
+    </ClCompile>
     <ClCompile Include="icd\object\MinefieldData.cpp">
       <Filter>icd\object</Filter>
     </ClCompile>
@@ -123,10 +126,16 @@
     <ClInclude Include="gateway\udp\CUdpSocket.h">
       <Filter>gateway\udp</Filter>
     </ClInclude>
+    <ClInclude Include="stub\CDesignatorToHla.h">
+      <Filter>stub</Filter>
+    </ClInclude>
     <ClInclude Include="stub\CTConstantFromHla.h">
       <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\CTFixtureFromHla.h">
+      <Filter>stub</Filter>
+    </ClInclude>
+    <ClInclude Include="stub\DesignatorFixture.h">
       <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\ObjectId.h">
@@ -149,6 +158,9 @@
     </ClInclude>
     <ClInclude Include="icd\icd_types.h">
       <Filter>icd</Filter>
+    </ClInclude>
+    <ClInclude Include="icd\object\Designator.h">
+      <Filter>icd\object</Filter>
     </ClInclude>
     <ClInclude Include="icd\object\MinefieldData.h">
       <Filter>icd\object</Filter>
