@@ -35,13 +35,10 @@ public:
     long drain(UdpSocket& sock, Fn&& fn) {
         long delivered = 0;
         for (;;) {
-            std::size_t len = 0;
-            const UdpSocket::Received r = sock.receive(m_buf.data(), m_buf.size(), len);
-            if (r == UdpSocket::Received::Error) return -1;
-            if (r == UdpSocket::Received::Nothing) return delivered;   // もう何も来ていない
-            // len == 0 の空データグラムもここに来る。ヘッダが無いので handle が
-            // malformed として数える — 黙って消えることはない。
-            delivered += handle(len, fn);
+            const long got = sock.receive(m_buf.data(), m_buf.size());
+            if (got < 0) return -1;
+            if (got == 0) return delivered;      // もう何も来ていない
+            delivered += handle(static_cast<std::size_t>(got), fn);
         }
     }
 

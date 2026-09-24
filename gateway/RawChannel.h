@@ -19,7 +19,8 @@
 //   static constexpr const char*   kName;   表示名
 //   static constexpr std::uint16_t kPort;   受信ポート
 //   bool parse(const unsigned char* data, std::size_t len, T& out);
-//       T と同じ名前空間に置く（ADL で拾う）。len は 0 もありうる — 空のデータグラム。
+//       T と同じ名前空間に置く（ADL で拾う）。len は常に 1 以上 — 空のデータグラムは
+//       来ない前提で、来ても receive() が「何も来ていない」として読み捨てる（net/UdpSocket.h）。
 //       形式に合わなければ false を返すこと。**例外は投げない。**
 //
 // 番号を配線に書かないのは ClassChannel と同じ理由で、T の定数から決まる。
@@ -68,14 +69,13 @@ public:
     std::size_t pumpIn() override {
         std::size_t delivered = 0;
         for (;;) {
-            std::size_t len = 0;
-            const UdpSocket::Received r = m_sock.receive(m_buf.data(), m_buf.size(), len);
-            if (r != UdpSocket::Received::Datagram) break;   // 何も無い / 失敗
+            const long got = m_sock.receive(m_buf.data(), m_buf.size());
+            if (got <= 0) break;   // 何も無い / 失敗
 
             // 毎回作り直す。前のメッセージの中身が parse の失敗時に残らないように。
             T message{};
             // parse は T の名前空間から ADL で拾う。
-            if (!parse(m_buf.data(), len, message)) {
+            if (!parse(m_buf.data(), static_cast<std::size_t>(got), message)) {
                 ++m_stats.malformed;
                 continue;
             }
