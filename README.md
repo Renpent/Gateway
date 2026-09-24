@@ -100,7 +100,7 @@ stub/           RTI が無い環境で動かすための代用品。**本番に�
 raw/            FOM に無い独自データの型（手書き）。相手が決めた形式を parse で読む
 net/            ソケットと poll
 platform/       コンソールの文字コードとタイマ分解能
-icd/            ICDgenerator の生成物。手で編集しない
+icd/            ICDgenerator の生成物。手で編集しない（共有ファイル + object/ + interaction/）
 ```
 
 依存は上から下への一方向で、**逆流させないこと**が唯一の構造上の規則。
@@ -198,7 +198,8 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 ### ① ICDgenerator 側
 
 GUI で対象クラスにチェック → ID/Port ダイアログで番号を振る（`連番を振る` は見えている行に効く）
-→ MTU を選ぶ → C++ 生成。これで `icd/<Class>.h` に `kClassId` `kPort` `kPayload`
+→ MTU を選ぶ → C++ 生成。これで `icd/object/<Class>.h`（インタラクションなら
+`icd/interaction/<Class>.h`）に `kClassId` `kPort` `kPayload`
 `kIsInteraction` `kFomName` が入り、まとめ include の `icd/icd_classes.h` も追随する。
 **Wiring に include を足す必要はない。**
 
@@ -532,6 +533,19 @@ ICD が変わったら、生成物を**丸ごと差し替える**。手を入れ
 
 ICDgenerator の GUI で対象クラスを選び、C++ 生成の出力先をこのリポジトリの `icd/` にする。
 クラスを増減したら `HLAGateway.vcxproj` と `CMakeLists.txt` のソース一覧を合わせること。
+
+```
+icd/
+  icd_codec.h        ランタイム（全クラス共通）
+  icd_types.h/.cpp   選んだクラスが使う列挙・レコード・配列の型
+  icd_classes.h      全クラスのまとめ include（配線用）
+  object/            オブジェクトクラス。1クラスにつき <Class>.h / <Class>.cpp
+  interaction/       インタラクションクラス。同上
+```
+
+共有ファイルはルートに、クラスは FOM 上の種類で `object/` と `interaction/` に分けて置かれる。
+クラスのヘッダは1つ上の `../icd_types.h` を include する。**生成器は既存のファイルを消さない**ので、
+選択から外したクラスや、フォルダを分ける前（すべてルートに並んでいた頃）のファイルは手で消すこと。
 ID・ポート・MTU は生成物が持っている（各クラスの `kClassId` / `kPort` / `kPayload`）ので、
 ゲートウェイ側に写す作業は無い。`app/Wiring.h` の `bindingOf<T>()` がそこから組み立てる。
 

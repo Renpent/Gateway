@@ -20,7 +20,7 @@
 #include <cstddef>
 #include <string>
 
-#include "../icd/WeaponFire.h"
+#include "../icd/interaction/WeaponFire.h"
 #include "ObjectId.h"
 
 namespace stub {

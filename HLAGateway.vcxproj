@@ -145,23 +145,20 @@
 
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="platform\Platform.cpp" />
-    <ClCompile Include="net\UdpSocket.cpp" />
-    <ClCompile Include="net\Poller.cpp" />
     <ClCompile Include="gateway\Gateway.cpp" />
+    <ClCompile Include="net\Poller.cpp" />
+    <ClCompile Include="net\UdpSocket.cpp" />
+    <ClCompile Include="platform\Platform.cpp" />
     <ClCompile Include="icd\icd_types.cpp" />
-    <ClCompile Include="icd\RadarBeam.cpp" />
-    <ClCompile Include="icd\RadioReceiver.cpp" />
-    <ClCompile Include="icd\MinefieldData.cpp" />
-    <ClCompile Include="icd\WeaponFire.cpp" />
+    <ClCompile Include="icd\object\MinefieldData.cpp" />
+    <ClCompile Include="icd\object\RadarBeam.cpp" />
+    <ClCompile Include="icd\object\RadioReceiver.cpp" />
+    <ClCompile Include="icd\interaction\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\CommandToApp.h" />
     <ClInclude Include="app\ToApp.h" />
     <ClInclude Include="app\Wiring.h" />
-    <ClInclude Include="platform\Platform.h" />
-    <ClInclude Include="net\UdpSocket.h" />
-    <ClInclude Include="net\Poller.h" />
     <ClInclude Include="gateway\Channel.h" />
     <ClInclude Include="gateway\ClassBinding.h" />
     <ClInclude Include="gateway\ClassChannel.h" />
@@ -179,7 +176,6 @@
     <ClInclude Include="hla\RtiObjectFromHla.h" />
     <ClInclude Include="hla\RtiObjectToHla.h" />
     <ClInclude Include="hla\ToHla.h" />
-    <ClInclude Include="raw\Command.h" />
     <ClInclude Include="stub\ConstantFromHla.h" />
     <ClInclude Include="stub\CountingToHla.h" />
     <ClInclude Include="stub\FixtureFromHla.h" />
@@ -187,13 +183,17 @@
     <ClInclude Include="stub\RadarBeamFixture.h" />
     <ClInclude Include="stub\VerifyingToHla.h" />
     <ClInclude Include="stub\WeaponFireFixture.h" />
+    <ClInclude Include="raw\Command.h" />
+    <ClInclude Include="net\Poller.h" />
+    <ClInclude Include="net\UdpSocket.h" />
+    <ClInclude Include="platform\Platform.h" />
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />
     <ClInclude Include="icd\icd_types.h" />
-    <ClInclude Include="icd\RadarBeam.h" />
-    <ClInclude Include="icd\RadioReceiver.h" />
-    <ClInclude Include="icd\MinefieldData.h" />
-    <ClInclude Include="icd\WeaponFire.h" />
+    <ClInclude Include="icd\object\MinefieldData.h" />
+    <ClInclude Include="icd\object\RadarBeam.h" />
+    <ClInclude Include="icd\object\RadioReceiver.h" />
+    <ClInclude Include="icd\interaction\WeaponFire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
