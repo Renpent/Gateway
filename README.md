@@ -226,7 +226,7 @@ WeaponFire（インタラクション）** で、偽のツールキットに対�
 | `rti/CDb.h` | world を持つシングルトン | 触らない |
 | `rti/TypeConv.h/.cpp` | 入れ子のレコードと ID の変換（型ごと、クラス間で共有） | まだ無い型が出てきたら1組足す |
 | `rti/<Class>Rti.h/.cpp` | **そのクラスの変換関数** | **1クラスにつき1組、新しく書く** |
-| `rti/C<Class>Callback.h` | インタラクションの受信コールバック | **インタラクションなら1つ書く** |
+| `rti/CInteractionCallback.h` | インタラクションの受信コールバック（全クラスで1つ） | **インタラクションならキューと override を1つずつ足す** |
 | `app/CRtiWiring.h` | 本番の配線 | **メンバ2本と1行を足す** |
 | `stub/toolkit/Toolkit.h` | 偽のツールキット（本番には持っていかない） | 試すなら、そのクラスを足す |
 
@@ -279,11 +279,15 @@ hla::CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
 addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // build() に
 ```
 
-### インタラクションを足す（`rti/WeaponFireRti.h/.cpp` と `rti/CWeaponFireCallback.h` が雛形）
+### インタラクションを足す（`rti/WeaponFireRti.h/.cpp` と `rti/CInteractionCallback.h` が雛形）
 
-**HLA から来る向きは RTI のコールバック**なので、変換関数のほかに、コールバックのクラスを1つ書く。
+**HLA から来る向きは RTI のコールバック。** ツールキットが生成するコールバックのクラスには
+FOM の全インタラクションの仮想関数が並んでいるので、`rti/CInteractionCallback.h` でそれを1回だけ
+継承し、**流すものだけ実装する。**
 
-変換関数は3本：
+1インタラクションにつき書くもの：
+
+**① 変換関数3本（`rti/<Class>Rti.h/.cpp`）**
 
 ```cpp
 namespace rti {
@@ -293,17 +297,16 @@ void sendWeaponFire(const icdfom::WeaponFire& r);                   // Send：fi
 }
 ```
 
-コールバックは、ツールキットが生成した仮想関数のクラスを継承し、**変換してそのクラスのキューに push するだけ**：
+**② `rti/CInteractionCallback.h` に、キュー1つと override 1つ**
 
 ```cpp
-class CWeaponFireCallback : public tk::WeaponFireCallback {
+class CInteractionCallback : public tk::InteractionCallback {
 public:
-    explicit CWeaponFireCallback(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue) : m_queue(queue) {}
-    void onWeaponFire(const tk::WeaponFire& interaction) override {   // RTI のスレッド
-        m_queue.push(toIcd(interaction));
+    hla::CTRtiInteractionFromHla<icdfom::WeaponFire> weaponFireFromHla;   // キュー
+
+    void onWeaponFire(const tk::WeaponFire& interaction) override {       // RTI のスレッド
+        weaponFireFromHla.push(toIcd(interaction));
     }
-private:
-    hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& m_queue;
 };
 ```
 
@@ -311,16 +314,15 @@ private:
 - `push()` はロック付きなので、RTI のスレッドから呼んでよい
 - ゲートウェイのほかのもの（チャネルやソケット）には触らない
 
-配線：キュー・コールバック・送信の3つをメンバにし、コールバックの登録を `subscribe()` に書く。
+**③ 配線（`app/CRtiWiring.h`）に、送信のメンバ1つと build() の1行**
 
 ```cpp
-hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;      // キュー
-rti::CWeaponFireCallback fireCallback{fireFromHla};                 // キューより後に宣言する
 hla::CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&rti::sendWeaponFire};
 ...
-addClass<icdfom::WeaponFire>(g, &fireFromHla, &fireToHla);          // build() に
-im->setWeaponFireCallback(&fireCallback);                           // subscribe() に
+addClass<icdfom::WeaponFire>(g, &interactions.weaponFireFromHla, &fireToHla);   // build() に
 ```
+
+コールバックの登録（`subscribe()`）は全インタラクションで1回なので、増えても変わらない。
 
 **用語：** レコードは UDP（ICD）側の1件（`icdfom::` の型）、パラメータ・属性は HLA 側
 （ツールキットの型）の値。
@@ -354,7 +356,8 @@ rti::CDb::getInstance().setWorld(nullptr);
    - 属性はアクセサ（`getXxx` / `setXxx`）で触る
    - 入れ子のレコードは FOM と同じ名前の構造体で返る
    - 列挙は整数、`RTIobjectId` は `std::string`
-   - インタラクションの受信は、生成された仮想関数のクラスを継承して登録する（登録の仕方は仮）
+   - インタラクションの受信は、全インタラクションの仮想関数が並んだ `InteractionCallback` を継承し、
+     `setInteractionCallback` で登録する（関数名と登録の仕方は仮）
 3. `stub/` を消し、main を `CRtiWiring` に切り替える
 
 **RTIobjectId の上限に注意。** ICD では上限（RPR FOM では16文字）のある配列になっている。

@@ -2,7 +2,7 @@
 //
 // オブジェクトと違い、HLA からは RTI のコールバックで押し込まれてくる：
 //
-//   HLA → UDP  CWeaponFireCallback（ツールキットのコールバックを継承）が toIcd してキューに push する
+//   HLA → UDP  CInteractionCallback::onWeaponFire が toIcd して、WeaponFire のキューに push する
 //   UDP → HLA  hla::CTRtiInteractionToHla{&sendWeaponFire}
 
 #pragma once

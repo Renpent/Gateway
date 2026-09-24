@@ -10,8 +10,8 @@
 //   → gateway.openAll(peer) → gateway.run(hz, 0)
 //   終了: run が戻る → resign → setWorld(nullptr)
 //
-// **wiring は resign より後まで生きていること。** コールバックのオブジェクトをツールキットに
-// 貸しているため。
+// **wiring は resign より後まで生きていること。** コールバックのオブジェクト（interactions）を
+// ツールキットに貸しているため。
 
 #pragma once
 
@@ -22,7 +22,7 @@
 #include "../gateway/hla/CTRtiObjectToHla.h"
 #include "../icd/icd_classes.h"
 #include "../rti/CDb.h"
-#include "../rti/CWeaponFireCallback.h"
+#include "../rti/CInteractionCallback.h"
 #include "../rti/DesignatorRti.h"
 #include "../rti/WeaponFireRti.h"
 #include "AddChannel.h"
@@ -43,12 +43,12 @@ public:
     hla::CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
         &rti::keyOf, &rti::registerDesignator, &rti::updateDesignator};
 
-    // ── インタラクション：WeaponFire ─────────────────────────────────
-    /// HLA → UDP のキュー。fireCallback が RTI のスレッドから push し、周期ループが drain する
-    hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;
-    /// 受信コールバック。fireFromHla に push する（fireFromHla より後に宣言すること）
-    rti::CWeaponFireCallback fireCallback{fireFromHla};
-    /// UDP → HLA。sendWeaponFire でパラメータを詰めて sendInteraction
+    // ── インタラクション ─────────────────────────────────────────────
+    /// HLA → UDP。全インタラクション共通の受信コールバックで、クラスごとのキューを持つ
+    /// （interactions.weaponFireFromHla など）。RTI のスレッドから push され、周期ループが drain する
+    rti::CInteractionCallback interactions;
+
+    /// UDP → HLA（WeaponFire）。sendWeaponFire でパラメータを詰めて sendInteraction
     hla::CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&rti::sendWeaponFire};
 
     // ── FOM に無い独自データ ──────────────────────────────────────────
@@ -57,17 +57,16 @@ public:
 
     void build(gw::CGateway& g) {
         addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);
-        addClass<icdfom::WeaponFire>(g, &fireFromHla, &fireToHla);
+        addClass<icdfom::WeaponFire>(g, &interactions.weaponFireFromHla, &fireToHla);
 
         addRaw<app::TCommand>(g, &commandHandler);
         addRaw<app::TControl>(g, &controlHandler);
     }
 
-    /// インタラクションの受信コールバックをツールキットに登録する。
+    /// インタラクションの受信コールバックをツールキットに登録する。インタラクションが増えても1行のまま。
     /// **CDb に world を置いたあとに1回呼ぶ。** 登録の仕方はツールキット次第（ここは仮）。
     void subscribe() {
-        tk::InteractionManager* im = rti::CDb::getInstance().getWorld()->getInteractionManager();
-        im->setWeaponFireCallback(&fireCallback);
+        rti::CDb::getInstance().getWorld()->getInteractionManager()->setInteractionCallback(&interactions);
     }
 };
 

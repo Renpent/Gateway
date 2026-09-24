@@ -12,8 +12,9 @@
 //   - 属性はアクセサ（getXxx / setXxx）で触る
 //   - 入れ子のレコードは FOM と同じ名前の構造体で返る
 //   - 列挙は整数、RTIobjectId は std::string
-//   - インタラクションの受信は、生成された仮想関数のクラス（WeaponFireCallback）を継承して
-//     onWeaponFire を実装し、setWeaponFireCallback で登録する。登録の仕方は仮
+//   - インタラクションの受信は、FOM の全インタラクションの仮想関数が並んだクラス
+//     （InteractionCallback）を継承し、要るものだけ実装して setInteractionCallback で登録する。
+//     関数名（onXxx）と登録の仕方は仮
 //
 // 外部ツールキットの見た目を真似るため、型名は接頭辞の決まりの対象外。
 // 「試験用」と書いた関数は本物には無い（RTI の代わりに値を入れるためのもの）。
@@ -125,12 +126,17 @@ private:
     std::vector<WeaponFire> m_sent;
 };
 
-/// 受信のコールバック。ツールキット側で生成される、仮想関数だけのクラスのつもり。
-/// 使う側が継承して onWeaponFire を実装する。**RTI のスレッドから呼ばれる。**
-class WeaponFireCallback {
+/// 実装しないインタラクションの例（中身は省略）。
+class MunitionDetonation {};
+
+/// 受信のコールバック。ツールキット側で生成される、**FOM の全インタラクションの仮想関数が
+/// 並んだクラス**のつもり（ここでは2つだけ）。使う側が継承して、要るものだけ実装する。
+/// 実装しなかったものは何もしない。**RTI のスレッドから呼ばれる。**
+class InteractionCallback {
 public:
-    virtual ~WeaponFireCallback() = default;
-    virtual void onWeaponFire(const WeaponFire& interaction) = 0;
+    virtual ~InteractionCallback() = default;
+    virtual void onWeaponFire(const WeaponFire& /*interaction*/) {}
+    virtual void onMunitionDetonation(const MunitionDetonation& /*interaction*/) {}
 };
 
 class InteractionManager {
@@ -138,14 +144,17 @@ public:
     WeaponFire* getWeaponFire() { return &m_weaponFire; }
 
     /// 受信のコールバックを登録する。callback は借りるだけ。
-    void setWeaponFireCallback(WeaponFireCallback* callback) { m_onWeaponFire = callback; }
+    void setInteractionCallback(InteractionCallback* callback) { m_callback = callback; }
 
-    /// 試験用：RTI が WeaponFire を受け取ったことにする。
-    void receiveWeaponFire(const WeaponFire& i) { if (m_onWeaponFire) m_onWeaponFire->onWeaponFire(i); }
+    /// 試験用：RTI がインタラクションを受け取ったことにする。
+    void receiveWeaponFire(const WeaponFire& i) { if (m_callback) m_callback->onWeaponFire(i); }
+    void receiveMunitionDetonation(const MunitionDetonation& i) {
+        if (m_callback) m_callback->onMunitionDetonation(i);
+    }
 
 private:
     WeaponFire m_weaponFire;
-    WeaponFireCallback* m_onWeaponFire = nullptr;
+    InteractionCallback* m_callback = nullptr;
 };
 
 // ─── world ──────────────────────────────────────────────────────────
