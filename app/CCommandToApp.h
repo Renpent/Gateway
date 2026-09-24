@@ -18,11 +18,11 @@
 #include <vector>
 
 #include "../raw/TCommand.h"
-#include "TCToApp.h"
+#include "CTToApp.h"
 
 namespace app {
 
-class CCommandToApp : public TCToApp<raw::TCommand> {
+class CCommandToApp : public CTToApp<raw::TCommand> {
 public:
     /// tick() の途中で呼ばれる。ここでは積むだけで、何も実行しない。
     void accept(const raw::TCommand& command) override {
@@ -54,7 +54,7 @@ private:
     }
 
     std::vector<std::string> m_pending;  ///< accept が積み、applyPending が空にする
-    std::uint64_t m_received = 0;        ///< 受け取った件数（形式違反は TCRawChannel 側で数える）
+    std::uint64_t m_received = 0;        ///< 受け取った件数（形式違反は CTRawChannel 側で数える）
     std::uint64_t m_handled = 0;         ///< 処理した件数
 };
 

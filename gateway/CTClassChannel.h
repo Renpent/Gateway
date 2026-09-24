@@ -3,7 +3,7 @@
 // 生成コーデックを呼ぶのも、HLA 側の継ぎ目に触るのもこのクラスで、外へは CChannel の抽象しか
 // 出ない。クラスを増やしても増えるのは実体化の数であって、周期ループ側のコードではない。
 //
-// FOM に無い独自データ（相手が決めた形式）は TCRawChannel が受け持つ。こちらは ICD の枠 —
+// FOM に無い独自データ（相手が決めた形式）は CTRawChannel が受け持つ。こちらは ICD の枠 —
 // 12バイトヘッダ + 固定長レコード — に乗るものだけ。
 
 #pragma once
@@ -14,20 +14,20 @@
 #include <string>
 #include <vector>
 
-#include "../hla/TCFromHla.h"
-#include "../hla/TCToHla.h"
+#include "../hla/CTFromHla.h"
+#include "../hla/CTToHla.h"
 #include "../icd/icd_codec.h"
 #include "../net/CUdpSocket.h"
 #include "CChannel.h"
 #include "TClassBinding.h"
 #include "TClassKind.h"
-#include "TCPublisher.h"
-#include "TCSubscriber.h"
+#include "CTPublisher.h"
+#include "CTSubscriber.h"
 
 namespace gw {
 
 template <class T>
-class TCClassChannel final : public CChannel {
+class CTClassChannel final : public CChannel {
 public:
     /// fromHla が null なら送信しない、toHla が null なら受けたものを捨てる。
     /// 実際のフェデレーションでも publish だけ / subscribe だけのクラスはあるので、
@@ -35,9 +35,9 @@ public:
     ///
     /// **どちらも借りているだけ**で、実体の寿命はこのチャネルより長くなければならない。
     /// 配線側（app/CWiring.h）が値で持っているのはそのため。
-    TCClassChannel(const TClassBinding& bind,
-                 hla::TCFromHla<T>* fromHla,
-                 hla::TCToHla<T>* toHla)
+    CTClassChannel(const TClassBinding& bind,
+                 hla::CTFromHla<T>* fromHla,
+                 hla::CTToHla<T>* toHla)
         : m_bind(bind), m_name(withoutRoot(bind.fomName)), m_fromHla(fromHla), m_toHla(toHla),
           m_pub(bind.classId, bind.payload), m_sub(bind.classId, bind.payload) {}
 
@@ -75,7 +75,7 @@ public:
         // 残りを捨てる設計なので、上限を超えた末尾が毎周期おなじように落ち続け、
         // インスタンス数が上限を超えたフェデレーションでは末尾が永久に送られなかった。
         //
-        // **出せた件数は TCPublisher に数えさせること。publish が true を返した回数ではない。**
+        // **出せた件数は CTPublisher に数えさせること。publish が true を返した回数ではない。**
         // publish はレコードをデータグラムに積んだ時点で true を返すが、積まれたぶんが
         // 実際に出るのは flush のときで、そこで断られると writer ごと捨てられる。
         // true の回数を「送った件数」として outbox から消すと、**持ち越すはずのイベントが
@@ -138,11 +138,11 @@ private:
 
     TClassBinding m_bind;            ///< このクラスの ID / ポート / 上限 / 種別（生成物の定数から）
     const char* m_name;             ///< 表示名。m_bind.fomName の根を除いた部分を指す
-    hla::TCFromHla<T>* m_fromHla;     ///< HLA 側の供給元。借り物で、null なら送信しない
-    hla::TCToHla<T>* m_toHla;         ///< HLA 側の受け口。借り物で、null なら受信を捨てる
+    hla::CTFromHla<T>* m_fromHla;     ///< HLA 側の供給元。借り物で、null なら送信しない
+    hla::CTToHla<T>* m_toHla;         ///< HLA 側の受け口。借り物で、null なら受信を捨てる
     CUdpSocket m_sock;               ///< このクラス専用のソケット（送受信とも1本）
-    TCPublisher<T> m_pub;             ///< レコード → データグラム
-    TCSubscriber<T> m_sub;            ///< データグラム → レコード
+    CTPublisher<T> m_pub;             ///< レコード → データグラム
+    CTSubscriber<T> m_sub;            ///< データグラム → レコード
     std::vector<T> m_outbox;        ///< 送信待ちのレコード。インタラクションは次の周期へ持ち越す
     std::size_t m_backlog = 0;      ///< 出し切れず残った件数
     std::uint64_t m_deferrals = 0;  ///< 出し切れなかった周期の回数

@@ -13,14 +13,14 @@
 #include <cstddef>
 #include <vector>
 
-#include "../hla/TCFromHla.h"
+#include "../hla/CTFromHla.h"
 
 namespace stub {
 
 template <class T>
-class TCConstantFromHla : public hla::TCFromHla<T> {
+class CTConstantFromHla : public hla::CTFromHla<T> {
 public:
-    explicit TCConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
+    explicit CTConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
 
     std::size_t drain(std::vector<T>& out) override {
         for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(T{});

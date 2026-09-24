@@ -14,9 +14,9 @@
 namespace gw {
 
 template <class T>
-class TCPublisher {
+class CTPublisher {
 public:
-    TCPublisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+    CTPublisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
         : m_classId(classId), m_buf(payload),
           m_writer(m_buf.data(), m_buf.size(), classId) {}
 

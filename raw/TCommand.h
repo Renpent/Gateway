@@ -31,7 +31,7 @@ struct TCommand {
 };
 
 /// 1データグラムをコマンド1つとして読む。空なら false（統計の「異常」に数えられる）。
-/// TCRawChannel が ADL で拾うので、TCommand と同じ名前空間に置いてある。
+/// CTRawChannel が ADL で拾うので、TCommand と同じ名前空間に置いてある。
 inline bool parse(const unsigned char* data, std::size_t len, TCommand& out) {
     // 最初の NUL まで。固定長の char 配列を丸ごと送ってくる相手は、後ろが NUL で埋まっている。
     std::size_t n = 0;

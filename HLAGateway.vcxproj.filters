@@ -66,10 +66,10 @@
     <ClInclude Include="app\CCommandToApp.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="app\CWiring.h">
+    <ClInclude Include="app\CTToApp.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="app\TCToApp.h">
+    <ClInclude Include="app\CWiring.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="gateway\CChannel.h">
@@ -78,7 +78,16 @@
     <ClInclude Include="gateway\CGateway.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\TCClassChannel.h">
+    <ClInclude Include="gateway\CTClassChannel.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\CTPublisher.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\CTRawChannel.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\CTSubscriber.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\TClassBinding.h">
@@ -87,58 +96,49 @@
     <ClInclude Include="gateway\TClassKind.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\TCPublisher.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="gateway\TCRawChannel.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="gateway\TCSubscriber.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
     <ClInclude Include="gateway\TLoopStats.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\TSubscriberStats.h">
       <Filter>gateway</Filter>
     </ClInclude>
+    <ClInclude Include="hla\CTFromHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CTRtiInteractionFromHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CTRtiInteractionToHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CTRtiObjectFromHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CTRtiObjectToHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
+    <ClInclude Include="hla\CTToHla.h">
+      <Filter>hla</Filter>
+    </ClInclude>
     <ClInclude Include="hla\Federate.h">
       <Filter>hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\TCFromHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\CTConstantFromHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="hla\TCRtiInteractionFromHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\CTCountingToHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="hla\TCRtiInteractionToHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\CTFixtureFromHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="hla\TCRtiObjectFromHla.h">
-      <Filter>hla</Filter>
-    </ClInclude>
-    <ClInclude Include="hla\TCRtiObjectToHla.h">
-      <Filter>hla</Filter>
-    </ClInclude>
-    <ClInclude Include="hla\TCToHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="stub\CTVerifyingToHla.h">
+      <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\ObjectId.h">
       <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\RadarBeamFixture.h">
-      <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="stub\TCConstantFromHla.h">
-      <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="stub\TCCountingToHla.h">
-      <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="stub\TCFixtureFromHla.h">
-      <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="stub\TCVerifyingToHla.h">
       <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\WeaponFireFixture.h">

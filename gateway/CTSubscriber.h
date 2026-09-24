@@ -16,7 +16,7 @@
 namespace gw {
 
 template <class T>
-class TCSubscriber {
+class CTSubscriber {
 public:
     /// **1周期に届いていたものは、その周期で読み切る。** 件数の上限は設けない。
     ///
@@ -26,7 +26,7 @@ public:
     ///
     /// 持ち越さないのはログのため。次の周期に回すと「このレコードはどの周期に届いたのか」が
     /// 突き合わせで曖昧になり、周期がずれているように見える。
-    explicit TCSubscriber(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+    explicit CTSubscriber(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
         : m_classId(classId), m_buf(payload) {}
 
     /// 来ているデータグラムを読み切る。ブロックしない。

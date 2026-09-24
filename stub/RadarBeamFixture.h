@@ -8,7 +8,7 @@
 // **決定的**（同じ i なら同じ値）にしてあるのは、往復した結果を元と1バイトずつ突き合わせる
 // ため。乱数だと「壊れたのか元から違うのか」が分からなくなる。
 //
-// 供給側（TCFixtureFromHla）と照合側（TCVerifyingToHla）の両方がここを呼ぶので、
+// 供給側（CTFixtureFromHla）と照合側（CTVerifyingToHla）の両方がここを呼ぶので、
 // 「送ったはずの値」の定義が1箇所に閉じる。
 
 #pragma once

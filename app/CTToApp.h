@@ -1,7 +1,7 @@
 // UDP → アプリ 向きの継ぎ目。FOM に無い独自データを、それを使う側のロジックへ渡す。
 //
-// 形は hla::TCToHla と同じ（accept が1本）だが、**別の型にしてある。** 独自データは RTI を
-// 1ミリも通らないので、hla::TCToHla を実装させると「HLA へ」という嘘の名前が1つ増える。
+// 形は hla::CTToHla と同じ（accept が1本）だが、**別の型にしてある。** 独自データは RTI を
+// 1ミリも通らないので、hla::CTToHla を実装させると「HLA へ」という嘘の名前が1つ増える。
 // 向きの付け方は hla/ と同じ規則 — 相手側の名前で呼び、実装の名前はすべて ToApp で終える
 // （CCommandToApp など）。
 //
@@ -17,7 +17,7 @@
 // 効き始めるのは次の周期から（20 Hz なら 50 ms 後）。前半・後半のあいだで反映すれば同じ周期の
 // 送信から効くが、そこでチャネルやソケットを変えると後半のループと poll の対応表がずれる。
 // 積むのも反映するのも周期ループのスレッドなので、このキューにロックは要らない
-// （RTI スレッドから積まれる TCRtiInteractionFromHla とはそこが違う）。
+// （RTI スレッドから積まれる CTRtiInteractionFromHla とはそこが違う）。
 //
 // 反映する場所は CGateway::setTickEnd で登録する。実例は CCommandToApp（accept で積み、
 // applyPending で処理する）と、それを登録している app/CWiring.h。
@@ -29,9 +29,9 @@
 namespace app {
 
 template <class T>
-class TCToApp {
+class CTToApp {
 public:
-    virtual ~TCToApp() = default;
+    virtual ~CTToApp() = default;
 
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれ、ここで待つと全ポートが遅れる。
     /// message はこの呼び出しの間だけ有効。後で使うならコピーすること。

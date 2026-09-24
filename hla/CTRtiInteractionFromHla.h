@@ -12,7 +12,7 @@
 //
 // **キューは深さで縛る。件数で周期を縛らない。** 周期ループが止まっている間にコールバックが
 // 溜め続けるとメモリが伸びる一方なので、上限を超えた push は捨てて数える（新しいほうを捨てる）。
-// 1周期に出す件数のほうは縛らない — 渡されたものはその周期で出し切る（TCClassChannel の方針）。
+// 1周期に出す件数のほうは縛らない — 渡されたものはその周期で出し切る（CTClassChannel の方針）。
 //
 // **この環境に RTI は無いので、push を呼ぶ者がいない。** 形を先に決めておくためのもの。
 
@@ -25,7 +25,7 @@
 #include <mutex>
 #include <vector>
 
-#include "TCFromHla.h"
+#include "CTFromHla.h"
 
 namespace hla {
 
@@ -52,11 +52,11 @@ namespace hla {
 inline constexpr std::size_t kInteractionQueueDepth = 2048;
 
 template <class T>
-class TCRtiInteractionFromHla : public TCFromHla<T> {
+class CTRtiInteractionFromHla : public CTFromHla<T> {
 public:
     /// **既定のままでよい。** 数値を渡すのは、getMaxDepth() が天井に張り付いたクラスが
     /// 実際に出てきたときだけ（kInteractionQueueDepth の説明を参照）。
-    explicit TCRtiInteractionFromHla(std::size_t maxQueued = kInteractionQueueDepth)
+    explicit CTRtiInteractionFromHla(std::size_t maxQueued = kInteractionQueueDepth)
         : m_maxQueued(maxQueued) {}
 
     /// **RTI のスレッドから呼ばれる。** コールバックの中で T に詰め替えたものを渡す。
@@ -79,7 +79,7 @@ public:
 
     /// 周期ループのスレッドから。**ロックの中でやるのはキューの差し替えだけ**で、
     /// out への挿入はロックの外。ここを雑にすると RTI のスレッドが周期ループに引きずられる。
-    /// out はクリアしない（インタラクションは持ち越すのが正しく、捨てる判断は TCClassChannel のもの）。
+    /// out はクリアしない（インタラクションは持ち越すのが正しく、捨てる判断は CTClassChannel のもの）。
     std::size_t drain(std::vector<T>& out) override {
         std::vector<T> taken;
         {

@@ -5,18 +5,18 @@
 // 受け取った件数だけ数える受け口。中身は見ない。
 //
 // 「ポートの振り分けが合っているか」だけを確かめたいとき用。中身まで見たいなら
-// TCVerifyingToHla のように、送信側と同じ値を作って突き合わせる必要がある。
+// CTVerifyingToHla のように、送信側と同じ値を作って突き合わせる必要がある。
 
 #pragma once
 
 #include <cstddef>
 
-#include "../hla/TCToHla.h"
+#include "../hla/CTToHla.h"
 
 namespace stub {
 
 template <class T>
-class TCCountingToHla : public hla::TCToHla<T> {
+class CTCountingToHla : public hla::CTToHla<T> {
 public:
     void accept(const T&) override { ++m_count; }
     [[nodiscard]] std::size_t getCount() const noexcept { return m_count; }

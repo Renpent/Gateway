@@ -19,18 +19,18 @@
 #include <vector>
 
 #include "../icd/icd_codec.h"
-#include "../hla/TCToHla.h"
+#include "../hla/CTToHla.h"
 
 namespace stub {
 
 template <class T>
-class TCVerifyingToHla : public hla::TCToHla<T> {
+class CTVerifyingToHla : public hla::CTToHla<T> {
 public:
-    /// **供給側（TCFixtureFromHla）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
+    /// **供給側（CTFixtureFromHla）と同じ関数を渡すこと。** 「送ったはずの値」の定義が2箇所に
     /// 分かれると、往復照合は何も確かめていないのと同じになる。
     using Fixture = T (*)(std::size_t);
 
-    explicit TCVerifyingToHla(Fixture make) : m_make(make) {}
+    explicit CTVerifyingToHla(Fixture make) : m_make(make) {}
 
     void accept(const T& rec) override {
         if (encodedBytes(rec) != encodedBytes(m_make(m_received))) {

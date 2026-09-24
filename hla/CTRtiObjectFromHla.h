@@ -22,12 +22,12 @@
 #include <utility>
 #include <vector>
 
-#include "TCFromHla.h"
+#include "CTFromHla.h"
 
 namespace hla {
 
 template <class T, class ObjPtr>
-class TCRtiObjectFromHla : public TCFromHla<T> {
+class CTRtiObjectFromHla : public CTFromHla<T> {
 public:
     /// getRemoteXXX() を呼ぶだけ。フェデレートを掴む必要があるので std::function。
     using Fetch = std::function<std::vector<ObjPtr>()>;
@@ -36,10 +36,10 @@ public:
     /// クラスごとに1本書く（ICDgenerator で生成できる見込み）。
     using Convert = T (*)(const ObjPtr&);
 
-    TCRtiObjectFromHla(Fetch fetch, Convert convert)
+    CTRtiObjectFromHla(Fetch fetch, Convert convert)
         : m_fetch(std::move(fetch)), m_convert(convert) {}
 
-    /// **out はクリアしない。** 末尾に足すだけで、捨てるかどうかは TCClassChannel が
+    /// **out はクリアしない。** 末尾に足すだけで、捨てるかどうかは CTClassChannel が
     /// TClassKind を見て決める。ここでクリアするとインタラクションの持ち越しが消える。
     ///
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれるので、ここで待つと

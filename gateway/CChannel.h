@@ -3,8 +3,8 @@
 // ポートごとにデータの型が違うので、周期ループから見えるのはこの CChannel だけにしてある。
 // 型が要るのは各実装の内側だけで、そこから外には出ない。実装は2つ：
 //
-//   TCClassChannel<T>  ICD のクラス。12バイトヘッダ + 固定長レコード、相手は HLA
-//   TCRawChannel<T>    FOM に無い独自データ。相手が決めた形式のまま、相手はアプリ
+//   CTClassChannel<T>  ICD のクラス。12バイトヘッダ + 固定長レコード、相手は HLA
+//   CTRawChannel<T>    FOM に無い独自データ。相手が決めた形式のまま、相手はアプリ
 //
 // 以前はこれが「FOM のクラス1つ」を表していて、binding() で TClassBinding（classId・
 // TClassKind・FOM 名）をそのまま見せていた。独自データにはそのどれも当てはまらないので、
@@ -58,7 +58,7 @@ public:
     /// — ジャンボフレームか、ICD の上限見直し。
     ///
     /// **getRecordSize() が 0 なら可変長**で、1データグラム = 1メッセージ（件数は 1）。
-    /// 相手が決めた形式のまま受ける TCRawChannel がこれにあたる。
+    /// 相手が決めた形式のまま受ける CTRawChannel がこれにあたる。
     [[nodiscard]] virtual std::size_t getRecordSize() const noexcept = 0;
     [[nodiscard]] virtual std::size_t getCapacityInRecords() const noexcept = 0;
 

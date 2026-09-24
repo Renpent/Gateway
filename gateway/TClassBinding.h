@@ -33,7 +33,7 @@ struct TClassBinding {
 /// 生成されたクラス T の定数から、その TClassBinding を組み立てる。
 ///
 /// T を明示するのは呼び側で、値は T から決まる。別クラスの binding を渡し間違える余地が無い。
-/// 配備先でポートを変えたいときは、これを使わず TClassBinding を直接書いて TCClassChannel に渡せばよい。
+/// 配備先でポートを変えたいときは、これを使わず TClassBinding を直接書いて CTClassChannel に渡せばよい。
 template <class T>
 constexpr TClassBinding bindingOf() noexcept {
     return TClassBinding{

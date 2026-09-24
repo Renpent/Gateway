@@ -21,7 +21,7 @@ namespace {
 
 int runGateway(const std::string& peer, unsigned hz, unsigned seconds, bool verify) {
     // **CWiring を先に宣言すること。** 破棄は宣言の逆順なので、この順なら gateway が先に
-    // 消え、そのチャネルが借りている継ぎ目（TCFromHla / TCToHla の実体）はあとから消える。
+    // 消え、そのチャネルが借りている継ぎ目（CTFromHla / CTToHla の実体）はあとから消える。
     // 逆にすると、チャネルより先に参照先が無くなる。今はチャネルのデストラクタが
     // それらを参照しないので実害は出ていないが、それに頼っている状態をなくしておく。
     app::CWiring wiring;

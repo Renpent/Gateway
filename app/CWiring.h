@@ -8,15 +8,15 @@
 // **オブジェクトかインタラクションかもここには書かない** — kIsInteraction から決まる。
 //
 // **`stub::` が付いているものは本番には無い。** いま繋いでいる供給元と受け口はすべて
-// `stub/` の代用品で、実 RTI に繋ぐときは `hla::TCRtiObjectFromHla` などに差し替える。
+// `stub/` の代用品で、実 RTI に繋ぐときは `hla::CTRtiObjectFromHla` などに差し替える。
 // `stub/` を見ているファイルは他に無いので、**書き換え対象はこのファイルだけ**になる。
 //
-// メンバは向きで命名してある（xxxFromHla / xxxToHla）。型の側も同じ規則で、`TCFromHla<T>` の
-// 実装はすべて名前が `FromHla` で終わり、`TCToHla<T>` の実装はすべて `ToHla` で終わる
-// （`TCRtiObjectFromHla` など）。派生の名前から基底が読めるので、Feed や Receiver のような
+// メンバは向きで命名してある（xxxFromHla / xxxToHla）。型の側も同じ規則で、`CTFromHla<T>` の
+// 実装はすべて名前が `FromHla` で終わり、`CTToHla<T>` の実装はすべて `ToHla` で終わる
+// （`CTRtiObjectFromHla` など）。派生の名前から基底が読めるので、Feed や Receiver のような
 // 「どちら向きか分からない語」を覚える必要がない。
 //
-// 継ぎ目の実体を**値で持っている**のは、TCClassChannel が生ポインタで借りるだけだから。
+// 継ぎ目の実体を**値で持っている**のは、CTClassChannel が生ポインタで借りるだけだから。
 // ここが所有者で、CGateway より長生きする必要がある（main.cpp の宣言順を参照）。
 //
 // 片方向のクラスは、要らないほうのメンバを作らず nullptr を渡す：
@@ -26,7 +26,7 @@
 // T は必ず明示すること。nullptr からは型が決まらない。
 //
 // FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで raw/ に置き、
-// 名前・ポート・parse を持つ（gateway/TCRawChannel.h）。受け口は hla::TCToHla ではなく app::TCToApp：
+// 名前・ポート・parse を持つ（gateway/CTRawChannel.h）。受け口は hla::CTToHla ではなく app::CTToApp：
 //   受信のみ addRaw<T>(g, &commandToApp);
 //
 // **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、CGateway の
@@ -42,17 +42,17 @@
 
 #include "../gateway/CChannel.h"
 #include "../gateway/TClassBinding.h"
-#include "../gateway/TCClassChannel.h"
+#include "../gateway/CTClassChannel.h"
 #include "../gateway/CGateway.h"
-#include "../gateway/TCRawChannel.h"
+#include "../gateway/CTRawChannel.h"
 #include "../raw/TCommand.h"
 #include "CCommandToApp.h"
-#include "TCToApp.h"
-#include "../stub/TCConstantFromHla.h"
-#include "../stub/TCCountingToHla.h"
-#include "../stub/TCFixtureFromHla.h"
+#include "CTToApp.h"
+#include "../stub/CTConstantFromHla.h"
+#include "../stub/CTCountingToHla.h"
+#include "../stub/CTFixtureFromHla.h"
 #include "../stub/RadarBeamFixture.h"
-#include "../stub/TCVerifyingToHla.h"
+#include "../stub/CTVerifyingToHla.h"
 #include "../stub/WeaponFireFixture.h"
 // ここだけが全クラスを名指しする。生成物なので、ICD にクラスを足せば自動で追随する。
 #include "../icd/icd_classes.h"
@@ -68,16 +68,16 @@ public:
     };
 
     // HLA → UDP（送信側の供給元）
-    stub::TCFixtureFromHla<icdfom::RadarBeam>       beamFromHla{stub::makeRadarBeam, 4};   ///< RadarBeam の供給元
-    stub::TCConstantFromHla<icdfom::RadioReceiver>  radioFromHla{1};                      ///< RadioReceiver の供給元
-    stub::TCConstantFromHla<icdfom::MinefieldData>  minefieldFromHla{1};                  ///< MinefieldData の供給元
-    stub::TCFixtureFromHla<icdfom::WeaponFire>      fireFromHla{stub::makeWeaponFire, 3};  ///< WeaponFire の供給元
+    stub::CTFixtureFromHla<icdfom::RadarBeam>       beamFromHla{stub::makeRadarBeam, 4};   ///< RadarBeam の供給元
+    stub::CTConstantFromHla<icdfom::RadioReceiver>  radioFromHla{1};                      ///< RadioReceiver の供給元
+    stub::CTConstantFromHla<icdfom::MinefieldData>  minefieldFromHla{1};                  ///< MinefieldData の供給元
+    stub::CTFixtureFromHla<icdfom::WeaponFire>      fireFromHla{stub::makeWeaponFire, 3};  ///< WeaponFire の供給元
 
     // UDP → HLA（受信側の受け口）
-    stub::TCVerifyingToHla<icdfom::RadarBeam>    beamToHla{stub::makeRadarBeam};   ///< RadarBeam の受け口。往復照合もする
-    stub::TCCountingToHla<icdfom::RadioReceiver> radioToHla;                      ///< RadioReceiver の受け口。数えるだけ
-    stub::TCCountingToHla<icdfom::MinefieldData> minefieldToHla;                  ///< MinefieldData の受け口。数えるだけ
-    stub::TCVerifyingToHla<icdfom::WeaponFire>   fireToHla{stub::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
+    stub::CTVerifyingToHla<icdfom::RadarBeam>    beamToHla{stub::makeRadarBeam};   ///< RadarBeam の受け口。往復照合もする
+    stub::CTCountingToHla<icdfom::RadioReceiver> radioToHla;                      ///< RadioReceiver の受け口。数えるだけ
+    stub::CTCountingToHla<icdfom::MinefieldData> minefieldToHla;                  ///< MinefieldData の受け口。数えるだけ
+    stub::CTVerifyingToHla<icdfom::WeaponFire>   fireToHla{stub::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
 
     // UDP → アプリ（FOM に無い独自データ）。**stub ではない** — 本番でもこのまま使う
     CCommandToApp commandToApp;   ///< コマンド文字列の受け口。処理は CCommandToApp::handle
@@ -110,22 +110,22 @@ public:
 
 private:
     template <class T>
-    static TVerifyResult tally(const stub::TCVerifyingToHla<T>& v) {
+    static TVerifyResult tally(const stub::CTVerifyingToHla<T>& v) {
         return TVerifyResult{v.getReceived(), v.getMismatched()};
     }
 
     /// 1行1クラスで並ぶようにするための包み。binding は T から決まり、new と unique_ptr は
     /// ここに1度だけ現れる。
     template <class T>
-    static void add(gw::CGateway& g, hla::TCFromHla<T>* fromHla, hla::TCToHla<T>* toHla) {
+    static void add(gw::CGateway& g, hla::CTFromHla<T>* fromHla, hla::CTToHla<T>* toHla) {
         g.add(std::unique_ptr<gw::CChannel>(
-            new gw::TCClassChannel<T>(gw::bindingOf<T>(), fromHla, toHla)));
+            new gw::CTClassChannel<T>(gw::bindingOf<T>(), fromHla, toHla)));
     }
 
     /// FOM に無い独自データの受信口。ポートと名前は T の定数から決まる。
     template <class T>
-    static void addRaw(gw::CGateway& g, TCToApp<T>* toApp) {
-        g.add(std::unique_ptr<gw::CChannel>(new gw::TCRawChannel<T>(toApp)));
+    static void addRaw(gw::CGateway& g, CTToApp<T>* toApp) {
+        g.add(std::unique_ptr<gw::CChannel>(new gw::CTRawChannel<T>(toApp)));
     }
 };
 

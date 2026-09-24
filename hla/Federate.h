@@ -1,14 +1,14 @@
 // HLA 側との継ぎ目のまとめ。**この2つを RTI の API で実装すれば移植が済む。**
 //
-// クラス定義そのものは TCFromHla.h と TCToHla.h にある。このファイルは両方を1行で入れるためと、
+// クラス定義そのものは CTFromHla.h と CTToHla.h にある。このファイルは両方を1行で入れるためと、
 // **どちらにも等しくかかる取り決め**を1箇所に書くために置いてある。
 //
 // 向きが2つあることに注意。名前が示すとおりだが、HLA の publish / subscribe とは逆に見える：
 //
-//   TCFromHla<T>  HLA → UDP。RTI が反映した属性更新を T に詰めて渡す（reflectAttributeValues）
-//               RTI に対しては subscribe。UDP 側の相手は gw::TCPublisher（送信）
-//   TCToHla<T>    UDP → HLA。UDP から復元した T を HLA に押し込む（updateAttributeValues）
-//               RTI に対しては publish。UDP 側の相手は gw::TCSubscriber（受信）
+//   CTFromHla<T>  HLA → UDP。RTI が反映した属性更新を T に詰めて渡す（reflectAttributeValues）
+//               RTI に対しては subscribe。UDP 側の相手は gw::CTPublisher（送信）
+//   CTToHla<T>    UDP → HLA。UDP から復元した T を HLA に押し込む（updateAttributeValues）
+//               RTI に対しては publish。UDP 側の相手は gw::CTSubscriber（受信）
 //
 // 実装側で必要になるが、インタフェースに現れないもの：
 //   - オブジェクトインスタンスハンドルと T の対応表（HLA はインスタンス単位、ICD はレコード単位）
@@ -37,5 +37,5 @@
 
 #pragma once
 
-#include "TCFromHla.h"
-#include "TCToHla.h"
+#include "CTFromHla.h"
+#include "CTToHla.h"

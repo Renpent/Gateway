@@ -73,10 +73,10 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 
 **この分岐は長いあいだ一度も実行されていなかった**（インタラクションのクラスが無かったため）。
 `WeaponFire` を通したときに、そこに2つ不具合が出た。**ソケットに断られた周期で、持ち越すはずの
-イベントがきっかり1データグラムぶん消えていた** — `TCPublisher::publish` はレコードを
+イベントがきっかり1データグラムぶん消えていた** — `CTPublisher::publish` はレコードを
 データグラムに積んだ時点で true を返すので、その後の flush が断られると積んだぶんは捨てられる
 のに、outbox からは「送った」ものとして削られていた（500件のバーストで 434件しか届かない）。
-いまは `TCPublisher::getRecordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
+いまは `CTPublisher::getRecordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
 残りを捨てた周期に `積み残し` を書き戻しておらず、**捨てたはずの件数を残り続けているかのように
 報告していた**。どちらもループバックでは出ない — OS はループバックの送信を断らないので、
 検出には送信失敗を人為的に起こす必要がある。
@@ -93,7 +93,7 @@ MTU（＝1発の件数）で、放っておくとキューが伸び続ける。
 
 ```
 main.cpp        起動とモード分岐だけ
-app/            配線。「どのクラスをどちら向きに流すか」を決める場所と、アプリ側への継ぎ目（TCToApp）
+app/            配線。「どのクラスをどちら向きに流すか」を決める場所と、アプリ側への継ぎ目（CTToApp）
 gateway/        型に依存しない送受信と周期ループ。ICD のクラス用と、FOM に無い独自データ用の2種類のチャネル
 hla/            HLA 側との継ぎ目。インタフェースと、RTI を呼ぶ実装
 stub/           RTI が無い環境で動かすための代用品。**本番には持っていかない**
@@ -112,7 +112,7 @@ icd/            ICDgenerator の生成物。手で編集しない（共有ファ
 どこで代用品を使っているかは型を見れば分かる。
 
 `stub/` を include しているのは `app/CWiring.h` だけなので、**消したときに直すのはそのファイル
-1つ**。`hla::TCRtiObjectFromHla` などの本番用の器はすでに `hla/` にあり、配線の右辺を
+1つ**。`hla::CTRtiObjectFromHla` などの本番用の器はすでに `hla/` にあり、配線の右辺を
 差し替えるだけで繋がる形にしてある。
 
 `main.cpp` の `loopback` モードも検証用（自分宛に送って往復を照合する）。実運用で使うのは
@@ -130,13 +130,13 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 ポートごとにデータの型が違うが、周期ループから見えるのは `CChannel`（`gateway/CChannel.h`）という
 型を持たない抽象だけ。型が要るのは実装の内側に閉じていて、実装は2つある。
 
-| | `TCClassChannel<T>` | `TCRawChannel<T>` |
+| | `CTClassChannel<T>` | `CTRawChannel<T>` |
 |---|---|---|
 | 何 | ICD のクラス | FOM に無い独自データ |
 | 形式を決めたのは | こちら（ICD） | **相手** |
 | バイト列 | 12バイトヘッダ + 固定長レコード | ヘッダ無し。1データグラム = 1メッセージ |
 | 型の出どころ | ICDgenerator の生成物（`icd/`） | 手書き |
-| 手元の相手 | HLA（`hla::TCFromHla` / `TCToHla`） | アプリ（`app::TCToApp`） |
+| 手元の相手 | HLA（`hla::CTFromHla` / `CTToHla`） | アプリ（`app::CTToApp`） |
 | 向き | 送受信 | いまは受信のみ |
 
 `CChannel` は以前 `binding()` で `TClassBinding`（classId・`TClassKind`・FOM 名）をそのまま見せていたが、
@@ -150,7 +150,7 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 | 種類 | 接頭辞 | 例 |
 |---|---|---|
 | クラス | `C` | `CGateway`（`gateway/CGateway.h`）、`CUdpSocket`、`CCommandToApp` |
-| クラステンプレート | `TC` | `TCClassChannel<T>`、`TCFromHla<T>`、`TCRtiObjectFromHla<T, Ptr>` |
+| クラステンプレート | `CT` | `CTClassChannel<T>`、`CTFromHla<T>`、`CTRtiObjectFromHla<T, Ptr>` |
 | 構造体・列挙 | `T` | `TClassBinding`、`TClassKind`、`TLoopStats`、`raw::TCommand` |
 
 振る舞いを持つものはクラス（`CWiring` は以前 `struct` だったが、配線を持って動くので
@@ -176,21 +176,21 @@ C++ の型名ではなく FOM 名）。
 ### 1ファイル1クラス
 
 手書きのコードは**クラス1つにつきファイル1つ**。継承しているものは基底と派生で分ける
-（`CChannel` / `TCClassChannel`、`TCFromHla` / `TCRtiObjectFromHla`）。入れ子クラスは例外で、
+（`CChannel` / `CTClassChannel`、`CTFromHla` / `CTRtiObjectFromHla`）。入れ子クラスは例外で、
 外側と同じファイルでよい。
 
-**派生の名前は、基底の名前（接頭辞を除いた部分）で終える。** `TCFromHla<T>` の実装はすべて
-名前が `FromHla` で終わり、`TCToHla<T>` の実装はすべて `ToHla` で終わる。`TCRtiObjectFromHla` を
+**派生の名前は、基底の名前（接頭辞を除いた部分）で終える。** `CTFromHla<T>` の実装はすべて
+名前が `FromHla` で終わり、`CTToHla<T>` の実装はすべて `ToHla` で終わる。`CTRtiObjectFromHla` を
 見れば「RTI のオブジェクトクラスを HLA から汲み出す FromHla」と読めるので、Feed や Receiver の
 ような語を別に覚えなくてよい。以前は
 `RtiSnapshotFeed` / `RtiEventReceiver` だったが、Feed がどちら向きか読めないうえ、
 Snapshot / Event はオブジェクト / インタラクションへの訳が毎回必要だった。
 
 例外は1つ。`TSubscriberStats` は `CChannel::getInStats()` がテンプレートでない参照を返すので
-`TCSubscriber<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
+`CTSubscriber<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
 
 `Federate.h` と `icd/icd_classes.h` はクラスを持たないまとめ include で、
-前者は TCFromHla/TCToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
+前者は CTFromHla/CTToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
 
 ### メンバ変数の書き方
 
@@ -243,13 +243,13 @@ GUI で対象クラスにチェック → ID/Port ダイアログで番号を振
 
 ```cpp
 // HLA → UDP
-stub::TCFixtureFromHla<icdfom::Aircraft> aircraftFromHla{stub::makeAircraft, 4};
+stub::CTFixtureFromHla<icdfom::Aircraft> aircraftFromHla{stub::makeAircraft, 4};
 // UDP → HLA
-stub::TCCountingToHla<icdfom::Aircraft>  aircraftToHla;
+stub::CTCountingToHla<icdfom::Aircraft>  aircraftToHla;
 ```
 
-値に意味が要らないなら `stub::TCConstantFromHla<T>{1}` で足りる（既定構築の値を毎周期1件）。
-バイト単位で往復照合したいときだけ `stub::TCVerifyingToHla<T>{stub::makeAircraft}` にし、
+値に意味が要らないなら `stub::CTConstantFromHla<T>{1}` で足りる（既定構築の値を毎周期1件）。
+バイト単位で往復照合したいときだけ `stub::CTVerifyingToHla<T>{stub::makeAircraft}` にし、
 `stub/<Class>Fixture.h` に `makeAircraft(i)` を1本書く（`stub/WeaponFireFixture.h` が雛形）。
 **照合器を足したら `CWiring::verifyResult()` の合計にも1つ加えること** — 配線で2箇所書くのは
 ここだけ。
@@ -276,19 +276,19 @@ add<icdfom::Bar>(g, nullptr,     &barToHla);  // 受信のみ
 
 ```cpp
 // オブジェクト
-hla::TCRtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
+hla::CTRtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
     [this] { return m_fed.getRemoteAircraft(); },   // Fetch: getRemoteXXX() を呼ぶだけ
     &toIcd                                          // Convert: 1インスタンス → 1レコード
 };
-hla::TCRtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
+hla::CTRtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
     &keyOf,                                                              // どのインスタンスか
     [this](const std::string& k) { return m_fed.registerAircraft(k); },  // 初見なら登録
     &writeBack                                                           // 属性を書いて update
 };
 
 // インタラクション
-hla::TCRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
-hla::TCRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
+hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
+hla::CTRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
     [this](const icdfom::WeaponFire& r) { m_fed.sendWeaponFire(toRti(r)); }
 };
 ```
@@ -308,12 +308,12 @@ hla::TCRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
 
 | | 何の数 | 既定 | 書くとき |
 |---|---|---|---|
-| `TCFixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷を変えたいとき |
-| `TCRtiInteractionFromHla{}` | キューの深さの上限 | `hla::kInteractionQueueDepth`（2048） | まず無い（下記） |
+| `CTFixtureFromHla{make, 4}` | **1周期に何件でっち上げるか** | 4 | 試験の負荷を変えたいとき |
+| `CTRtiInteractionFromHla{}` | キューの深さの上限 | `hla::kInteractionQueueDepth`（2048） | まず無い（下記） |
 
 前者は `stub/` の中だけの話で、本番には存在しない。増やせばそのクラスの送信件数がそのまま増える。
 
-後者は **`hla/TCRtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
+後者は **`hla/CTRtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
 クラスごとに流量を見積もって数値を入れる運用にはしない。**
 
 - **使わなければ1バイトも要らない。** キューは普通の `std::vector` で積まれたぶんしか確保せず、
@@ -370,10 +370,10 @@ bool parse(const unsigned char* data, std::size_t len, TCommand& out);
 }  // namespace raw
 ```
 
-`parse` は `TCommand` と同じ名前空間に置くこと（`TCRawChannel` が ADL で拾う）。相手の形式が
+`parse` は `TCommand` と同じ名前空間に置くこと（`CTRawChannel` が ADL で拾う）。相手の形式が
 ビッグエンディアンのバイナリなら、`icd/icd_codec.h` の `icd::Reader` がそのまま使える。
 
-**② 受け口を1つ書く。** `app::TCToApp<T>` を実装する。名前は `ToApp` で終える。
+**② 受け口を1つ書く。** `app::CTToApp<T>` を実装する。名前は `ToApp` で終える。
 実例は `app/CCommandToApp.h`。
 
 **③ 配線に1行。**
@@ -472,10 +472,10 @@ tick():  [UDP 受信 → HLA へ]  [HLA から → UDP 送信]  [制御コマン
 
 | | 向き | RTI 側 | UDP 側の相手 |
 |---|---|---|---|
-| `TCFromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::TCPublisher`（送信） |
-| `TCToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::TCSubscriber`（受信） |
+| `CTFromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::CTPublisher`（送信） |
+| `CTToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::CTSubscriber`（受信） |
 
-`TCClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
+`CTClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
 クラスが実運用にはあるため。
 
 **排他が要るのはこの継ぎ目だけ。** ゲートウェイ本体は単一スレッドで、`tick()` が受信を全部
