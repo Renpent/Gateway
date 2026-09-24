@@ -8,15 +8,15 @@
 #include <cstdint>
 #include <vector>
 
-#include "../icd/icd_codec.h"
-#include "../net/CUdpSocket.h"
+#include "../../icd/icd_codec.h"
+#include "CUdpSocket.h"
 
-namespace gw {
+namespace udp {
 
 template <class T>
-class CTPublisher {
+class CTUdpSender {
 public:
-    CTPublisher(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+    CTUdpSender(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
         : m_classId(classId), m_buf(payload),
           m_writer(m_buf.data(), m_buf.size(), classId) {}
 
@@ -59,4 +59,4 @@ private:
     std::uint64_t m_records = 0;        ///< 送ったレコード数
 };
 
-}  // namespace gw
+}  // namespace udp

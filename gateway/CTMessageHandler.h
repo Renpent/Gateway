@@ -2,8 +2,8 @@
 //
 // 形は hla::CTToHla と同じ（accept が1本）だが、**別の型にしてある。** 独自データは RTI を
 // 1ミリも通らないので、hla::CTToHla を実装させると「HLA へ」という嘘の名前が1つ増える。
-// 向きの付け方は hla/ と同じ規則 — 相手側の名前で呼び、実装の名前はすべて ToApp で終える
-// （CCommandToApp など）。
+// 実装の名前はすべて Handler で終える
+// （CCommandHandler など）。
 //
 // **ゲートウェイ自身の制御に使うときの注意。** accept は周期ループのスレッドで、tick() の
 // **途中**（前半の UDP 受信）に呼ばれる。ここで CGateway のチャネル一覧を変えたり止めたりすると、
@@ -19,23 +19,23 @@
 // 積むのも反映するのも周期ループのスレッドなので、このキューにロックは要らない
 // （RTI スレッドから積まれる CTRtiInteractionFromHla とはそこが違う）。
 //
-// 反映する場所は CGateway::setTickEnd で登録する。実例は CCommandToApp（accept で積み、
+// 反映する場所は CGateway::setTickEnd で登録する。実例は CCommandHandler（accept で積み、
 // applyPending で処理する）と、それを登録している app/CWiring.h。
 //
 // 送る向き（アプリ → UDP）が要るようになったら、対になる FromApp をここに足す。
 
 #pragma once
 
-namespace app {
+namespace gw {
 
 template <class T>
-class CTToApp {
+class CTMessageHandler {
 public:
-    virtual ~CTToApp() = default;
+    virtual ~CTMessageHandler() = default;
 
     /// **ブロックしないこと。** 周期ループのスレッドから呼ばれ、ここで待つと全ポートが遅れる。
     /// message はこの呼び出しの間だけ有効。後で使うならコピーすること。
     virtual void accept(const T& message) = 0;
 };
 
-}  // namespace app
+}  // namespace gw

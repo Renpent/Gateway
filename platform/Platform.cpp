@@ -13,7 +13,7 @@
 #  endif
 #endif
 
-namespace gw {
+namespace platform {
 
 #ifdef _WIN32
 namespace {
@@ -40,4 +40,4 @@ void shutdownPlatform() {
 #endif
 }
 
-}  // namespace gw
+}  // namespace platform

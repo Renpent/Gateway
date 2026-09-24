@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace gw {
+namespace platform {
 
 /// main の先頭で一度だけ呼ぶ。
 ///
@@ -22,4 +22,4 @@ void initPlatform();
 /// 分解能はシステム全体の設定なので、上げっぱなしにすると他のプロセスの消費電力に響く。
 void shutdownPlatform();
 
-}  // namespace gw
+}  // namespace platform

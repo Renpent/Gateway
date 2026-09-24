@@ -35,7 +35,7 @@ HLAGateway run <宛先IP|none> [Hz] [秒]  実運用の形。none なら受信�
 
 **全ポートを順に recvfrom で叩かない。** クラスが増えても poll は1回で、空振りの recvfrom が
 積み上がらない。Windows の `WSAPoll` は POSIX の `poll` と同じ `pollfd` 構造・同じ意味で
-使えるので、分岐は `net/CPoller.cpp` 冒頭の別名定義だけで済んでいる。
+使えるので、分岐は `gateway/udp/CPoller.cpp` 冒頭の別名定義だけで済んでいる。
 
 ### 周期がずれたら
 
@@ -73,10 +73,10 @@ ICD の `Rate` 列は「受信側が期待してよい更新頻度」を書く�
 
 **この分岐は長いあいだ一度も実行されていなかった**（インタラクションのクラスが無かったため）。
 `WeaponFire` を通したときに、そこに2つ不具合が出た。**ソケットに断られた周期で、持ち越すはずの
-イベントがきっかり1データグラムぶん消えていた** — `CTPublisher::publish` はレコードを
+イベントがきっかり1データグラムぶん消えていた** — `CTUdpSender::publish` はレコードを
 データグラムに積んだ時点で true を返すので、その後の flush が断られると積んだぶんは捨てられる
 のに、outbox からは「送った」ものとして削られていた（500件のバーストで 434件しか届かない）。
-いまは `CTPublisher::getRecordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
+いまは `CTUdpSender::getRecordsSent()` の増分だけを削っている。もう1つは表示の側で、オブジェクトが
 残りを捨てた周期に `積み残し` を書き戻しておらず、**捨てたはずの件数を残り続けているかのように
 報告していた**。どちらもループバックでは出ない — OS はループバックの送信を断らないので、
 検出には送信失敗を人為的に起こす必要がある。
@@ -92,18 +92,25 @@ MTU（＝1発の件数）で、放っておくとキューが伸び続ける。
 ## 層
 
 ```
-main.cpp        起動とモード分岐だけ
-app/            配線。「どのクラスをどちら向きに流すか」を決める場所と、アプリ側への継ぎ目（CTToApp）
-gateway/        型に依存しない送受信と周期ループ。ICD のクラス用と、FOM に無い独自データ用の2種類のチャネル
-hla/            HLA 側との継ぎ目。インタフェースと、RTI を呼ぶ実装
-stub/           RTI が無い環境で動かすための代用品。**本番には持っていかない**
-raw/            FOM に無い独自データの型（手書き）。相手が決めた形式を parse で読む
-net/            ソケットと poll
-platform/       コンソールの文字コードとタイマ分解能
-icd/            ICDgenerator の生成物。手で編集しない（共有ファイル + object/ + interaction/）
+main.cpp          起動とモード分岐だけ
+app/              配線（CWiring）と、FOM に無い独自データの型・処理（TCommand, CCommandHandler）
+gateway/          周期ループ（CGateway）とチャネル。ICD のクラス用と独自データ用の2種類
+  udp/            UDP 側。ソケット、poll、データグラムの送信（CTUdpSender）と受信（CTUdpReceiver）
+  hla/            HLA 側の継ぎ目。インタフェース（CTFromHla / CTToHla）と、RTI を呼ぶ器
+stub/             RTI が無い環境で動かすための代用品。**本番には持っていかない**
+platform/         コンソールの文字コードとタイマ分解能
+icd/              ICDgenerator の生成物。手で編集しない（共有ファイル + object/ + interaction/）
 ```
 
-依存は上から下への一方向で、**逆流させないこと**が唯一の構造上の規則。
+依存は上から下への一方向で、**逆流させないこと**が唯一の構造上の規則。`gateway/` の直下は
+`udp/` と `hla/` を使い、`udp/` と `hla/` は互いを知らない。`app/` はゲートウェイを使う側で、
+`gateway/` からは見えない。
+
+**名前空間はフォルダで決まる（1フォルダ1名前空間）。** `gateway/` → `gw`、`gateway/udp/` → `udp`、
+`gateway/hla/` → `hla`、`app/` → `app`、`stub/` → `stub`、`platform/` → `platform`。生成物の `icd/` だけは
+ICDgenerator の決まり（ランタイムは `icd`、型とクラスは `icdfom`）に従う。**名前は名前空間を外しても
+意味が通るようにしてある** — たとえば UDP 側の送受信は `CTUdpSender` / `CTUdpReceiver` で、HLA の
+publish / subscribe（向きが逆）と取り違えない。
 
 ### 本番に要るもの / 要らないもの
 
@@ -112,20 +119,21 @@ icd/            ICDgenerator の生成物。手で編集しない（共有ファ
 どこで代用品を使っているかは型を見れば分かる。
 
 `stub/` を include しているのは `app/CWiring.h` だけなので、**消したときに直すのはそのファイル
-1つ**。`hla::CTRtiObjectFromHla` などの本番用の器はすでに `hla/` にあり、配線の右辺を
+1つ**。`hla::CTRtiObjectFromHla` などの本番用の器はすでに `gateway/hla/` にあり、配線の右辺を
 差し替えるだけで繋がる形にしてある。
 
 `main.cpp` の `loopback` モードも検証用（自分宛に送って往復を照合する）。実運用で使うのは
 `run` のほうで、こちらは照合せず `stub/` の照合器も繋がない。
 
-- `gateway/` と `hla/` はソケットの型を知らない（`CUdpSocket` と `CPoller` しか見えない）
-- `gateway/` `net/` は RTI の型を知らない
+- `gateway/` と `gateway/hla/` はソケットの型を知らない（`udp::CUdpSocket` と `udp::CPoller` しか見えない）
+- `gateway/` のどこも RTI の型を知らない（RTI を呼ぶのは配線で渡す関数だけ）
+- `gateway/` は `app/` を見ない。アプリ側への口（`gw::CTMessageHandler`）も `gateway/` に置いてある
 - `icd/` は何も知らない。OS ヘッダも RTI も include していない
 
-OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッダには winsock も
+OS を知っているのは **`gateway/udp/*.cpp` と `platform/*.cpp` だけ**。ヘッダには winsock も
 `<sys/socket.h>` も現れない（`CUdpSocket` がハンドルを `std::intptr_t` で持っているのはそのため
 で、Windows の `SOCKET` と POSIX の `int fd` を1つの型で受けられる）。この向きを守っている
-限り、移植で書き換わるのは `net/` `platform/` と `hla/` の実装だけになる。
+限り、移植で書き換わるのは `gateway/udp/` `platform/` と `gateway/hla/` の実装だけになる。
 
 ポートごとにデータの型が違うが、周期ループから見えるのは `CChannel`（`gateway/CChannel.h`）という
 型を持たない抽象だけ。型が要るのは実装の内側に閉じていて、実装は2つある。
@@ -136,7 +144,7 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 | 形式を決めたのは | こちら（ICD） | **相手** |
 | バイト列 | 12バイトヘッダ + 固定長レコード | ヘッダ無し。1データグラム = 1メッセージ |
 | 型の出どころ | ICDgenerator の生成物（`icd/`） | 手書き |
-| 手元の相手 | HLA（`hla::CTFromHla` / `CTToHla`） | アプリ（`app::CTToApp`） |
+| 手元の相手 | HLA（`hla::CTFromHla` / `CTToHla`） | アプリ（`gw::CTMessageHandler`） |
 | 向き | 送受信 | いまは受信のみ |
 
 `CChannel` は以前 `binding()` で `TClassBinding`（classId・`TClassKind`・FOM 名）をそのまま見せていたが、
@@ -149,9 +157,9 @@ OS を知っているのは **`net/*.cpp` と `platform/*.cpp` だけ**。ヘッ
 
 | 種類 | 接頭辞 | 例 |
 |---|---|---|
-| クラス | `C` | `CGateway`（`gateway/CGateway.h`）、`CUdpSocket`、`CCommandToApp` |
+| クラス | `C` | `CGateway`（`gateway/CGateway.h`）、`CUdpSocket`、`CCommandHandler` |
 | クラステンプレート | `CT` | `CTClassChannel<T>`、`CTFromHla<T>`、`CTRtiObjectFromHla<T, Ptr>` |
-| 構造体・列挙 | `T` | `TClassBinding`、`TClassKind`、`TLoopStats`、`raw::TCommand` |
+| 構造体・列挙 | `T` | `TClassBinding`、`TClassKind`、`TLoopStats`、`app::TCommand` |
 
 振る舞いを持つものはクラス（`CWiring` は以前 `struct` だったが、配線を持って動くので
 `class` にした）、値の入れ物は構造体。関数だけのファイル（`platform/Platform.h`、
@@ -170,7 +178,7 @@ ICD の行から grep で辿れることと、参照モードで HLA ツール�
 動作（`pumpIn()`、`tick()`、`applyPending()`）、複数の受け口を集計する `verifyResult()`、
 生成物 `icd/` の関数（`w.ok()`、`reader.hasNext()` など）。
 
-表示名は型名と別。`raw::TCommand` の統計表の名前は `"Command"` のまま（ICD のクラスも、表示は
+表示名は型名と別。`app::TCommand` の統計表の名前は `"Command"` のまま（ICD のクラスも、表示は
 C++ の型名ではなく FOM 名）。
 
 ### 1ファイル1クラス
@@ -186,8 +194,8 @@ C++ の型名ではなく FOM 名）。
 `RtiSnapshotFeed` / `RtiEventReceiver` だったが、Feed がどちら向きか読めないうえ、
 Snapshot / Event はオブジェクト / インタラクションへの訳が毎回必要だった。
 
-例外は1つ。`TSubscriberStats` は `CChannel::getInStats()` がテンプレートでない参照を返すので
-`CTSubscriber<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
+例外は1つ。`TUdpReceiveStats` は `CChannel::getInStats()` がテンプレートでない参照を返すので
+`CTUdpReceiver<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
 
 `Federate.h` と `icd/icd_classes.h` はクラスを持たないまとめ include で、
 前者は CTFromHla/CTToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
@@ -313,7 +321,7 @@ hla::CTRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
 
 前者は `stub/` の中だけの話で、本番には存在しない。増やせばそのクラスの送信件数がそのまま増える。
 
-後者は **`hla/CTRtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
+後者は **`gateway/hla/CTRtiInteractionFromHla.h` の `kInteractionQueueDepth` 1つを全クラスで使う。
 クラスごとに流量を見積もって数値を入れる運用にはしない。**
 
 - **使わなければ1バイトも要らない。** キューは普通の `std::vector` で積まれたぶんしか確保せず、
@@ -349,12 +357,12 @@ FOM のクラスではない UDP データ — たとえば別のシステムが
 
 ### 足し方
 
-**① 型を1つ手書きする。** 置き場所は `raw/<名前>.h`、名前空間は `raw`（`icd/` は再生成で丸ごと
+**① 型を1つ手書きする。** 置き場所は `app/<名前>.h`、名前空間は `app`（`icd/` は再生成で丸ごと
 差し替わるので、手書きを置いてはいけない）。求めるのは定数2つと関数1つ。
-実例は `raw/TCommand.h`（下の「コマンド文字列」）。
+実例は `app/TCommand.h`（下の「コマンド文字列」）。
 
 ```cpp
-namespace raw {
+namespace app {
 
 struct TCommand {
     std::string text;
@@ -367,27 +375,27 @@ struct TCommand {
 /// len は常に 1 以上（空のデータグラムは来ない前提）。
 bool parse(const unsigned char* data, std::size_t len, TCommand& out);
 
-}  // namespace raw
+}  // namespace app
 ```
 
 `parse` は `TCommand` と同じ名前空間に置くこと（`CTRawChannel` が ADL で拾う）。相手の形式が
 ビッグエンディアンのバイナリなら、`icd/icd_codec.h` の `icd::Reader` がそのまま使える。
 
-**② 受け口を1つ書く。** `app::CTToApp<T>` を実装する。名前は `ToApp` で終える。
-実例は `app/CCommandToApp.h`。
+**② 受け口を1つ書く。** `gw::CTMessageHandler<T>` を実装する。名前は `Handler` で終える。
+実例は `app/CCommandHandler.h`。
 
 **③ 配線に1行。**
 
 ```cpp
-addRaw<raw::TCommand>(g, &commandToApp);
+addRaw<app::TCommand>(g, &commandHandler);
 ```
 
 ポートも名前も `T` の定数から決まるので、配線に数字は出てこない（ICD のクラスと同じ）。
 
-### コマンド文字列（`raw::TCommand`）
+### コマンド文字列（`app::TCommand`）
 
 いま配線してある独自データはこれ1つ。**1データグラム = 1コマンドで、中身は char の並び**、
-ヘッダも長さの前置も無い、という仮の形式。相手の仕様が固まったら `raw/TCommand.h` の `parse` と
+ヘッダも長さの前置も無い、という仮の形式。相手の仕様が固まったら `app/TCommand.h` の `parse` と
 `kPort`（いまは 24100）を合わせる。
 
 C/C++ の送信側でよくある3つの送り方を、どれも同じコマンドとして受ける：
@@ -402,7 +410,7 @@ C/C++ の送信側でよくある3つの送り方を、どれも同じコマン�
 文字の中身は見ない。0x80 以上（日本語の Shift_JIS や UTF-8）もそのまま通す。何が正しいコマンドか
 を判断するのは受け取った側。
 
-**処理は `app/CCommandToApp.h` の `handle()` に書く。** いまは受け取ったことを表示するだけ：
+**処理は `app/CCommandHandler.h` の `handle()` に書く。** いまは受け取ったことを表示するだけ：
 
 ```
 コマンド受信: "START"
@@ -429,7 +437,7 @@ python -c "import socket; socket.socket(2,2).sendto(b'STOP', ('127.0.0.1', 24100
 
 **空のデータグラム（0バイト）は来ない前提。** `receive()` は 0 を「何も来ていない」の意味にも
 使っているので、もし届いても parse には渡らず、数えられずに読み捨てられる（そのポートに続いて
-届いていたぶんは次の周期に回る）。区別が要るようになったら `net/CUdpSocket.h` のコメントに戻し方を
+届いていたぶんは次の周期に回る）。区別が要るようになったら `gateway/udp/CUdpSocket.h` のコメントに戻し方を
 書いてある。
 
 **ポートは ICD のクラスと同じ番号空間。** 手書きの番号は ICDgenerator のダイアログの重複検出を
@@ -467,13 +475,13 @@ tick():  [UDP 受信 → HLA へ]  [HLA から → UDP 送信]  [制御コマン
 
 ## 移植するときに書くもの
 
-`hla/Federate.h` の2つのインタフェースを RTI の API で実装する。**名前に向きが入っている**
+`gateway/hla/Federate.h` の2つのインタフェースを RTI の API で実装する。**名前に向きが入っている**
 のは、ここが一番読み違えられるところだから — HLA の publish / subscribe とは逆に見える：
 
 | | 向き | RTI 側 | UDP 側の相手 |
 |---|---|---|---|
-| `CTFromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `gw::CTPublisher`（送信） |
-| `CTToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `gw::CTSubscriber`（受信） |
+| `CTFromHla<T>` | HLA → UDP | **subscribe**。`reflectAttributeValues` で来たものを `T` に詰める | `udp::CTUdpSender`（送信） |
+| `CTToHla<T>` | UDP → HLA | **publish**。復元した `T` を `updateAttributeValues` で出す | `udp::CTUdpReceiver`（受信） |
 
 `CTClassChannel` は `fromHla` / `toHla` のどちらも null を許す。publish だけ、subscribe だけの
 クラスが実運用にはあるため。

@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-namespace gw {
+namespace udp {
 
 class CUdpSocket;
 
@@ -45,4 +45,4 @@ private:
     std::string m_error;                   ///< 直近の失敗理由
 };
 
-}  // namespace gw
+}  // namespace udp

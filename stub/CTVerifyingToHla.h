@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "../icd/icd_codec.h"
-#include "../hla/CTToHla.h"
+#include "../gateway/hla/CTToHla.h"
 
 namespace stub {
 

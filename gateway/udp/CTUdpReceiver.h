@@ -2,21 +2,21 @@
 //
 // クラスに依存しない部分だけをここに置く。T ごとの違い（何バイトか、どう復号するか）は
 // すべて生成コードが知っているので、このテンプレートは1つで足りる。
-// 数えた結果は TSubscriberStats。
+// 数えた結果は TUdpReceiveStats。
 
 #pragma once
 
 #include <cstdint>
 #include <vector>
 
-#include "../icd/icd_codec.h"
-#include "../net/CUdpSocket.h"
-#include "TSubscriberStats.h"
+#include "../../icd/icd_codec.h"
+#include "CUdpSocket.h"
+#include "TUdpReceiveStats.h"
 
-namespace gw {
+namespace udp {
 
 template <class T>
-class CTSubscriber {
+class CTUdpReceiver {
 public:
     /// **1周期に届いていたものは、その周期で読み切る。** 件数の上限は設けない。
     ///
@@ -26,7 +26,7 @@ public:
     ///
     /// 持ち越さないのはログのため。次の周期に回すと「このレコードはどの周期に届いたのか」が
     /// 突き合わせで曖昧になり、周期がずれているように見える。
-    explicit CTSubscriber(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
+    explicit CTUdpReceiver(std::uint32_t classId, std::size_t payload = icd::kDefaultPayload)
         : m_classId(classId), m_buf(payload) {}
 
     /// 来ているデータグラムを読み切る。ブロックしない。
@@ -42,7 +42,7 @@ public:
         }
     }
 
-    [[nodiscard]] const TSubscriberStats& getStats() const noexcept { return m_stats; }
+    [[nodiscard]] const TUdpReceiveStats& getStats() const noexcept { return m_stats; }
 
 private:
     template <class Fn>
@@ -72,7 +72,7 @@ private:
 
     std::uint32_t m_classId;            ///< 期待する classId。違えば wrongClass として捨てる
     std::vector<unsigned char> m_buf;   ///< 受信バッファ。長さは payload
-    TSubscriberStats m_stats;            ///< 受けた / 捨てた件数の内訳
+    TUdpReceiveStats m_stats;            ///< 受けた / 捨てた件数の内訳
 };
 
-}  // namespace gw
+}  // namespace udp

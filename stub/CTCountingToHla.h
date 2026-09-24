@@ -11,7 +11,7 @@
 
 #include <cstddef>
 
-#include "../hla/CTToHla.h"
+#include "../gateway/hla/CTToHla.h"
 
 namespace stub {
 

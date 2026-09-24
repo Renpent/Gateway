@@ -17,15 +17,15 @@
 #include <string>
 #include <vector>
 
-#include "../raw/TCommand.h"
-#include "CTToApp.h"
+#include "TCommand.h"
+#include "../gateway/CTMessageHandler.h"
 
 namespace app {
 
-class CCommandToApp : public CTToApp<raw::TCommand> {
+class CCommandHandler : public gw::CTMessageHandler<app::TCommand> {
 public:
     /// tick() の途中で呼ばれる。ここでは積むだけで、何も実行しない。
-    void accept(const raw::TCommand& command) override {
+    void accept(const app::TCommand& command) override {
         m_pending.push_back(command.text);
         ++m_received;
     }

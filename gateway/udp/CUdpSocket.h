@@ -1,6 +1,6 @@
 // UDP ソケット。
 //
-// このプロジェクトで OS を知っているのは net/ と platform/ の .cpp だけで、ヘッダには
+// このプロジェクトで OS を知っているのは gateway/udp/ と platform/ の .cpp だけで、ヘッダには
 // winsock も <sys/socket.h> も現れない。ハンドルを std::intptr_t で持っているのはそのためで、
 // Windows の SOCKET（符号なし整数ハンドル）と POSIX の int fd を1つの型で受けられる。
 //
@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <string>
 
-namespace gw {
+namespace udp {
 
 class CUdpSocket {
 public:
@@ -39,7 +39,7 @@ public:
 
     /// OS が持っているハンドルの**値**。ただし型は移植用の器で、OS の型そのもの
     /// （Windows の SOCKET、POSIX の int fd）ではない。本来の型に戻すのは .cpp の asSocket()。
-    /// 使うのは net/ の中だけ — CPoller が poll に渡すため。
+    /// 使うのは gateway/udp/ の中だけ — CPoller が poll に渡すため。
     [[nodiscard]] std::intptr_t getOsHandle() const noexcept { return m_handle; }
 
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。
@@ -80,4 +80,4 @@ private:
     std::uint16_t m_peerPort = 0;   ///< 送信先ポート（0 = 送信先なし。ネットワークバイトオーダー）
 };
 
-}  // namespace gw
+}  // namespace udp

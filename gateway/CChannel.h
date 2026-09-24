@@ -16,8 +16,8 @@
 #include <cstdint>
 #include <string>
 
-#include "../net/CUdpSocket.h"
-#include "TSubscriberStats.h"
+#include "udp/CUdpSocket.h"
+#include "udp/TUdpReceiveStats.h"
 
 namespace gw {
 
@@ -39,7 +39,7 @@ public:
     /// 計画表の「種別」列に出す文字列。
     [[nodiscard]] virtual const char* getKindLabel() const noexcept = 0;
 
-    [[nodiscard]] virtual CUdpSocket& getSocket() noexcept = 0;
+    [[nodiscard]] virtual udp::CUdpSocket& getSocket() noexcept = 0;
 
     /// 受信ポートを bind し、送信先を設定する。peerHost が空なら受信専用。
     [[nodiscard]] virtual bool open(const std::string& peerHost) = 0;
@@ -70,7 +70,7 @@ public:
     [[nodiscard]] virtual std::size_t getBacklog() const noexcept = 0;
     [[nodiscard]] virtual std::uint64_t getDeferrals() const noexcept = 0;
 
-    [[nodiscard]] virtual const TSubscriberStats& getInStats() const noexcept = 0;
+    [[nodiscard]] virtual const udp::TUdpReceiveStats& getInStats() const noexcept = 0;
     [[nodiscard]] virtual const std::string& getLastError() const noexcept = 0;
 };
 

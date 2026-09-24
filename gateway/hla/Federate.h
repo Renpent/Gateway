@@ -6,9 +6,9 @@
 // 向きが2つあることに注意。名前が示すとおりだが、HLA の publish / subscribe とは逆に見える：
 //
 //   CTFromHla<T>  HLA → UDP。RTI が反映した属性更新を T に詰めて渡す（reflectAttributeValues）
-//               RTI に対しては subscribe。UDP 側の相手は gw::CTPublisher（送信）
+//               RTI に対しては subscribe。UDP 側の相手は udp::CTUdpSender（送信）
 //   CTToHla<T>    UDP → HLA。UDP から復元した T を HLA に押し込む（updateAttributeValues）
-//               RTI に対しては publish。UDP 側の相手は gw::CTSubscriber（受信）
+//               RTI に対しては publish。UDP 側の相手は udp::CTUdpReceiver（受信）
 //
 // 実装側で必要になるが、インタフェースに現れないもの：
 //   - オブジェクトインスタンスハンドルと T の対応表（HLA はインスタンス単位、ICD はレコード単位）

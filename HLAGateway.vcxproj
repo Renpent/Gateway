@@ -146,8 +146,8 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="gateway\CGateway.cpp" />
-    <ClCompile Include="net\CPoller.cpp" />
-    <ClCompile Include="net\CUdpSocket.cpp" />
+    <ClCompile Include="gateway\udp\CPoller.cpp" />
+    <ClCompile Include="gateway\udp\CUdpSocket.cpp" />
     <ClCompile Include="platform\Platform.cpp" />
     <ClCompile Include="icd\icd_types.cpp" />
     <ClCompile Include="icd\object\MinefieldData.cpp" />
@@ -156,26 +156,29 @@
     <ClCompile Include="icd\interaction\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app\CCommandToApp.h" />
-    <ClInclude Include="app\CTToApp.h" />
+    <ClInclude Include="app\CCommandHandler.h" />
     <ClInclude Include="app\CWiring.h" />
+    <ClInclude Include="app\TCommand.h" />
     <ClInclude Include="gateway\CChannel.h" />
     <ClInclude Include="gateway\CGateway.h" />
     <ClInclude Include="gateway\CTClassChannel.h" />
-    <ClInclude Include="gateway\CTPublisher.h" />
+    <ClInclude Include="gateway\CTMessageHandler.h" />
     <ClInclude Include="gateway\CTRawChannel.h" />
-    <ClInclude Include="gateway\CTSubscriber.h" />
     <ClInclude Include="gateway\TClassBinding.h" />
     <ClInclude Include="gateway\TClassKind.h" />
     <ClInclude Include="gateway\TLoopStats.h" />
-    <ClInclude Include="gateway\TSubscriberStats.h" />
-    <ClInclude Include="hla\CTFromHla.h" />
-    <ClInclude Include="hla\CTRtiInteractionFromHla.h" />
-    <ClInclude Include="hla\CTRtiInteractionToHla.h" />
-    <ClInclude Include="hla\CTRtiObjectFromHla.h" />
-    <ClInclude Include="hla\CTRtiObjectToHla.h" />
-    <ClInclude Include="hla\CTToHla.h" />
-    <ClInclude Include="hla\Federate.h" />
+    <ClInclude Include="gateway\hla\CTFromHla.h" />
+    <ClInclude Include="gateway\hla\CTRtiInteractionFromHla.h" />
+    <ClInclude Include="gateway\hla\CTRtiInteractionToHla.h" />
+    <ClInclude Include="gateway\hla\CTRtiObjectFromHla.h" />
+    <ClInclude Include="gateway\hla\CTRtiObjectToHla.h" />
+    <ClInclude Include="gateway\hla\CTToHla.h" />
+    <ClInclude Include="gateway\hla\Federate.h" />
+    <ClInclude Include="gateway\udp\CPoller.h" />
+    <ClInclude Include="gateway\udp\CTUdpReceiver.h" />
+    <ClInclude Include="gateway\udp\CTUdpSender.h" />
+    <ClInclude Include="gateway\udp\CUdpSocket.h" />
+    <ClInclude Include="gateway\udp\TUdpReceiveStats.h" />
     <ClInclude Include="stub\CTConstantFromHla.h" />
     <ClInclude Include="stub\CTCountingToHla.h" />
     <ClInclude Include="stub\CTFixtureFromHla.h" />
@@ -183,9 +186,6 @@
     <ClInclude Include="stub\ObjectId.h" />
     <ClInclude Include="stub\RadarBeamFixture.h" />
     <ClInclude Include="stub\WeaponFireFixture.h" />
-    <ClInclude Include="raw\TCommand.h" />
-    <ClInclude Include="net\CPoller.h" />
-    <ClInclude Include="net\CUdpSocket.h" />
     <ClInclude Include="platform\Platform.h" />
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />

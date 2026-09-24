@@ -51,7 +51,7 @@ static bool setNonBlocking(socket_t s) {
 }
 #endif
 
-namespace gw {
+namespace udp {
 namespace {
 
 /// 器から OS の型へ戻す。getOsHandle() が渡してくるのは値だけなので、型はここで付け直す。
@@ -181,4 +181,4 @@ long CUdpSocket::receive(unsigned char* buf, std::size_t cap) {
     return static_cast<long>(got);
 }
 
-}  // namespace gw
+}  // namespace udp

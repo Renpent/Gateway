@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include "../net/CPoller.h"
+#include "udp/CPoller.h"
 #include "CChannel.h"
 #include "TLoopStats.h"
 
@@ -35,7 +35,7 @@ public:
     /// tick() の最後に1回呼ぶ処理を登録する。**制御コマンドはここで反映する。**
     ///
     /// 受信（2）と送信（3）のループがどちらも終わったあとなので、ループの途中で状態を変えて
-    /// 壊す心配が無い。受信中に届いたコマンドはその場ではキューに積むだけにして（app/CTToApp.h）、
+    /// 壊す心配が無い。受信中に届いたコマンドはその場ではキューに積むだけにして（app/CTMessageHandler.h）、
     /// ここでまとめて処理する。効くのは次の周期の送信から。
     ///
     /// 1つだけ登録できる。登録しなければ何もしない。
@@ -59,8 +59,8 @@ public:
 
 private:
     std::vector<std::unique_ptr<CChannel>> m_channels;  ///< 登録されたチャネル。所有する
-    std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> CPoller の添字
-    CPoller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
+    std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> udp::CPoller の添字
+    udp::CPoller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
     TLoopStats m_loop;                       ///< 周期が守れているかの記録
     std::function<void()> m_tickEnd;        ///< tick() の最後に呼ぶ処理。空なら何もしない
     bool m_opened = false;                  ///< openAll が成功したか。false なら tick は何もしない

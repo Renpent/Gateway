@@ -70,7 +70,7 @@ void usage() {
 }  // namespace
 
 int main(int argc, char** argv) {
-    gw::initPlatform();
+    platform::initPlatform();
 
     const std::string mode = (argc > 1) ? argv[1] : "loopback";
     int rc = 2;
@@ -90,6 +90,6 @@ int main(int argc, char** argv) {
         usage();
     }
 
-    gw::shutdownPlatform();
+    platform::shutdownPlatform();
     return rc;
 }

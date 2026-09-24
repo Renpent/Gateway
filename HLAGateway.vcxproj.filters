@@ -7,17 +7,14 @@
     <Filter Include="gateway">
       <UniqueIdentifier>{1a1b0a1e-0003-4000-9000-000000000003}</UniqueIdentifier>
     </Filter>
-    <Filter Include="hla">
-      <UniqueIdentifier>{1a1b0a1e-0004-4000-9000-000000000004}</UniqueIdentifier>
+    <Filter Include="gateway\hla">
+      <UniqueIdentifier>{158a0e9d-f5d7-4149-a834-e313f27562ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gateway\udp">
+      <UniqueIdentifier>{1d5e5d58-7872-4bb6-9272-ce502cb7f639}</UniqueIdentifier>
     </Filter>
     <Filter Include="stub">
       <UniqueIdentifier>{9c1f7a52-3b6d-4e08-8a41-2f7d5c0b6e93}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="raw">
-      <UniqueIdentifier>{4d2b8e71-6a3c-4f59-b0e2-8c1d7f3a5e64}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net">
-      <UniqueIdentifier>{1a1b0a1e-0002-4000-9000-000000000002}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform">
       <UniqueIdentifier>{1a1b0a1e-0001-4000-9000-000000000001}</UniqueIdentifier>
@@ -37,11 +34,11 @@
     <ClCompile Include="gateway\CGateway.cpp">
       <Filter>gateway</Filter>
     </ClCompile>
-    <ClCompile Include="net\CPoller.cpp">
-      <Filter>net</Filter>
+    <ClCompile Include="gateway\udp\CPoller.cpp">
+      <Filter>gateway\udp</Filter>
     </ClCompile>
-    <ClCompile Include="net\CUdpSocket.cpp">
-      <Filter>net</Filter>
+    <ClCompile Include="gateway\udp\CUdpSocket.cpp">
+      <Filter>gateway\udp</Filter>
     </ClCompile>
     <ClCompile Include="platform\Platform.cpp">
       <Filter>platform</Filter>
@@ -63,13 +60,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app\CCommandToApp.h">
-      <Filter>app</Filter>
-    </ClInclude>
-    <ClInclude Include="app\CTToApp.h">
+    <ClInclude Include="app\CCommandHandler.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="app\CWiring.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="app\TCommand.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="gateway\CChannel.h">
@@ -81,13 +78,10 @@
     <ClInclude Include="gateway\CTClassChannel.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CTPublisher.h">
+    <ClInclude Include="gateway\CTMessageHandler.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\CTRawChannel.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="gateway\CTSubscriber.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\TClassBinding.h">
@@ -99,29 +93,41 @@
     <ClInclude Include="gateway\TLoopStats.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\TSubscriberStats.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="gateway\hla\CTFromHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTFromHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\CTRtiInteractionFromHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTRtiInteractionFromHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\CTRtiInteractionToHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTRtiInteractionToHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\CTRtiObjectFromHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTRtiObjectFromHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\CTRtiObjectToHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTRtiObjectToHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\CTToHla.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\CTToHla.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\hla\Federate.h">
+      <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="hla\Federate.h">
-      <Filter>hla</Filter>
+    <ClInclude Include="gateway\udp\CPoller.h">
+      <Filter>gateway\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\udp\CTUdpReceiver.h">
+      <Filter>gateway\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\udp\CTUdpSender.h">
+      <Filter>gateway\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\udp\CUdpSocket.h">
+      <Filter>gateway\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\udp\TUdpReceiveStats.h">
+      <Filter>gateway\udp</Filter>
     </ClInclude>
     <ClInclude Include="stub\CTConstantFromHla.h">
       <Filter>stub</Filter>
@@ -143,15 +149,6 @@
     </ClInclude>
     <ClInclude Include="stub\WeaponFireFixture.h">
       <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="raw\TCommand.h">
-      <Filter>raw</Filter>
-    </ClInclude>
-    <ClInclude Include="net\CPoller.h">
-      <Filter>net</Filter>
-    </ClInclude>
-    <ClInclude Include="net\CUdpSocket.h">
-      <Filter>net</Filter>
     </ClInclude>
     <ClInclude Include="platform\Platform.h">
       <Filter>platform</Filter>

@@ -20,7 +20,7 @@ void CGateway::add(std::unique_ptr<CChannel> channel) {
 }
 
 bool CGateway::openAll(const std::string& peerHost) {
-    // **ポートの重複は bind では捕まらない。** CUdpSocket は SO_REUSEADDR を立てているので
+    // **ポートの重複は bind では捕まらない。** udp::CUdpSocket は SO_REUSEADDR を立てているので
     // 2本目の bind も成功し、データグラムはどちらか一方にしか届かない。しかも**どちらに
     // 届くかが OS で逆**で、Windows は先に bind したほう、Linux は後のほうが受け取る
     // （両方で実測）。片方が黙って飢えるうえに、飢えるほうが環境で変わるので、開く前に止める。
@@ -141,7 +141,7 @@ void CGateway::printSummary() const {
                 "クラス", "port", "送信件数", "受信件数", "class違い", "異常",
                 "積み残し", "持ち越し");
     for (const auto& ch : m_channels) {
-        const TSubscriberStats& s = ch->getInStats();
+        const udp::TUdpReceiveStats& s = ch->getInStats();
         std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu %8llu\n",
                     ch->getName(),
                     ch->getPort(),

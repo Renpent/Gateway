@@ -22,7 +22,7 @@ static int pollWait(pollfd_t* fds, unsigned long n, int timeoutMs) {
 static int lastErrno() { return errno; }
 #endif
 
-namespace gw {
+namespace udp {
 
 std::size_t CPoller::add(const CUdpSocket& sock) {
     m_handles.push_back(sock.getOsHandle());
@@ -71,4 +71,4 @@ bool CPoller::readable(std::size_t index) const {
     return index < m_ready.size() && m_ready[index] != 0;
 }
 
-}  // namespace gw
+}  // namespace udp

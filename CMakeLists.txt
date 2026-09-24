@@ -13,8 +13,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(HLAGateway
     main.cpp
     gateway/CGateway.cpp
-    net/CPoller.cpp
-    net/CUdpSocket.cpp
+    gateway/udp/CPoller.cpp
+    gateway/udp/CUdpSocket.cpp
     platform/Platform.cpp
     icd/icd_types.cpp
     icd/object/MinefieldData.cpp

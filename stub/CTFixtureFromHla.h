@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "../hla/CTFromHla.h"
+#include "../gateway/hla/CTFromHla.h"
 
 namespace stub {
 

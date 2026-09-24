@@ -25,12 +25,12 @@
 //   受信のみ add<T>(g, nullptr,  &toHla);
 // T は必ず明示すること。nullptr からは型が決まらない。
 //
-// FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで raw/ に置き、
-// 名前・ポート・parse を持つ（gateway/CTRawChannel.h）。受け口は hla::CTToHla ではなく app::CTToApp：
-//   受信のみ addRaw<T>(g, &commandToApp);
+// FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで app/ に置き、
+// 名前・ポート・parse を持つ（gateway/CTRawChannel.h）。受け口は hla::CTToHla ではなく gw::CTMessageHandler：
+//   受信のみ addRaw<T>(g, &commandHandler);
 //
 // **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、CGateway の
-// setTickEnd で登録した処理がまとめて実行する（app/CCommandToApp.h）。
+// setTickEnd で登録した処理がまとめて実行する（app/CCommandHandler.h）。
 //
 // setTickEnd に渡すラムダは this（CWiring）を掴む。CWiring が CGateway より長生きするのが前提で、
 // main.cpp の宣言順がそれを保証している。
@@ -45,9 +45,9 @@
 #include "../gateway/CTClassChannel.h"
 #include "../gateway/CGateway.h"
 #include "../gateway/CTRawChannel.h"
-#include "../raw/TCommand.h"
-#include "CCommandToApp.h"
-#include "CTToApp.h"
+#include "TCommand.h"
+#include "CCommandHandler.h"
+#include "../gateway/CTMessageHandler.h"
 #include "../stub/CTConstantFromHla.h"
 #include "../stub/CTCountingToHla.h"
 #include "../stub/CTFixtureFromHla.h"
@@ -80,7 +80,7 @@ public:
     stub::CTVerifyingToHla<icdfom::WeaponFire>   fireToHla{stub::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
 
     // UDP → アプリ（FOM に無い独自データ）。**stub ではない** — 本番でもこのまま使う
-    CCommandToApp commandToApp;   ///< コマンド文字列の受け口。処理は CCommandToApp::handle
+    CCommandHandler commandHandler;   ///< コマンド文字列の受け口。処理は CCommandHandler::handle
 
     /// verify が false なら照合するクラスの受信は捨てる（照合はループバックのときだけ）。
     void build(gw::CGateway& g, bool verify) {
@@ -92,10 +92,10 @@ public:
         add<icdfom::WeaponFire>   (g, &fireFromHla,      verify ? &fireToHla : nullptr);
 
         // FOM に無い独自データ。受信のみ。
-        addRaw<raw::TCommand>(g, &commandToApp);
+        addRaw<app::TCommand>(g, &commandHandler);
 
         // 周期の終わりにコマンドを処理する。受信中は積むだけ、ここでまとめて実行。
-        g.setTickEnd([this] { commandToApp.applyPending(); });
+        g.setTickEnd([this] { commandHandler.applyPending(); });
     }
 
     /// 照合する受け口ぜんぶの合計。クラスが増えたらここに1行足す。
@@ -124,8 +124,8 @@ private:
 
     /// FOM に無い独自データの受信口。ポートと名前は T の定数から決まる。
     template <class T>
-    static void addRaw(gw::CGateway& g, CTToApp<T>* toApp) {
-        g.add(std::unique_ptr<gw::CChannel>(new gw::CTRawChannel<T>(toApp)));
+    static void addRaw(gw::CGateway& g, gw::CTMessageHandler<T>* handler) {
+        g.add(std::unique_ptr<gw::CChannel>(new gw::CTRawChannel<T>(handler)));
     }
 };
 
