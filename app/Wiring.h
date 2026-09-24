@@ -24,9 +24,15 @@
 //   受信のみ add<T>(g, nullptr,  &toHla);
 // T は必ず明示すること。nullptr からは型が決まらない。
 //
-// FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで、名前・ポート・
-// parse を持つ（gateway/RawChannel.h）。受け口は hla::ToHla ではなく app::ToApp：
+// FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで raw/ に置き、
+// 名前・ポート・parse を持つ（gateway/RawChannel.h）。受け口は hla::ToHla ではなく app::ToApp：
 //   受信のみ addRaw<T>(g, &commandToApp);
+//
+// **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、Gateway の
+// setTickEnd で登録した処理がまとめて実行する（app/CommandToApp.h）。
+//
+// setTickEnd に渡すラムダは this（Wiring）を掴む。Wiring が Gateway より長生きするのが前提で、
+// main.cpp の宣言順がそれを保証している。
 
 #pragma once
 
@@ -38,6 +44,8 @@
 #include "../gateway/ClassChannel.h"
 #include "../gateway/Gateway.h"
 #include "../gateway/RawChannel.h"
+#include "../raw/Command.h"
+#include "CommandToApp.h"
 #include "ToApp.h"
 #include "../stub/ConstantFromHla.h"
 #include "../stub/CountingToHla.h"
@@ -69,6 +77,9 @@ struct Wiring {
     stub::CountingToHla<icdfom::MinefieldData> minefieldToHla;                  ///< MinefieldData の受け口。数えるだけ
     stub::VerifyingToHla<icdfom::WeaponFire>   fireToHla{stub::makeWeaponFire};  ///< WeaponFire の受け口。往復照合もする
 
+    // UDP → アプリ（FOM に無い独自データ）。**stub ではない** — 本番でもこのまま使う
+    CommandToApp commandToApp;   ///< コマンド文字列の受け口。処理は CommandToApp::handle
+
     /// verify が false なら照合するクラスの受信は捨てる（照合はループバックのときだけ）。
     void build(gw::Gateway& g, bool verify) {
         add<icdfom::RadarBeam>    (g, &beamFromHla,      verify ? &beamToHla : nullptr);
@@ -77,6 +88,12 @@ struct Wiring {
         // **唯一のインタラクション。** ClassKind::Interaction になるのは kIsInteraction=true だから
         // で、ここには何も書いていない。送り残しを次の周期へ持ち越すのはこのクラスだけ。
         add<icdfom::WeaponFire>   (g, &fireFromHla,      verify ? &fireToHla : nullptr);
+
+        // FOM に無い独自データ。受信のみ。
+        addRaw<raw::Command>(g, &commandToApp);
+
+        // 周期の終わりにコマンドを処理する。受信中は積むだけ、ここでまとめて実行。
+        g.setTickEnd([this] { commandToApp.applyPending(); });
     }
 
     /// 照合する受け口ぜんぶの合計。クラスが増えたらここに1行足す。
@@ -104,7 +121,6 @@ private:
     }
 
     /// FOM に無い独自データの受信口。ポートと名前は T の定数から決まる。
-    /// **いまは使っていない** — 実際の形式が決まったら、その型をここで1行足す。
     template <class T>
     static void addRaw(gw::Gateway& g, ToApp<T>* toApp) {
         g.add(std::unique_ptr<gw::Channel>(new gw::RawChannel<T>(toApp)));

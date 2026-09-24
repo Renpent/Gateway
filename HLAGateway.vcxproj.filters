@@ -19,6 +19,9 @@
     <Filter Include="stub">
       <UniqueIdentifier>{9c1f7a52-3b6d-4e08-8a41-2f7d5c0b6e93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="raw">
+      <UniqueIdentifier>{4d2b8e71-6a3c-4f59-b0e2-8c1d7f3a5e64}</UniqueIdentifier>
+    </Filter>
     <Filter Include="icd">
       <UniqueIdentifier>{1a1b0a1e-0005-4000-9000-000000000005}</UniqueIdentifier>
     </Filter>
@@ -54,6 +57,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\CommandToApp.h">
+      <Filter>app</Filter>
+    </ClInclude>
     <ClInclude Include="app\ToApp.h">
       <Filter>app</Filter>
     </ClInclude>
@@ -98,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="gateway\SubscriberStats.h">
       <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="raw\Command.h">
+      <Filter>raw</Filter>
     </ClInclude>
     <ClInclude Include="stub\ConstantFromHla.h">
       <Filter>stub</Filter>

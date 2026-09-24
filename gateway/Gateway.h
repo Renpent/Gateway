@@ -1,9 +1,10 @@
 // 全チャネルをまとめて周期実行する。
 //
-// 1周（tick）でやることは3つ：
+// 1周（tick）でやることは4つ：
 //   1. poll に待機時間 0 で聞き、来ているポートを知る
-//   2. そのポートだけ読み切って復号し、HLA 側へ渡す
-//   3. HLA 側から出てきたものを符号化して送る
+//   2. そのポートだけ読み切って復号し、手元（HLA やアプリ）へ渡す
+//   3. 手元から出てきたものを符号化して送る
+//   4. 周期の終わりの処理（setTickEnd で登録したもの。制御コマンドの反映に使う）
 //
 // ソケットは全部ノンブロッキングなので、tick は必ず有限時間で戻る。待つのはこのクラスの
 // 最後の sleep だけで、そこが周期を決めている。
@@ -11,6 +12,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,6 +31,15 @@ public:
     /// 全チャネルの受信ポートを bind し、送信先を設定する。
     /// peerHost が空なら受信専用で立ち上がる。
     [[nodiscard]] bool openAll(const std::string& peerHost);
+
+    /// tick() の最後に1回呼ぶ処理を登録する。**制御コマンドはここで反映する。**
+    ///
+    /// 受信（2）と送信（3）のループがどちらも終わったあとなので、ループの途中で状態を変えて
+    /// 壊す心配が無い。受信中に届いたコマンドはその場ではキューに積むだけにして（app/ToApp.h）、
+    /// ここでまとめて処理する。効くのは次の周期の送信から。
+    ///
+    /// 1つだけ登録できる。登録しなければ何もしない。
+    void setTickEnd(std::function<void()> fn) { m_tickEnd = std::move(fn); }
 
     /// 1周ぶん。ブロックしない。
     void tick();
@@ -51,6 +62,7 @@ private:
     std::vector<std::size_t> m_pollIndex;   ///< m_channels の添字 -> Poller の添字
     Poller m_poller;                        ///< 全チャネルのソケットをまとめて見張る
     LoopStats m_loop;                       ///< 周期が守れているかの記録
+    std::function<void()> m_tickEnd;        ///< tick() の最後に呼ぶ処理。空なら何もしない
     bool m_opened = false;                  ///< openAll が成功したか。false なら tick は何もしない
 };
 

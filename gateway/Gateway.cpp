@@ -76,6 +76,9 @@ void Gateway::tick() {
     // 送信は poll と無関係に毎周期。手元（HLA やアプリ）から出てくるものは
     // ソケットの読み取り可否とは関係がない。受信専用のチャネルは何もしない。
     for (auto& ch : m_channels) ch->pumpOut();
+
+    // 周期の終わり。受信・送信どちらのループも回っていないので、制御コマンドはここで反映する。
+    if (m_tickEnd) m_tickEnd();
 }
 
 void Gateway::run(unsigned hz, unsigned seconds) {

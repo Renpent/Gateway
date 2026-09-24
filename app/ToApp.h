@@ -18,7 +18,8 @@
 // 積むのも反映するのも周期ループのスレッドなので、このキューにロックは要らない
 // （RTI スレッドから積まれる RtiInteractionFromHla とはそこが違う）。
 //
-// 反映する仕組みそのものはまだ無い。具体的な制御コマンドが決まってから足す。
+// 反映する場所は Gateway::setTickEnd で登録する。実例は CommandToApp（accept で積み、
+// applyPending で処理する）と、それを登録している app/Wiring.h。
 //
 // 送る向き（アプリ → UDP）が要るようになったら、対になる FromApp をここに足す。
 
