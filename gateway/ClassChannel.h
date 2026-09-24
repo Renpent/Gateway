@@ -1,12 +1,16 @@
-// Channel の唯一の実装。**型が現れるのはここから内側だけ。**
+// ICD のクラス1つぶんの Channel。**型が現れるのはここから内側だけ。**
 //
 // 生成コーデックを呼ぶのも、HLA 側の継ぎ目に触るのもこのクラスで、外へは Channel の抽象しか
 // 出ない。クラスを増やしても増えるのは実体化の数であって、周期ループ側のコードではない。
+//
+// FOM に無い独自データ（相手が決めた形式）は RawChannel が受け持つ。こちらは ICD の枠 —
+// 12バイトヘッダ + 固定長レコード — に乗るものだけ。
 
 #pragma once
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -34,10 +38,15 @@ public:
     ClassChannel(const ClassBinding& bind,
                  hla::FromHla<T>* fromHla,
                  hla::ToHla<T>* toHla)
-        : m_bind(bind), m_fromHla(fromHla), m_toHla(toHla),
+        : m_bind(bind), m_name(withoutRoot(bind.fomName)), m_fromHla(fromHla), m_toHla(toHla),
           m_pub(bind.classId, bind.payload), m_sub(bind.classId, bind.payload) {}
 
-    [[nodiscard]] const ClassBinding& binding() const noexcept override { return m_bind; }
+    [[nodiscard]] const char* name() const noexcept override { return m_name; }
+    [[nodiscard]] std::uint16_t port() const noexcept override { return m_bind.port; }
+    [[nodiscard]] std::size_t payload() const noexcept override { return m_bind.payload; }
+    [[nodiscard]] const char* kindLabel() const noexcept override {
+        return m_bind.kind == ClassKind::Object ? "オブジェクト" : "インタラクション";
+    }
     [[nodiscard]] UdpSocket& socket() noexcept override { return m_sock; }
 
     [[nodiscard]] bool open(const std::string& peerHost) override {
@@ -119,7 +128,16 @@ public:
     }
 
 private:
-    ClassBinding m_bind;            ///< このクラスの ID / ポート / レート（ICD から写した値）
+    /// "HLAobjectRoot.EmitterBeam.RadarBeam" -> "EmitterBeam.RadarBeam"。
+    /// 根の名前はどのクラスにも付いていて、表示では何も区別しない。以前は Gateway が表示のたびに
+    /// やっていたが、FOM 名であることを知っているのはこのクラスだけなので、ここで1度だけ行う。
+    static const char* withoutRoot(const char* fomName) noexcept {
+        const char* dot = std::strchr(fomName, '.');
+        return dot ? dot + 1 : fomName;
+    }
+
+    ClassBinding m_bind;            ///< このクラスの ID / ポート / 上限 / 種別（生成物の定数から）
+    const char* m_name;             ///< 表示名。m_bind.fomName の根を除いた部分を指す
     hla::FromHla<T>* m_fromHla;     ///< HLA 側の供給元。借り物で、null なら送信しない
     hla::ToHla<T>* m_toHla;         ///< HLA 側の受け口。借り物で、null なら受信を捨てる
     UdpSocket m_sock;               ///< このクラス専用のソケット（送受信とも1本）

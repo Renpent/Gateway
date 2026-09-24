@@ -54,6 +54,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\ToApp.h">
+      <Filter>app</Filter>
+    </ClInclude>
     <ClInclude Include="app\Wiring.h">
       <Filter>app</Filter>
     </ClInclude>
@@ -85,6 +88,9 @@
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\Publisher.h">
+      <Filter>gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="gateway\RawChannel.h">
       <Filter>gateway</Filter>
     </ClInclude>
     <ClInclude Include="gateway\Subscriber.h">

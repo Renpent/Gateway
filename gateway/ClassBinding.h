@@ -26,7 +26,7 @@ struct ClassBinding {
     std::uint32_t classId;      ///< データグラム先頭に入るクラス識別子
     std::uint16_t port;         ///< このクラス専用の UDP ポート（送受信とも同じ番号）
     std::size_t   payload;      ///< 1データグラムの上限。ICD の MTU から生成された値
-    ClassKind      kind;     ///< 状態かイベントか。送り残しの扱いが正反対
+    ClassKind     kind;         ///< オブジェクトかインタラクションか。送り残しの扱いが正反対
     const char*   fomName;      ///< FOM 上の完全名。ログ表示用
 };
 

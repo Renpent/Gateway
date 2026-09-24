@@ -23,6 +23,10 @@
 //   送信のみ add<T>(g, &fromHla, nullptr);
 //   受信のみ add<T>(g, nullptr,  &toHla);
 // T は必ず明示すること。nullptr からは型が決まらない。
+//
+// FOM に無い独自データ（相手が決めた形式）は addRaw<T> で足す。T は手書きで、名前・ポート・
+// parse を持つ（gateway/RawChannel.h）。受け口は hla::ToHla ではなく app::ToApp：
+//   受信のみ addRaw<T>(g, &commandToApp);
 
 #pragma once
 
@@ -33,6 +37,8 @@
 #include "../gateway/ClassBinding.h"
 #include "../gateway/ClassChannel.h"
 #include "../gateway/Gateway.h"
+#include "../gateway/RawChannel.h"
+#include "ToApp.h"
 #include "../stub/ConstantFromHla.h"
 #include "../stub/CountingToHla.h"
 #include "../stub/FixtureFromHla.h"
@@ -95,6 +101,13 @@ private:
     static void add(gw::Gateway& g, hla::FromHla<T>* fromHla, hla::ToHla<T>* toHla) {
         g.add(std::unique_ptr<gw::Channel>(
             new gw::ClassChannel<T>(gw::bindingOf<T>(), fromHla, toHla)));
+    }
+
+    /// FOM に無い独自データの受信口。ポートと名前は T の定数から決まる。
+    /// **いまは使っていない** — 実際の形式が決まったら、その型をここで1行足す。
+    template <class T>
+    static void addRaw(gw::Gateway& g, ToApp<T>* toApp) {
+        g.add(std::unique_ptr<gw::Channel>(new gw::RawChannel<T>(toApp)));
     }
 };
 

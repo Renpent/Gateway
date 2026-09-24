@@ -2,19 +2,12 @@
 
 #include <chrono>
 #include <cstdio>
-#include <cstring>
 #include <thread>
 
 namespace gw {
 namespace {
 
 using Clock = std::chrono::steady_clock;
-
-/// "HLAobjectRoot.EmitterBeam.RadarBeam" -> "EmitterBeam.RadarBeam"
-const char* trimRoot(const char* fomName) {
-    const char* dot = std::strchr(fomName, '.');
-    return dot ? dot + 1 : fomName;
-}
 
 double toMs(Clock::duration d) {
     return std::chrono::duration<double, std::milli>(d).count();
@@ -36,12 +29,10 @@ bool Gateway::openAll(const std::string& peerHost) {
     // （FOM に無い独自データ）はその網にかからない。ここが全チャネル共通の最後の網。
     for (std::size_t i = 0; i < m_channels.size(); ++i) {
         for (std::size_t j = 0; j < i; ++j) {
-            if (m_channels[i]->binding().port == m_channels[j]->binding().port) {
+            if (m_channels[i]->port() == m_channels[j]->port()) {
                 std::printf("ポート %u が重複しています: [%s] と [%s]。"
                             "重複すると片方にしか届かず、どちらに届くかは OS で変わります。\n",
-                            m_channels[i]->binding().port,
-                            trimRoot(m_channels[j]->binding().fomName),
-                            trimRoot(m_channels[i]->binding().fomName));
+                            m_channels[i]->port(), m_channels[j]->name(), m_channels[i]->name());
                 return false;
             }
         }
@@ -50,17 +41,17 @@ bool Gateway::openAll(const std::string& peerHost) {
     m_pollIndex.clear();
     for (auto& ch : m_channels) {
         // 1件も入らないレコードは、開いてから毎周期黙って捨てられる。ここで止める。
+        // 可変長のチャネル（recordSize() == 0）は件数が常に 1 なので、ここには掛からない。
         if (ch->capacityInRecords() == 0) {
             std::printf("[%s] レコード %zu B が1件もペイロードに入りません。"
                         "ジャンボフレーム（MTU 9000）にするか、"
                         "ICD の配列上限を下げてください。\n",
-                        trimRoot(ch->binding().fomName), ch->recordSize());
+                        ch->name(), ch->recordSize());
             return false;
         }
         if (!ch->open(peerHost)) {
             std::printf("[%s] ポート %u を開けません: %s\n",
-                        ch->binding().fomName, ch->binding().port,
-                        ch->lastError().c_str());
+                        ch->name(), ch->port(), ch->lastError().c_str());
             return false;
         }
         m_pollIndex.push_back(m_poller.add(ch->socket()));
@@ -82,8 +73,8 @@ void Gateway::tick() {
         }
     }
 
-    // 送信は poll と無関係に毎周期。HLA 側から出てくるものは
-    // ソケットの読み取り可否とは関係がない。
+    // 送信は poll と無関係に毎周期。手元（HLA やアプリ）から出てくるものは
+    // ソケットの読み取り可否とは関係がない。受信専用のチャネルは何もしない。
     for (auto& ch : m_channels) ch->pumpOut();
 }
 
@@ -128,26 +119,29 @@ void Gateway::printPlan() const {
     std::printf("%-28s %6s %8s %8s %8s  %s\n",
                 "クラス", "port", "1件(B)", "1発(件)", "上限(B)", "種別");
     for (const auto& ch : m_channels) {
-        const ClassBinding& b = ch->binding();
-        std::printf("%-28s %6u %8zu %8zu %8zu  %s\n",
-                    trimRoot(b.fomName), b.port,
-                    ch->recordSize(), ch->capacityInRecords(), b.payload,
-                    b.kind == ClassKind::Object ? "オブジェクト" : "インタラクション");
+        // 可変長（相手が決めた形式）は1件の大きさが決まっていないので、数字の代わりに書く。
+        char size[16];
+        if (ch->recordSize() == 0) std::snprintf(size, sizeof size, "%s", "可変");
+        else                       std::snprintf(size, sizeof size, "%zu", ch->recordSize());
+
+        std::printf("%-28s %6u %8s %8zu %8zu  %s\n",
+                    ch->name(), ch->port(), size,
+                    ch->capacityInRecords(), ch->payload(), ch->kindLabel());
     }
 }
 
 void Gateway::printSummary() const {
-    // 持ち越し回数を出しているのは、**ClassKind によって意味が正反対**だから。イベントなら
-    // その回数だけ次の周期へ繰り越しており、状態なら同じ回数だけ捨てている。積み残しは
-    // 終わった瞬間の残り件数、持ち越しは出し切れなかった周期の数。
+    // 持ち越し回数を出しているのは、**ClassKind によって意味が正反対**だから。インタラクション
+    // ならその回数だけ次の周期へ繰り越しており、オブジェクトなら同じ回数だけ捨てている。
+    // 積み残しは終わった瞬間の残り件数、持ち越しは出し切れなかった周期の数。
     std::printf("\n%-28s %10s %10s %10s %8s %8s %8s %8s\n",
                 "クラス", "port", "送信件数", "受信件数", "class違い", "異常",
                 "積み残し", "持ち越し");
     for (const auto& ch : m_channels) {
         const SubscriberStats& s = ch->inStats();
         std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu %8llu\n",
-                    trimRoot(ch->binding().fomName),
-                    ch->binding().port,
+                    ch->name(),
+                    ch->port(),
                     static_cast<unsigned long long>(ch->sentTotal()),
                     static_cast<unsigned long long>(s.records),
                     static_cast<unsigned long long>(s.wrongClass),

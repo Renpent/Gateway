@@ -156,6 +156,7 @@
     <ClCompile Include="icd\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\ToApp.h" />
     <ClInclude Include="app\Wiring.h" />
     <ClInclude Include="platform\Platform.h" />
     <ClInclude Include="net\UdpSocket.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="gateway\Gateway.h" />
     <ClInclude Include="gateway\LoopStats.h" />
     <ClInclude Include="gateway\Publisher.h" />
+    <ClInclude Include="gateway\RawChannel.h" />
     <ClInclude Include="gateway\Subscriber.h" />
     <ClInclude Include="gateway\SubscriberStats.h" />
     <ClInclude Include="hla\Federate.h" />
