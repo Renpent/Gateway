@@ -3,7 +3,7 @@
 // 配線（app/CRtiWiring.h）にはこの5本を渡す：
 //
 //   HLA → UDP  hla::CTRtiObjectFromHla{&getRemoteDesignator, &toIcd}
-//   UDP → HLA  hla::CTRtiObjectToHla{&keyOf, &registerDesignator, &writeBack}
+//   UDP → HLA  hla::CTRtiObjectToHla{&keyOf, &registerDesignator, &updateDesignator}
 
 #pragma once
 
@@ -29,7 +29,7 @@ std::string keyOf(const icdfom::Designator& r);
 /// Create：初めて見る鍵でインスタンスを登録する。失敗したら空。
 tk::DesignatorPtr registerDesignator(const std::string& key);
 
-/// Write：属性を書いて update する。
-void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p);
+/// Update：属性を書いて update する。
+void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);
 
 }  // namespace rti

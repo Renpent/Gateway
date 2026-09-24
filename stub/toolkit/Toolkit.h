@@ -12,7 +12,8 @@
 //   - 属性はアクセサ（getXxx / setXxx）で触る
 //   - 入れ子のレコードは FOM と同じ名前の構造体で返る
 //   - 列挙は整数、RTIobjectId は std::string
-//   - インタラクションの受信は setWeaponFireCallback で登録したコールバックに届く
+//   - インタラクションの受信は、生成された仮想関数のクラス（WeaponFireCallback）を継承して
+//     onWeaponFire を実装し、setWeaponFireCallback で登録する。登録の仕方は仮
 //
 // 外部ツールキットの見た目を真似るため、型名は接頭辞の決まりの対象外。
 // 「試験用」と書いた関数は本物には無い（RTI の代わりに値を入れるためのもの）。
@@ -20,7 +21,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -125,19 +125,27 @@ private:
     std::vector<WeaponFire> m_sent;
 };
 
+/// 受信のコールバック。ツールキット側で生成される、仮想関数だけのクラスのつもり。
+/// 使う側が継承して onWeaponFire を実装する。**RTI のスレッドから呼ばれる。**
+class WeaponFireCallback {
+public:
+    virtual ~WeaponFireCallback() = default;
+    virtual void onWeaponFire(const WeaponFire& interaction) = 0;
+};
+
 class InteractionManager {
 public:
     WeaponFire* getWeaponFire() { return &m_weaponFire; }
 
-    /// 受信したら呼ばれる関数を登録する。**RTI のスレッドから呼ばれる。**
-    void setWeaponFireCallback(std::function<void(const WeaponFire&)> fn) { m_onWeaponFire = std::move(fn); }
+    /// 受信のコールバックを登録する。callback は借りるだけ。
+    void setWeaponFireCallback(WeaponFireCallback* callback) { m_onWeaponFire = callback; }
 
     /// 試験用：RTI が WeaponFire を受け取ったことにする。
-    void receiveWeaponFire(const WeaponFire& i) { if (m_onWeaponFire) m_onWeaponFire(i); }
+    void receiveWeaponFire(const WeaponFire& i) { if (m_onWeaponFire) m_onWeaponFire->onWeaponFire(i); }
 
 private:
     WeaponFire m_weaponFire;
-    std::function<void(const WeaponFire&)> m_onWeaponFire;
+    WeaponFireCallback* m_onWeaponFire = nullptr;
 };
 
 // ─── world ──────────────────────────────────────────────────────────

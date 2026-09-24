@@ -45,9 +45,4 @@ void sendWeaponFire(const icdfom::WeaponFire& r) {
     i->sendInteraction();
 }
 
-void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue) {
-    CDb::getInstance().getWorld()->getInteractionManager()->setWeaponFireCallback(
-        [&queue](const tk::WeaponFire& i) { queue.push(toIcd(i)); });
-}
-
 }  // namespace rti

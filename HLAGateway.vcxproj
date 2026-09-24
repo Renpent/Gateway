@@ -168,6 +168,7 @@
     <ClInclude Include="app\TCommand.h" />
     <ClInclude Include="app\TControl.h" />
     <ClInclude Include="rti\CDb.h" />
+    <ClInclude Include="rti\CWeaponFireCallback.h" />
     <ClInclude Include="rti\DesignatorRti.h" />
     <ClInclude Include="rti\Toolkit.h" />
     <ClInclude Include="rti\TypeConv.h" />

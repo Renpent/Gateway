@@ -226,6 +226,7 @@ WeaponFire（インタラクション）** で、偽のツールキットに対�
 | `rti/CDb.h` | world を持つシングルトン | 触らない |
 | `rti/TypeConv.h/.cpp` | 入れ子のレコードと ID の変換（型ごと、クラス間で共有） | まだ無い型が出てきたら1組足す |
 | `rti/<Class>Rti.h/.cpp` | **そのクラスの変換関数** | **1クラスにつき1組、新しく書く** |
+| `rti/C<Class>Callback.h` | インタラクションの受信コールバック | **インタラクションなら1つ書く** |
 | `app/CRtiWiring.h` | 本番の配線 | **メンバ2本と1行を足す** |
 | `stub/toolkit/Toolkit.h` | 偽のツールキット（本番には持っていかない） | 試すなら、そのクラスを足す |
 
@@ -242,7 +243,7 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator();                      // Fe
 icdfom::Designator toIcd(const tk::DesignatorPtr& p);                       // HLA → ICD
 std::string keyOf(const icdfom::Designator& r);                             // どのインスタンスか
 tk::DesignatorPtr registerDesignator(const std::string& key);               // Create
-void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p);    // ICD → HLA、update
+void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);   // ICD → HLA、update
 }
 ```
 
@@ -260,7 +261,7 @@ icdfom::Designator toIcd(const tk::DesignatorPtr& p) {
     return r;
 }
 
-void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
+void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
     p->setEntityIdentifier(toRti(r.EntityIdentifier));
     ...
     p->update();
@@ -273,40 +274,56 @@ void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
 hla::CTRtiObjectFromHla<icdfom::Designator, tk::DesignatorPtr> designatorFromHla{
     &rti::getRemoteDesignator, &rti::toIcd};
 hla::CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
-    &rti::keyOf, &rti::registerDesignator, &rti::writeBack};
+    &rti::keyOf, &rti::registerDesignator, &rti::updateDesignator};
 ...
 addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // build() に
 ```
 
-### インタラクションを足す（`rti/WeaponFireRti.h/.cpp` が雛形）
+### インタラクションを足す（`rti/WeaponFireRti.h/.cpp` と `rti/CWeaponFireCallback.h` が雛形）
 
-書く関数は4本。**HLA から来る向きは RTI のコールバック**なので、受信を登録する関数が要る。
+**HLA から来る向きは RTI のコールバック**なので、変換関数のほかに、コールバックのクラスを1つ書く。
+
+変換関数は3本：
 
 ```cpp
 namespace rti {
-icdfom::WeaponFire toIcd(const tk::WeaponFire& i);                  // 受信したパラメータ → ICD
-void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);       // ICD → 送信するパラメータ
+icdfom::WeaponFire toIcd(const tk::WeaponFire& i);                  // 受信したパラメータ → レコード
+void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);       // レコード → 送信するパラメータ
 void sendWeaponFire(const icdfom::WeaponFire& r);                   // Send：fillRti して sendInteraction
-void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue);   // 受信の登録
 }
 ```
 
+コールバックは、ツールキットが生成した仮想関数のクラスを継承し、**変換してそのクラスのキューに push するだけ**：
+
 ```cpp
-void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue) {
-    CDb::getInstance().getWorld()->getInteractionManager()->setWeaponFireCallback(
-        [&queue](const tk::WeaponFire& i) { queue.push(toIcd(i)); });   // RTI のスレッド
-}
+class CWeaponFireCallback : public tk::WeaponFireCallback {
+public:
+    explicit CWeaponFireCallback(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue) : m_queue(queue) {}
+    void onWeaponFire(const tk::WeaponFire& interaction) override {   // RTI のスレッド
+        m_queue.push(toIcd(interaction));
+    }
+private:
+    hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& m_queue;
+};
 ```
 
-配線：
+- パラメータはコールバックの間しか有効でないのが普通なので、この場でレコードに写す
+- `push()` はロック付きなので、RTI のスレッドから呼んでよい
+- ゲートウェイのほかのもの（チャネルやソケット）には触らない
+
+配線：キュー・コールバック・送信の3つをメンバにし、コールバックの登録を `subscribe()` に書く。
 
 ```cpp
-hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;
+hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;      // キュー
+rti::CWeaponFireCallback fireCallback{fireFromHla};                 // キューより後に宣言する
 hla::CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&rti::sendWeaponFire};
 ...
-addClass<icdfom::WeaponFire>(g, &fireFromHla, &fireToHla);   // build() に
-rti::subscribeWeaponFire(fireFromHla);                       // subscribe() に
+addClass<icdfom::WeaponFire>(g, &fireFromHla, &fireToHla);          // build() に
+im->setWeaponFireCallback(&fireCallback);                           // subscribe() に
 ```
+
+**用語：** レコードは UDP（ICD）側の1件（`icdfom::` の型）、パラメータ・属性は HLA 側
+（ツールキットの型）の値。
 
 ### main の形
 
@@ -320,10 +337,11 @@ wiring.build(gateway);
 
 /* join */
 rti::CDb::getInstance().setWorld(world);
-wiring.subscribe();              // インタラクションの受信を登録
+wiring.subscribe();              // インタラクションの受信コールバックを登録
 if (gateway.openAll(peer)) gateway.run(20, 0);
 /* resign */
 rti::CDb::getInstance().setWorld(nullptr);
+// wiring はここより後まで生きていること（コールバックをツールキットに貸しているため）
 ```
 
 いまの `main.cpp` はスタブの配線（`CWiring`）を使っている。`CRtiWiring` はビルドには入っているが、
@@ -336,7 +354,7 @@ rti::CDb::getInstance().setWorld(nullptr);
    - 属性はアクセサ（`getXxx` / `setXxx`）で触る
    - 入れ子のレコードは FOM と同じ名前の構造体で返る
    - 列挙は整数、`RTIobjectId` は `std::string`
-   - インタラクションの受信は `setWeaponFireCallback` で登録したコールバックに届く
+   - インタラクションの受信は、生成された仮想関数のクラスを継承して登録する（登録の仕方は仮）
 3. `stub/` を消し、main を `CRtiWiring` に切り替える
 
 **RTIobjectId の上限に注意。** ICD では上限（RPR FOM では16文字）のある配列になっている。
@@ -375,7 +393,7 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator() {
 - **鍵の選び方（`keyOf`）。** サンプルは `HostObjectIdentifier`。1つの母体に指示器が複数あるなら、
   ほかのフィールドと組にする
 - **部分更新の扱い。** ICD は常に全属性ぶんの箱を送るので、送信側が持っていない属性はゼロで届く。
-  前回値で埋めるか既定値で埋めるかは `writeBack` の中で決める
+  前回値で埋めるか既定値で埋めるかは `updateDesignator` の中で決める
 - **インスタンスの削除。** `CTRtiObjectToHla` は一度登録したインスタンスを消さない
 
 ## FOM に無いデータを受ける

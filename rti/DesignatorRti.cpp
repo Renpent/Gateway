@@ -32,7 +32,7 @@ tk::DesignatorPtr registerDesignator(const std::string& key) {
     return CDb::getInstance().getWorld()->getObjectManager()->registerDesignator(key);
 }
 
-void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
+void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
     // ICD は常に全属性を送ってくるので、全部書く。
     // （送信側が持っていなかった属性はゼロで届く。前回値で埋めるかどうかは未決）
     p->setEntityIdentifier(toRti(r.EntityIdentifier));

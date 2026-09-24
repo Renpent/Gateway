@@ -102,6 +102,9 @@
     <ClInclude Include="rti\CDb.h">
       <Filter>rti</Filter>
     </ClInclude>
+    <ClInclude Include="rti\CWeaponFireCallback.h">
+      <Filter>rti</Filter>
+    </ClInclude>
     <ClInclude Include="rti\DesignatorRti.h">
       <Filter>rti</Filter>
     </ClInclude>

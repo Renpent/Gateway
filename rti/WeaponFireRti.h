@@ -2,12 +2,11 @@
 //
 // オブジェクトと違い、HLA からは RTI のコールバックで押し込まれてくる：
 //
-//   HLA → UDP  subscribeWeaponFire(fireFromHla)   join 後に1回。コールバックで toIcd して push する
+//   HLA → UDP  CWeaponFireCallback（ツールキットのコールバックを継承）が toIcd してキューに push する
 //   UDP → HLA  hla::CTRtiInteractionToHla{&sendWeaponFire}
 
 #pragma once
 
-#include "../gateway/hla/CTRtiInteractionFromHla.h"
 #include "../icd/interaction/WeaponFire.h"
 #include "Toolkit.h"
 
@@ -21,10 +20,5 @@ void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);
 
 /// Send：パラメータを詰めて sendInteraction する。
 void sendWeaponFire(const icdfom::WeaponFire& r);
-
-/// 受信のコールバックを登録する。**join して CDb に world を置いたあとに1回呼ぶ。**
-/// コールバックは RTI のスレッドで、変換してから queue に push する
-/// （RTI のパラメータはコールバックの間しか有効でないため、先に値へ写す）。
-void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue);
 
 }  // namespace rti
