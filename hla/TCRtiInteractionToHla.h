@@ -34,7 +34,7 @@ public:
         ++m_sent;
     }
 
-    [[nodiscard]] std::uint64_t sent() const noexcept { return m_sent; }
+    [[nodiscard]] std::uint64_t getSent() const noexcept { return m_sent; }
 
 private:
     Send m_send;                ///< 詰め替え + sendInteraction

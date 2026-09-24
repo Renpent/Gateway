@@ -70,10 +70,10 @@ public:
         ++m_written;
     }
 
-    [[nodiscard]] std::size_t instances() const noexcept { return m_instances.size(); }
-    [[nodiscard]] std::uint64_t registered() const noexcept { return m_registered; }
-    [[nodiscard]] std::uint64_t refused() const noexcept { return m_refused; }
-    [[nodiscard]] std::uint64_t written() const noexcept { return m_written; }
+    [[nodiscard]] std::size_t getInstances() const noexcept { return m_instances.size(); }
+    [[nodiscard]] std::uint64_t getRegistered() const noexcept { return m_registered; }
+    [[nodiscard]] std::uint64_t getRefused() const noexcept { return m_refused; }
+    [[nodiscard]] std::uint64_t getWritten() const noexcept { return m_written; }
 
 private:
     KeyOf m_keyOf;                    ///< レコード -> インスタンスの鍵

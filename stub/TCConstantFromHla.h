@@ -28,7 +28,7 @@ public:
         return m_perDrain;
     }
 
-    [[nodiscard]] std::size_t produced() const noexcept { return m_produced; }
+    [[nodiscard]] std::size_t getProduced() const noexcept { return m_produced; }
 
 private:
     std::size_t m_perDrain;         ///< 1回の drain で作る件数

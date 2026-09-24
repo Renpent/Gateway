@@ -54,7 +54,7 @@ static bool setNonBlocking(socket_t s) {
 namespace gw {
 namespace {
 
-/// 器から OS の型へ戻す。osHandle() が渡してくるのは値だけなので、型はここで付け直す。
+/// 器から OS の型へ戻す。getOsHandle() が渡してくるのは値だけなので、型はここで付け直す。
 socket_t asSocket(std::intptr_t h) { return static_cast<socket_t>(h); }
 
 }  // namespace

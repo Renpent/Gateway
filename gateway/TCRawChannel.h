@@ -52,11 +52,11 @@ public:
     explicit TCRawChannel(app::TCToApp<T>* toApp)
         : m_toApp(toApp), m_buf(CUdpSocket::kMaxDatagram) {}
 
-    [[nodiscard]] const char* name() const noexcept override { return T::kName; }
-    [[nodiscard]] std::uint16_t port() const noexcept override { return T::kPort; }
-    [[nodiscard]] std::size_t payload() const noexcept override { return m_buf.size(); }
-    [[nodiscard]] const char* kindLabel() const noexcept override { return "独自（受信のみ）"; }
-    [[nodiscard]] CUdpSocket& socket() noexcept override { return m_sock; }
+    [[nodiscard]] const char* getName() const noexcept override { return T::kName; }
+    [[nodiscard]] std::uint16_t getPort() const noexcept override { return T::kPort; }
+    [[nodiscard]] std::size_t getPayload() const noexcept override { return m_buf.size(); }
+    [[nodiscard]] const char* getKindLabel() const noexcept override { return "独自（受信のみ）"; }
+    [[nodiscard]] CUdpSocket& getSocket() noexcept override { return m_sock; }
 
     /// 受信専用なので送信先は持たない。loopback でも run でも、bind するだけ。
     [[nodiscard]] bool open(const std::string& /*peerHost*/) override {
@@ -88,15 +88,15 @@ public:
     }
 
     /// 可変長。1データグラムに1メッセージ（CChannel の取り決めで 0 が「可変」）。
-    [[nodiscard]] std::size_t recordSize() const noexcept override { return 0; }
-    [[nodiscard]] std::size_t capacityInRecords() const noexcept override { return 1; }
+    [[nodiscard]] std::size_t getRecordSize() const noexcept override { return 0; }
+    [[nodiscard]] std::size_t getCapacityInRecords() const noexcept override { return 1; }
 
-    [[nodiscard]] std::uint64_t sentTotal() const noexcept override { return 0; }
-    [[nodiscard]] std::size_t backlog() const noexcept override { return 0; }
-    [[nodiscard]] std::uint64_t deferrals() const noexcept override { return 0; }
-    [[nodiscard]] const TSubscriberStats& inStats() const noexcept override { return m_stats; }
-    [[nodiscard]] const std::string& lastError() const noexcept override {
-        return m_sock.lastError();
+    [[nodiscard]] std::uint64_t getSentTotal() const noexcept override { return 0; }
+    [[nodiscard]] std::size_t getBacklog() const noexcept override { return 0; }
+    [[nodiscard]] std::uint64_t getDeferrals() const noexcept override { return 0; }
+    [[nodiscard]] const TSubscriberStats& getInStats() const noexcept override { return m_stats; }
+    [[nodiscard]] const std::string& getLastError() const noexcept override {
+        return m_sock.getLastError();
     }
 
 private:

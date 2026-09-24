@@ -43,9 +43,9 @@ namespace hla {
 ///    2048 件。実運用のインタラクション頻度から見て、これを超えるクラスがあるなら、それは
 ///    上限の調整ではなく設計の見直しが要る状況。
 ///
-/// 3. **超えても黙って壊れない。** 溢れた push は false を返して dropped() に載り、
-///    最大どこまで伸びたかは maxDepth() で後から読める。**先に見積もるのではなく、
-///    流してから maxDepth() を見ればよい。**
+/// 3. **超えても黙って壊れない。** 溢れた push は false を返して getDropped() に載り、
+///    最大どこまで伸びたかは getMaxDepth() で後から読める。**先に見積もるのではなく、
+///    流してから getMaxDepth() を見ればよい。**
 ///
 /// 大きめに取ってあるのはそのため。個別に詰める価値が出るのは、1件が極端に大きいクラスで
 /// 実際に天井に張り付いたときだけで、そのときだけコンストラクタに数値を渡せばよい。
@@ -54,13 +54,13 @@ inline constexpr std::size_t kInteractionQueueDepth = 2048;
 template <class T>
 class TCRtiInteractionFromHla : public TCFromHla<T> {
 public:
-    /// **既定のままでよい。** 数値を渡すのは、maxDepth() が天井に張り付いたクラスが
+    /// **既定のままでよい。** 数値を渡すのは、getMaxDepth() が天井に張り付いたクラスが
     /// 実際に出てきたときだけ（kInteractionQueueDepth の説明を参照）。
     explicit TCRtiInteractionFromHla(std::size_t maxQueued = kInteractionQueueDepth)
         : m_maxQueued(maxQueued) {}
 
     /// **RTI のスレッドから呼ばれる。** コールバックの中で T に詰め替えたものを渡す。
-    /// 溢れていたら捨てて false。捨てた数は dropped() に出る。
+    /// 溢れていたら捨てて false。捨てた数は getDropped() に出る。
     bool push(const T& record) {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_queue.size() >= m_maxQueued) {
@@ -93,18 +93,18 @@ public:
         return taken.size();
     }
 
-    [[nodiscard]] std::uint64_t pushed() const noexcept { return m_pushed.load(); }
-    [[nodiscard]] std::uint64_t dropped() const noexcept { return m_dropped.load(); }
-    [[nodiscard]] std::uint64_t drained() const noexcept { return m_drained; }
+    [[nodiscard]] std::uint64_t getPushed() const noexcept { return m_pushed.load(); }
+    [[nodiscard]] std::uint64_t getDropped() const noexcept { return m_dropped.load(); }
+    [[nodiscard]] std::uint64_t getDrained() const noexcept { return m_drained; }
 
     /// 実際に積み上がった最大の深さ。**上限が妥当かを後から確かめるための値。**
     /// これが maxQueued に届いていないなら、そのクラスに個別の調整は要らない。
-    [[nodiscard]] std::size_t maxDepth() const noexcept {
+    [[nodiscard]] std::size_t getMaxDepth() const noexcept {
         return m_maxDepth.load(std::memory_order_relaxed);
     }
 
     /// この器が使っている上限。
-    [[nodiscard]] std::size_t maxQueued() const noexcept { return m_maxQueued; }
+    [[nodiscard]] std::size_t getMaxQueued() const noexcept { return m_maxQueued; }
 
 private:
     std::mutex m_mutex;                    ///< m_queue を守る。push と drain の間だけ

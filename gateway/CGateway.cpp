@@ -29,10 +29,10 @@ bool CGateway::openAll(const std::string& peerHost) {
     // （FOM に無い独自データ）はその網にかからない。ここが全チャネル共通の最後の網。
     for (std::size_t i = 0; i < m_channels.size(); ++i) {
         for (std::size_t j = 0; j < i; ++j) {
-            if (m_channels[i]->port() == m_channels[j]->port()) {
+            if (m_channels[i]->getPort() == m_channels[j]->getPort()) {
                 std::printf("ポート %u が重複しています: [%s] と [%s]。"
                             "重複すると片方にしか届かず、どちらに届くかは OS で変わります。\n",
-                            m_channels[i]->port(), m_channels[j]->name(), m_channels[i]->name());
+                            m_channels[i]->getPort(), m_channels[j]->getName(), m_channels[i]->getName());
                 return false;
             }
         }
@@ -41,20 +41,20 @@ bool CGateway::openAll(const std::string& peerHost) {
     m_pollIndex.clear();
     for (auto& ch : m_channels) {
         // 1件も入らないレコードは、開いてから毎周期黙って捨てられる。ここで止める。
-        // 可変長のチャネル（recordSize() == 0）は件数が常に 1 なので、ここには掛からない。
-        if (ch->capacityInRecords() == 0) {
+        // 可変長のチャネル（getRecordSize() == 0）は件数が常に 1 なので、ここには掛からない。
+        if (ch->getCapacityInRecords() == 0) {
             std::printf("[%s] レコード %zu B が1件もペイロードに入りません。"
                         "ジャンボフレーム（MTU 9000）にするか、"
                         "ICD の配列上限を下げてください。\n",
-                        ch->name(), ch->recordSize());
+                        ch->getName(), ch->getRecordSize());
             return false;
         }
         if (!ch->open(peerHost)) {
             std::printf("[%s] ポート %u を開けません: %s\n",
-                        ch->name(), ch->port(), ch->lastError().c_str());
+                        ch->getName(), ch->getPort(), ch->getLastError().c_str());
             return false;
         }
-        m_pollIndex.push_back(m_poller.add(ch->socket()));
+        m_pollIndex.push_back(m_poller.add(ch->getSocket()));
     }
     m_opened = true;
     return true;
@@ -124,12 +124,12 @@ void CGateway::printPlan() const {
     for (const auto& ch : m_channels) {
         // 可変長（相手が決めた形式）は1件の大きさが決まっていないので、数字の代わりに書く。
         char size[16];
-        if (ch->recordSize() == 0) std::snprintf(size, sizeof size, "%s", "可変");
-        else                       std::snprintf(size, sizeof size, "%zu", ch->recordSize());
+        if (ch->getRecordSize() == 0) std::snprintf(size, sizeof size, "%s", "可変");
+        else                       std::snprintf(size, sizeof size, "%zu", ch->getRecordSize());
 
         std::printf("%-28s %6u %8s %8zu %8zu  %s\n",
-                    ch->name(), ch->port(), size,
-                    ch->capacityInRecords(), ch->payload(), ch->kindLabel());
+                    ch->getName(), ch->getPort(), size,
+                    ch->getCapacityInRecords(), ch->getPayload(), ch->getKindLabel());
     }
 }
 
@@ -141,16 +141,16 @@ void CGateway::printSummary() const {
                 "クラス", "port", "送信件数", "受信件数", "class違い", "異常",
                 "積み残し", "持ち越し");
     for (const auto& ch : m_channels) {
-        const TSubscriberStats& s = ch->inStats();
+        const TSubscriberStats& s = ch->getInStats();
         std::printf("%-28s %10u %10llu %10llu %8llu %8llu %8zu %8llu\n",
-                    ch->name(),
-                    ch->port(),
-                    static_cast<unsigned long long>(ch->sentTotal()),
+                    ch->getName(),
+                    ch->getPort(),
+                    static_cast<unsigned long long>(ch->getSentTotal()),
                     static_cast<unsigned long long>(s.records),
                     static_cast<unsigned long long>(s.wrongClass),
                     static_cast<unsigned long long>(s.malformed + s.skipped),
-                    ch->backlog(),
-                    static_cast<unsigned long long>(ch->deferrals()));
+                    ch->getBacklog(),
+                    static_cast<unsigned long long>(ch->getDeferrals()));
     }
 
     const double avgLate = m_loop.ticks ? m_loop.sumLateMs / static_cast<double>(m_loop.ticks) : 0.0;

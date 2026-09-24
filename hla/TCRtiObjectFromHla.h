@@ -59,8 +59,8 @@ public:
         return taken;
     }
 
-    [[nodiscard]] std::uint64_t seen() const noexcept { return m_seen; }
-    [[nodiscard]] std::uint64_t skipped() const noexcept { return m_skipped; }
+    [[nodiscard]] std::uint64_t getSeen() const noexcept { return m_seen; }
+    [[nodiscard]] std::uint64_t getSkipped() const noexcept { return m_skipped; }
 
 private:
     Fetch m_fetch;                  ///< getRemoteXXX() を呼ぶ

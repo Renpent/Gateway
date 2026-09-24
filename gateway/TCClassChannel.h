@@ -41,13 +41,13 @@ public:
         : m_bind(bind), m_name(withoutRoot(bind.fomName)), m_fromHla(fromHla), m_toHla(toHla),
           m_pub(bind.classId, bind.payload), m_sub(bind.classId, bind.payload) {}
 
-    [[nodiscard]] const char* name() const noexcept override { return m_name; }
-    [[nodiscard]] std::uint16_t port() const noexcept override { return m_bind.port; }
-    [[nodiscard]] std::size_t payload() const noexcept override { return m_bind.payload; }
-    [[nodiscard]] const char* kindLabel() const noexcept override {
+    [[nodiscard]] const char* getName() const noexcept override { return m_name; }
+    [[nodiscard]] std::uint16_t getPort() const noexcept override { return m_bind.port; }
+    [[nodiscard]] std::size_t getPayload() const noexcept override { return m_bind.payload; }
+    [[nodiscard]] const char* getKindLabel() const noexcept override {
         return m_bind.kind == TClassKind::Object ? "オブジェクト" : "インタラクション";
     }
-    [[nodiscard]] CUdpSocket& socket() noexcept override { return m_sock; }
+    [[nodiscard]] CUdpSocket& getSocket() noexcept override { return m_sock; }
 
     [[nodiscard]] bool open(const std::string& peerHost) override {
         return m_sock.open(m_bind.port, peerHost, m_bind.port);
@@ -80,8 +80,8 @@ public:
         // 実際に出るのは flush のときで、そこで断られると writer ごと捨てられる。
         // true の回数を「送った件数」として outbox から消すと、**持ち越すはずのイベントが
         // 毎回きっかり1データグラムぶん静かに消える**（500件のバーストで 434件しか届かない）。
-        // recordsSent() は送信が成功したときしか増えないので、これが唯一の正しい件数になる。
-        const std::uint64_t before = m_pub.recordsSent();
+        // getRecordsSent() は送信が成功したときしか増えないので、これが唯一の正しい件数になる。
+        const std::uint64_t before = m_pub.getRecordsSent();
         for (const T& record : m_outbox) {
             if (!m_pub.publish(record, m_sock)) break;
         }
@@ -90,7 +90,7 @@ public:
         (void)m_pub.flush(m_sock);
 
         // 出たのは outbox の先頭から連続したぶんなので、その件数だけ削れば順序は保たれる。
-        const std::size_t sent = static_cast<std::size_t>(m_pub.recordsSent() - before);
+        const std::size_t sent = static_cast<std::size_t>(m_pub.getRecordsSent() - before);
         m_outbox.erase(m_outbox.begin(), m_outbox.begin() + static_cast<std::ptrdiff_t>(sent));
         if (!m_outbox.empty()) {
             ++m_deferrals;
@@ -108,23 +108,23 @@ public:
         return got < 0 ? 0 : static_cast<std::size_t>(got);
     }
 
-    [[nodiscard]] std::uint64_t sentTotal() const noexcept override {
-        return m_pub.recordsSent();
+    [[nodiscard]] std::uint64_t getSentTotal() const noexcept override {
+        return m_pub.getRecordsSent();
     }
-    [[nodiscard]] std::size_t backlog() const noexcept override { return m_backlog; }
-    [[nodiscard]] std::uint64_t deferrals() const noexcept override { return m_deferrals; }
-    [[nodiscard]] const TSubscriberStats& inStats() const noexcept override {
-        return m_sub.stats();
+    [[nodiscard]] std::size_t getBacklog() const noexcept override { return m_backlog; }
+    [[nodiscard]] std::uint64_t getDeferrals() const noexcept override { return m_deferrals; }
+    [[nodiscard]] const TSubscriberStats& getInStats() const noexcept override {
+        return m_sub.getStats();
     }
-    [[nodiscard]] const std::string& lastError() const noexcept override {
-        return m_sock.lastError();
+    [[nodiscard]] const std::string& getLastError() const noexcept override {
+        return m_sock.getLastError();
     }
 
-    [[nodiscard]] std::size_t recordSize() const noexcept override {
+    [[nodiscard]] std::size_t getRecordSize() const noexcept override {
         return icd::fixedSize<T>;
     }
-    [[nodiscard]] std::size_t capacityInRecords() const noexcept override {
-        return m_pub.capacityInRecords();
+    [[nodiscard]] std::size_t getCapacityInRecords() const noexcept override {
+        return m_pub.getCapacityInRecords();
     }
 
 private:

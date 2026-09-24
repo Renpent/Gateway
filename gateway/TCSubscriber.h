@@ -42,7 +42,7 @@ public:
         }
     }
 
-    [[nodiscard]] const TSubscriberStats& stats() const noexcept { return m_stats; }
+    [[nodiscard]] const TSubscriberStats& getStats() const noexcept { return m_stats; }
 
 private:
     template <class Fn>

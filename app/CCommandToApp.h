@@ -39,9 +39,9 @@ public:
         m_pending.clear();
     }
 
-    [[nodiscard]] std::uint64_t received() const noexcept { return m_received; }
-    [[nodiscard]] std::uint64_t handled() const noexcept { return m_handled; }
-    [[nodiscard]] std::size_t pending() const noexcept { return m_pending.size(); }
+    [[nodiscard]] std::uint64_t getReceived() const noexcept { return m_received; }
+    [[nodiscard]] std::uint64_t getHandled() const noexcept { return m_handled; }
+    [[nodiscard]] std::size_t getPending() const noexcept { return m_pending.size(); }
 
 private:
     /// **コマンド1つぶんの処理。ここに中身を書く。**

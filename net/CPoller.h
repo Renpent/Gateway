@@ -37,8 +37,7 @@ public:
     /// 直前の poll() の結果。
     [[nodiscard]] bool readable(std::size_t index) const;
 
-    [[nodiscard]] std::size_t size() const noexcept { return m_handles.size(); }
-    [[nodiscard]] const std::string& lastError() const noexcept { return m_error; }
+    [[nodiscard]] const std::string& getLastError() const noexcept { return m_error; }
 
 private:
     std::vector<std::intptr_t> m_handles;  ///< 監視対象のハンドル（add した順）

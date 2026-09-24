@@ -35,7 +35,7 @@ public:
         return m_perDrain;
     }
 
-    [[nodiscard]] std::size_t produced() const noexcept { return m_produced; }
+    [[nodiscard]] std::size_t getProduced() const noexcept { return m_produced; }
 
 private:
     Fixture m_make;                 ///< i 番目の値を作る関数

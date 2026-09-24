@@ -40,7 +40,7 @@ public:
     /// OS が持っているハンドルの**値**。ただし型は移植用の器で、OS の型そのもの
     /// （Windows の SOCKET、POSIX の int fd）ではない。本来の型に戻すのは .cpp の asSocket()。
     /// 使うのは net/ の中だけ — CPoller が poll に渡すため。
-    [[nodiscard]] std::intptr_t osHandle() const noexcept { return m_handle; }
+    [[nodiscard]] std::intptr_t getOsHandle() const noexcept { return m_handle; }
 
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。
     [[nodiscard]] bool send(const unsigned char* data, std::size_t len);
@@ -52,7 +52,7 @@ public:
     /// データグラムを1つ受ける。ブロックしない。
     ///   >0  受信バイト数
     ///    0  今は何も来ていない
-    ///   -1  エラー（lastError() を見ること）
+    ///   -1  エラー（getLastError() を見ること）
     /// cap は必ず最大ペイロード以上にすること。長いデータグラムは切り詰められ、
     /// UDP では残りを後から取れない。形式が分からない相手なら kMaxDatagram にする。
     ///
@@ -67,7 +67,7 @@ public:
     /// **send と receive が同じ1本を書く。** ソケット自体は全二重で、送信と受信を別スレッドに
     /// 割っても OS 側は安全だが、このメンバ（と統計カウンタ）だけはそのとき競合する。
     /// 今は単一スレッドなので問題にならない。
-    [[nodiscard]] const std::string& lastError() const noexcept { return m_error; }
+    [[nodiscard]] const std::string& getLastError() const noexcept { return m_error; }
 
 private:
     bool fail(const char* what);

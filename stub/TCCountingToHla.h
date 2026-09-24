@@ -19,7 +19,7 @@ template <class T>
 class TCCountingToHla : public hla::TCToHla<T> {
 public:
     void accept(const T&) override { ++m_count; }
-    [[nodiscard]] std::size_t count() const noexcept { return m_count; }
+    [[nodiscard]] std::size_t getCount() const noexcept { return m_count; }
 
 private:
     std::size_t m_count = 0;    ///< 受け取った件数

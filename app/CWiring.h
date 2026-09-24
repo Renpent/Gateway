@@ -111,7 +111,7 @@ public:
 private:
     template <class T>
     static TVerifyResult tally(const stub::TCVerifyingToHla<T>& v) {
-        return TVerifyResult{v.received(), v.mismatched()};
+        return TVerifyResult{v.getReceived(), v.getMismatched()};
     }
 
     /// 1行1クラスで並ぶようにするための包み。binding は T から決まり、new と unique_ptr は

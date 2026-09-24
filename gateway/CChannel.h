@@ -27,19 +27,19 @@ public:
 
     /// ログと統計表に出す名前。ICD のクラスなら FOM 名（先頭の HLAobjectRoot などを除いたもの）、
     /// 独自データなら型に付けた名前。
-    [[nodiscard]] virtual const char* name() const noexcept = 0;
+    [[nodiscard]] virtual const char* getName() const noexcept = 0;
 
     /// このチャネル専用の UDP ポート（送受信とも同じ番号）。**全チャネルで1つの番号空間。**
     /// 重複は CGateway::openAll が開く前に断る。
-    [[nodiscard]] virtual std::uint16_t port() const noexcept = 0;
+    [[nodiscard]] virtual std::uint16_t getPort() const noexcept = 0;
 
     /// 1データグラムの上限。受信バッファの長さでもある。
-    [[nodiscard]] virtual std::size_t payload() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t getPayload() const noexcept = 0;
 
     /// 計画表の「種別」列に出す文字列。
-    [[nodiscard]] virtual const char* kindLabel() const noexcept = 0;
+    [[nodiscard]] virtual const char* getKindLabel() const noexcept = 0;
 
-    [[nodiscard]] virtual CUdpSocket& socket() noexcept = 0;
+    [[nodiscard]] virtual CUdpSocket& getSocket() noexcept = 0;
 
     /// 受信ポートを bind し、送信先を設定する。peerHost が空なら受信専用。
     [[nodiscard]] virtual bool open(const std::string& peerHost) = 0;
@@ -57,21 +57,21 @@ public:
     /// ICD のクラスは固定長なので開く前に分かる。件数が 0 なら **1件がペイロードに収まらない**
     /// — ジャンボフレームか、ICD の上限見直し。
     ///
-    /// **recordSize() が 0 なら可変長**で、1データグラム = 1メッセージ（件数は 1）。
+    /// **getRecordSize() が 0 なら可変長**で、1データグラム = 1メッセージ（件数は 1）。
     /// 相手が決めた形式のまま受ける TCRawChannel がこれにあたる。
-    [[nodiscard]] virtual std::size_t recordSize() const noexcept = 0;
-    [[nodiscard]] virtual std::size_t capacityInRecords() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t getRecordSize() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t getCapacityInRecords() const noexcept = 0;
 
-    [[nodiscard]] virtual std::uint64_t sentTotal() const noexcept = 0;
+    [[nodiscard]] virtual std::uint64_t getSentTotal() const noexcept = 0;
 
     /// 送り切れずに次の周期へ回した件数と、そうなった周期の回数。
     /// **インタラクションで backlog が減らないなら、そのクラスは供給に追いついていない。**
     /// 上げるのは周期そのものか payload（＝1発の件数）で、放っておくとメモリが伸び続ける。
-    [[nodiscard]] virtual std::size_t backlog() const noexcept = 0;
-    [[nodiscard]] virtual std::uint64_t deferrals() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t getBacklog() const noexcept = 0;
+    [[nodiscard]] virtual std::uint64_t getDeferrals() const noexcept = 0;
 
-    [[nodiscard]] virtual const TSubscriberStats& inStats() const noexcept = 0;
-    [[nodiscard]] virtual const std::string& lastError() const noexcept = 0;
+    [[nodiscard]] virtual const TSubscriberStats& getInStats() const noexcept = 0;
+    [[nodiscard]] virtual const std::string& getLastError() const noexcept = 0;
 };
 
 }  // namespace gw

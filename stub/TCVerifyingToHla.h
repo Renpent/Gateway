@@ -43,8 +43,8 @@ public:
         ++m_received;
     }
 
-    [[nodiscard]] std::size_t received() const noexcept { return m_received; }
-    [[nodiscard]] std::size_t mismatched() const noexcept { return m_mismatched; }
+    [[nodiscard]] std::size_t getReceived() const noexcept { return m_received; }
+    [[nodiscard]] std::size_t getMismatched() const noexcept { return m_mismatched; }
 
 private:
     /// レコード1件を符号化した結果。失敗したら空を返すので、比較は必ず不一致になる。

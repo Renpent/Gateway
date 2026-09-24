@@ -47,8 +47,8 @@ public:
     /// hz の周期で tick を回す。seconds 秒で終わる（0 なら止まらない）。
     void run(unsigned hz, unsigned seconds);
 
-    [[nodiscard]] const TLoopStats& loopStats() const noexcept { return m_loop; }
-    [[nodiscard]] const std::vector<std::unique_ptr<CChannel>>& channels() const noexcept {
+    [[nodiscard]] const TLoopStats& getLoopStats() const noexcept { return m_loop; }
+    [[nodiscard]] const std::vector<std::unique_ptr<CChannel>>& getChannels() const noexcept {
         return m_channels;
     }
 

@@ -25,7 +25,7 @@ static int lastErrno() { return errno; }
 namespace gw {
 
 std::size_t CPoller::add(const CUdpSocket& sock) {
-    m_handles.push_back(sock.osHandle());
+    m_handles.push_back(sock.getOsHandle());
     m_ready.push_back(0);
     return m_handles.size() - 1;
 }

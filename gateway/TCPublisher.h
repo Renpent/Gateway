@@ -21,7 +21,7 @@ public:
           m_writer(m_buf.data(), m_buf.size(), classId) {}
 
     /// 1データグラムに何件入るか。レコードが固定長なので、1件も詰める前に分かる。
-    [[nodiscard]] std::size_t capacityInRecords() const noexcept {
+    [[nodiscard]] std::size_t getCapacityInRecords() const noexcept {
         return m_writer.capacityInRecords();
     }
 
@@ -48,8 +48,8 @@ public:
         return ok;
     }
 
-    [[nodiscard]] std::uint64_t datagramsSent() const noexcept { return m_datagrams; }
-    [[nodiscard]] std::uint64_t recordsSent() const noexcept { return m_records; }
+    [[nodiscard]] std::uint64_t getDatagramsSent() const noexcept { return m_datagrams; }
+    [[nodiscard]] std::uint64_t getRecordsSent() const noexcept { return m_records; }
 
 private:
     std::uint32_t m_classId;            ///< データグラム先頭に入れる classId
