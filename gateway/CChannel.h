@@ -1,23 +1,15 @@
-// 1ポートぶんの送受信を、型を持たない形で見せる抽象。
+// 1ポートぶんの送受信。周期ループ（CGateway）からはこの抽象だけが見える。
 //
-// ポートごとにデータの型が違うので、周期ループから見えるのはこの CChannel だけにしてある。
-// 型が要るのは各実装の内側だけで、そこから外には出ない。実装は2つ：
-//
+// 実装は2つ：
 //   CTClassChannel<T>  ICD のクラス。12バイトヘッダ + 固定長レコード、相手は HLA
 //   CTRawChannel<T>    FOM に無い独自データ。相手が決めた形式のまま、相手はアプリ
-//
-// 以前はこれが「FOM のクラス1つ」を表していて、binding() で TClassBinding（classId・
-// TClassKind・FOM 名）をそのまま見せていた。独自データにはそのどれも当てはまらないので、
-// 周期ループが本当に使う4つ — 名前・ポート・上限・種別の表示 — だけを出すようにした。
 
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
 #include <string>
 
 #include "udp/CUdpSocket.h"
-#include "udp/TUdpReceiveStats.h"
 
 namespace gw {
 
@@ -25,53 +17,22 @@ class CChannel {
 public:
     virtual ~CChannel() = default;
 
-    /// ログと統計表に出す名前。ICD のクラスなら FOM 名（先頭の HLAobjectRoot などを除いたもの）、
-    /// 独自データなら型に付けた名前。
+    /// メッセージに出す名前。
     [[nodiscard]] virtual const char* getName() const noexcept = 0;
 
-    /// このチャネル専用の UDP ポート（送受信とも同じ番号）。**全チャネルで1つの番号空間。**
-    /// 重複は CGateway::openAll が開く前に断る。
+    /// このチャネル専用の UDP ポート。**全チャネルで重複してはいけない。**
     [[nodiscard]] virtual std::uint16_t getPort() const noexcept = 0;
-
-    /// 1データグラムの上限。受信バッファの長さでもある。
-    [[nodiscard]] virtual std::size_t getPayload() const noexcept = 0;
-
-    /// 計画表の「種別」列に出す文字列。
-    [[nodiscard]] virtual const char* getKindLabel() const noexcept = 0;
 
     [[nodiscard]] virtual udp::CUdpSocket& getSocket() noexcept = 0;
 
     /// 受信ポートを bind し、送信先を設定する。peerHost が空なら受信専用。
     [[nodiscard]] virtual bool open(const std::string& peerHost) = 0;
 
-    /// 手元（HLA やアプリ）から出てきたぶんを送る。ブロックしない。受信専用なら何もしない。
-    virtual std::size_t pumpOut() = 0;
+    /// 来ている分を読み切って手元（HLA やアプリ）へ渡す。poll が読めると言ったときだけ呼ぶ。
+    virtual void pumpIn() = 0;
 
-    /// 来ているぶんを読み切って手元へ渡す。ブロックしない。
-    /// **poll が「読める」と言ったときだけ呼ぶこと。** 呼んでも害はないが、
-    /// 空振りの recvfrom がポート数ぶん積み上がる。
-    virtual std::size_t pumpIn() = 0;
-
-    /// 1レコードのバイト数と、1データグラムに入る件数。
-    ///
-    /// ICD のクラスは固定長なので開く前に分かる。件数が 0 なら **1件がペイロードに収まらない**
-    /// — ジャンボフレームか、ICD の上限見直し。
-    ///
-    /// **getRecordSize() が 0 なら可変長**で、1データグラム = 1メッセージ（件数は 1）。
-    /// 相手が決めた形式のまま受ける CTRawChannel がこれにあたる。
-    [[nodiscard]] virtual std::size_t getRecordSize() const noexcept = 0;
-    [[nodiscard]] virtual std::size_t getCapacityInRecords() const noexcept = 0;
-
-    [[nodiscard]] virtual std::uint64_t getSentTotal() const noexcept = 0;
-
-    /// 送り切れずに次の周期へ回した件数と、そうなった周期の回数。
-    /// **インタラクションで backlog が減らないなら、そのクラスは供給に追いついていない。**
-    /// 上げるのは周期そのものか payload（＝1発の件数）で、放っておくとメモリが伸び続ける。
-    [[nodiscard]] virtual std::size_t getBacklog() const noexcept = 0;
-    [[nodiscard]] virtual std::uint64_t getDeferrals() const noexcept = 0;
-
-    [[nodiscard]] virtual const udp::TUdpReceiveStats& getInStats() const noexcept = 0;
-    [[nodiscard]] virtual const std::string& getLastError() const noexcept = 0;
+    /// 手元から出てきた分を送る。受信専用なら何もしない。
+    virtual void pumpOut() = 0;
 };
 
 }  // namespace gw

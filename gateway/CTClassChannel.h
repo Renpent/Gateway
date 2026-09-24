@@ -1,151 +1,71 @@
-// ICD のクラス1つぶんの CChannel。**型が現れるのはここから内側だけ。**
+// ICD のクラス1つぶんの CChannel。
 //
-// 生成コーデックを呼ぶのも、HLA 側の継ぎ目に触るのもこのクラスで、外へは CChannel の抽象しか
-// 出ない。クラスを増やしても増えるのは実体化の数であって、周期ループ側のコードではない。
-//
-// FOM に無い独自データ（相手が決めた形式）は CTRawChannel が受け持つ。こちらは ICD の枠 —
-// 12バイトヘッダ + 固定長レコード — に乗るものだけ。
+// 送信：毎周期 fromHla から取り出した分を全部送る。**送れなかった分は捨てる**（持ち越さない）。
+// 受信：届いた分を全部復号して toHla へ渡す。
 
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include "hla/CTFromHla.h"
 #include "hla/CTToHla.h"
-#include "../icd/icd_codec.h"
 #include "udp/CUdpSocket.h"
-#include "CChannel.h"
-#include "TClassBinding.h"
-#include "TClassKind.h"
 #include "udp/CTUdpSender.h"
 #include "udp/CTUdpReceiver.h"
+#include "CChannel.h"
+#include "TClassBinding.h"
 
 namespace gw {
 
 template <class T>
 class CTClassChannel final : public CChannel {
 public:
-    /// fromHla が null なら送信しない、toHla が null なら受けたものを捨てる。
-    /// 実際のフェデレーションでも publish だけ / subscribe だけのクラスはあるので、
-    /// 両方揃っていることを前提にしない。
-    ///
-    /// **どちらも借りているだけ**で、実体の寿命はこのチャネルより長くなければならない。
-    /// 配線側（app/CWiring.h）が値で持っているのはそのため。
-    CTClassChannel(const TClassBinding& bind,
-                 hla::CTFromHla<T>* fromHla,
-                 hla::CTToHla<T>* toHla)
+    /// fromHla が null なら送信しない、toHla が null なら受けた分を捨てる。
+    /// **どちらも借りているだけ**なので、このチャネルより長く生きていること。
+    CTClassChannel(const TClassBinding& bind, hla::CTFromHla<T>* fromHla, hla::CTToHla<T>* toHla)
         : m_bind(bind), m_name(withoutRoot(bind.fomName)), m_fromHla(fromHla), m_toHla(toHla),
           m_sender(bind.classId, bind.payload), m_receiver(bind.classId, bind.payload) {}
 
     [[nodiscard]] const char* getName() const noexcept override { return m_name; }
     [[nodiscard]] std::uint16_t getPort() const noexcept override { return m_bind.port; }
-    [[nodiscard]] std::size_t getPayload() const noexcept override { return m_bind.payload; }
-    [[nodiscard]] const char* getKindLabel() const noexcept override {
-        return m_bind.kind == TClassKind::Object ? "オブジェクト" : "インタラクション";
-    }
     [[nodiscard]] udp::CUdpSocket& getSocket() noexcept override { return m_sock; }
 
     [[nodiscard]] bool open(const std::string& peerHost) override {
         return m_sock.open(m_bind.port, peerHost, m_bind.port);
     }
 
-    /// 毎周期、渡されたものを全部出す。クラスごとの間引きは無い — 周期は tick() を叩く側が
-    /// 決めていて、それが全クラスの送信レート。
-    std::size_t pumpOut() override {
-        if (m_fromHla == nullptr || !m_sock.canSend()) return 0;
-
-        // オブジェクトは前回の残りが既に古い。撮り直す前に捨てる。
-        // インタラクションは1件ずつ意味があるので、残っているぶんの後ろに足す。
-        if (m_bind.kind == TClassKind::Object) m_outbox.clear();
-        m_fromHla->drain(m_outbox);
-        // ここで m_backlog を戻しておくこと。オブジェクトが上の clear() で残りを捨てた周期は
-        // ここを通って抜けるので、書き直さないと**捨てたはずの件数を積み残しとして
-        // 報告し続ける**。実際に消えているのに「まだ手元にある」と読める表示になる。
-        if (m_outbox.empty()) { m_backlog = 0; return 0; }
-
-        // 件数の上限は設けない。**1周期に渡されたものはその周期で出し切る。**
-        // 止まるのはソケットが受け付けなかったときだけで、そのとき残った分が持ち越しになる。
-        //
-        // 以前は「1周期あたり8データグラム」で切っていた。それはイベント（インタラクション）が
-        // 束で来る場合を想定した制限だったが、**オブジェクトには有害だった**: 次の周期の頭で
-        // 残りを捨てる設計なので、上限を超えた末尾が毎周期おなじように落ち続け、
-        // インスタンス数が上限を超えたフェデレーションでは末尾が永久に送られなかった。
-        //
-        // **出せた件数は udp::CTUdpSender に数えさせること。publish が true を返した回数ではない。**
-        // publish はレコードをデータグラムに積んだ時点で true を返すが、積まれたぶんが
-        // 実際に出るのは flush のときで、そこで断られると writer ごと捨てられる。
-        // true の回数を「送った件数」として outbox から消すと、**持ち越すはずのイベントが
-        // 毎回きっかり1データグラムぶん静かに消える**（500件のバーストで 434件しか届かない）。
-        // getRecordsSent() は送信が成功したときしか増えないので、これが唯一の正しい件数になる。
-        const std::uint64_t before = m_sender.getRecordsSent();
-        for (const T& record : m_outbox) {
-            if (!m_sender.publish(record, m_sock)) break;
-        }
-
-        // 周期の終わりに必ず出し切る。次の周期まで抱えると、その1周期ぶん遅れる。
-        (void)m_sender.flush(m_sock);
-
-        // 出たのは outbox の先頭から連続したぶんなので、その件数だけ削れば順序は保たれる。
-        const std::size_t sent = static_cast<std::size_t>(m_sender.getRecordsSent() - before);
-        m_outbox.erase(m_outbox.begin(), m_outbox.begin() + static_cast<std::ptrdiff_t>(sent));
-        if (!m_outbox.empty()) {
-            ++m_deferrals;
-            m_backlog = m_outbox.size();
-        } else {
-            m_backlog = 0;
-        }
-        return sent;
-    }
-
-    std::size_t pumpIn() override {
-        const long got = m_receiver.drain(m_sock, [this](const T& rec) {
-            if (m_toHla != nullptr) m_toHla->accept(rec);
+    void pumpIn() override {
+        m_receiver.drain(m_sock, [this](const T& record) {
+            if (m_toHla != nullptr) m_toHla->accept(record);
         });
-        return got < 0 ? 0 : static_cast<std::size_t>(got);
     }
 
-    [[nodiscard]] std::uint64_t getSentTotal() const noexcept override {
-        return m_sender.getRecordsSent();
-    }
-    [[nodiscard]] std::size_t getBacklog() const noexcept override { return m_backlog; }
-    [[nodiscard]] std::uint64_t getDeferrals() const noexcept override { return m_deferrals; }
-    [[nodiscard]] const udp::TUdpReceiveStats& getInStats() const noexcept override {
-        return m_receiver.getStats();
-    }
-    [[nodiscard]] const std::string& getLastError() const noexcept override {
-        return m_sock.getLastError();
-    }
+    void pumpOut() override {
+        if (m_fromHla == nullptr || !m_sock.canSend()) return;
 
-    [[nodiscard]] std::size_t getRecordSize() const noexcept override {
-        return icd::fixedSize<T>;
-    }
-    [[nodiscard]] std::size_t getCapacityInRecords() const noexcept override {
-        return m_sender.getCapacityInRecords();
+        m_outbox.clear();
+        m_fromHla->drain(m_outbox);
+        for (const T& record : m_outbox) m_sender.publish(record, m_sock);
+        m_sender.flush(m_sock);   // 次の周期まで抱えない
     }
 
 private:
-    /// "HLAobjectRoot.EmitterBeam.RadarBeam" -> "EmitterBeam.RadarBeam"。
-    /// 根の名前はどのクラスにも付いていて、表示では何も区別しない。以前は CGateway が表示のたびに
-    /// やっていたが、FOM 名であることを知っているのはこのクラスだけなので、ここで1度だけ行う。
+    /// "HLAobjectRoot.EmitterBeam.RadarBeam" -> "EmitterBeam.RadarBeam"
     static const char* withoutRoot(const char* fomName) noexcept {
         const char* dot = std::strchr(fomName, '.');
         return dot ? dot + 1 : fomName;
     }
 
-    TClassBinding m_bind;            ///< このクラスの ID / ポート / 上限 / 種別（生成物の定数から）
-    const char* m_name;             ///< 表示名。m_bind.fomName の根を除いた部分を指す
-    hla::CTFromHla<T>* m_fromHla;     ///< HLA 側の供給元。借り物で、null なら送信しない
-    hla::CTToHla<T>* m_toHla;         ///< HLA 側の受け口。借り物で、null なら受信を捨てる
-    udp::CUdpSocket m_sock;               ///< このクラス専用のソケット（送受信とも1本）
-    udp::CTUdpSender<T> m_sender;             ///< レコード → データグラム
-    udp::CTUdpReceiver<T> m_receiver;            ///< データグラム → レコード
-    std::vector<T> m_outbox;        ///< 送信待ちのレコード。インタラクションは次の周期へ持ち越す
-    std::size_t m_backlog = 0;      ///< 出し切れず残った件数
-    std::uint64_t m_deferrals = 0;  ///< 出し切れなかった周期の回数
+    TClassBinding m_bind;               ///< ID / ポート / 上限（生成物の定数から）
+    const char* m_name;                 ///< 表示名。m_bind.fomName の根を除いた部分を指す
+    hla::CTFromHla<T>* m_fromHla;       ///< HLA 側の供給元。借り物で、null なら送信しない
+    hla::CTToHla<T>* m_toHla;           ///< HLA 側の受け口。借り物で、null なら受信を捨てる
+    udp::CUdpSocket m_sock;             ///< このクラス専用のソケット（送受信とも1本）
+    udp::CTUdpSender<T> m_sender;       ///< レコード → データグラム
+    udp::CTUdpReceiver<T> m_receiver;   ///< データグラム → レコード
+    std::vector<T> m_outbox;            ///< その周期に送るレコード。毎周期空にして使い回す
 };
 
 }  // namespace gw

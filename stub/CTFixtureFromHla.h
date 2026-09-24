@@ -1,15 +1,7 @@
-// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
-// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
-// 直す先は app/CWiring.h の1ファイルで済む。
+// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境で送信側を動かすための
+// 代用品で、実 RTI に繋ぐときはフォルダごと消せる（直すのは app/CWiring.h だけ）。
 //
-// フィクスチャが作った値を毎周期そのまま渡す供給元。RTI の代わり。
-//
-// **CTFixtureFromHla を一般化したもの。** クラスが2つ目になった時点で、違うのは
-// 「i 番目の値をどう作るか」だけだと分かったので、そこだけを関数ポインタで受ける。
-// クラスを増やしても増えるのは <Class>Fixture.h ひとつで、供給元は実体化するだけでよい。
-//
-// CTConstantFromHla との違いは値が毎回変わること。往復をバイト比較するならこちら、
-// ポートの振り分けだけ見たいなら CTConstantFromHla で足りる。
+// フィクスチャ関数が作る値を毎周期 perDrain 件渡す供給元。i 件目は make(i)。
 
 #pragma once
 
@@ -23,24 +15,18 @@ namespace stub {
 template <class T>
 class CTFixtureFromHla : public hla::CTFromHla<T> {
 public:
-    /// i 番目の値を作る関数。**照合側（CTVerifyingToHla）に同じものを渡すこと。**
-    /// 「送ったはずの値」の定義が2箇所に分かれると、往復照合が意味を失う。
-    using Fixture = T (*)(std::size_t);
+    using Fixture = T (*)(std::size_t);   ///< i 件目の値を作る関数
 
-    CTFixtureFromHla(Fixture make, std::size_t perDrain = 4)
-        : m_make(make), m_perDrain(perDrain) {}
+    CTFixtureFromHla(Fixture make, std::size_t perDrain) : m_make(make), m_perDrain(perDrain) {}
 
-    std::size_t drain(std::vector<T>& out) override {
-        for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(m_make(m_produced++));
-        return m_perDrain;
+    void drain(std::vector<T>& out) override {
+        for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(m_make(m_next++));
     }
 
-    [[nodiscard]] std::size_t getProduced() const noexcept { return m_produced; }
-
 private:
-    Fixture m_make;                 ///< i 番目の値を作る関数
-    std::size_t m_perDrain;         ///< 1回の drain で作る件数
-    std::size_t m_produced = 0;     ///< これまでに作った累計件数（m_make の添字）
+    Fixture m_make;           ///< i 件目の値を作る関数
+    std::size_t m_perDrain;   ///< 1回の drain で渡す件数
+    std::size_t m_next = 0;   ///< 次に作る値の添字
 };
 
 }  // namespace stub

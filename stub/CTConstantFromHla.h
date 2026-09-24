@@ -1,12 +1,7 @@
-// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境でゲートウェイを動かし、
-// 往復を検証するための代用品だけが入っている。実 RTI に繋ぐときは stub/ ごと消せて、
-// 直す先は app/CWiring.h の1ファイルで済む。
+// **本番には持っていかないファイル。** stub/ は RTI が無いこの環境で送信側を動かすための
+// 代用品で、実 RTI に繋ぐときはフォルダごと消せる（直すのは app/CWiring.h だけ）。
 //
-// 中身に意味を持たせない供給元。
-//
-// ポートが複数あって poll が正しく振り分けているかを見るためだけのもので、
-// 値は既定構築のまま（可変長配列は 0 要素）。**毎回まったく同じ値**なので、
-// これを流したクラスはバイト比較しても何も分からない。数えるだけの相手と組ませること。
+// 既定構築の値（可変長配列は 0 要素）を毎周期 perDrain 件渡す供給元。値に意味は無い。
 
 #pragma once
 
@@ -20,19 +15,14 @@ namespace stub {
 template <class T>
 class CTConstantFromHla : public hla::CTFromHla<T> {
 public:
-    explicit CTConstantFromHla(std::size_t perDrain = 1) : m_perDrain(perDrain) {}
+    explicit CTConstantFromHla(std::size_t perDrain) : m_perDrain(perDrain) {}
 
-    std::size_t drain(std::vector<T>& out) override {
+    void drain(std::vector<T>& out) override {
         for (std::size_t n = 0; n < m_perDrain; ++n) out.push_back(T{});
-        m_produced += m_perDrain;
-        return m_perDrain;
     }
 
-    [[nodiscard]] std::size_t getProduced() const noexcept { return m_produced; }
-
 private:
-    std::size_t m_perDrain;         ///< 1回の drain で作る件数
-    std::size_t m_produced = 0;     ///< これまでに作った累計件数
+    std::size_t m_perDrain;   ///< 1回の drain で渡す件数
 };
 
 }  // namespace stub

@@ -87,12 +87,6 @@
     <ClInclude Include="gateway\TClassBinding.h">
       <Filter>gateway</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\TClassKind.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="gateway\TLoopStats.h">
-      <Filter>gateway</Filter>
-    </ClInclude>
     <ClInclude Include="gateway\hla\CTFromHla.h">
       <Filter>gateway\hla</Filter>
     </ClInclude>
@@ -111,9 +105,6 @@
     <ClInclude Include="gateway\hla\CTToHla.h">
       <Filter>gateway\hla</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\Federate.h">
-      <Filter>gateway\hla</Filter>
-    </ClInclude>
     <ClInclude Include="gateway\udp\CPoller.h">
       <Filter>gateway\udp</Filter>
     </ClInclude>
@@ -126,19 +117,10 @@
     <ClInclude Include="gateway\udp\CUdpSocket.h">
       <Filter>gateway\udp</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\udp\TUdpReceiveStats.h">
-      <Filter>gateway\udp</Filter>
-    </ClInclude>
     <ClInclude Include="stub\CTConstantFromHla.h">
       <Filter>stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\CTCountingToHla.h">
-      <Filter>stub</Filter>
-    </ClInclude>
     <ClInclude Include="stub\CTFixtureFromHla.h">
-      <Filter>stub</Filter>
-    </ClInclude>
-    <ClInclude Include="stub\CTVerifyingToHla.h">
       <Filter>stub</Filter>
     </ClInclude>
     <ClInclude Include="stub\ObjectId.h">
