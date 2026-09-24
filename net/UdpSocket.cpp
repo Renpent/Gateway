@@ -163,22 +163,25 @@ bool UdpSocket::send(const unsigned char* data, std::size_t len) {
     return true;
 }
 
-long UdpSocket::receive(unsigned char* buf, std::size_t cap) {
-    if (!isOpen()) { m_error = "ソケットが開いていません"; return -1; }
+UdpSocket::Received UdpSocket::receive(unsigned char* buf, std::size_t cap, std::size_t& len) {
+    len = 0;
+    if (!isOpen()) { m_error = "ソケットが開いていません"; return Received::Error; }
 
     const auto got = ::recvfrom(asSocket(m_handle), reinterpret_cast<char*>(buf),
                                 static_cast<int>(cap), 0, nullptr, nullptr);
     if (got < 0) {
-        if (wouldBlock(lastErrno())) return 0;
+        if (wouldBlock(lastErrno())) return Received::Nothing;
 #ifdef _WIN32
         // 直前に送った先が閉じていると ICMP port unreachable が返り、Windows では
         // それが「受信側」のエラーとして上がってくる。UDP は非接続なので無視してよい。
-        if (lastErrno() == WSAECONNRESET) return 0;
+        if (lastErrno() == WSAECONNRESET) return Received::Nothing;
 #endif
         (void)fail("recvfrom");
-        return -1;
+        return Received::Error;
     }
-    return static_cast<long>(got);
+    // 0 も正当な長さ。空のデータグラムを受け取ったのであって、何も来ていないのではない。
+    len = static_cast<std::size_t>(got);
+    return Received::Datagram;
 }
 
 }  // namespace gw

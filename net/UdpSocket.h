@@ -45,13 +45,26 @@ public:
     /// データグラムを1つ送る。UDP に部分送信はない — 全部行くか失敗するか。
     [[nodiscard]] bool send(const unsigned char* data, std::size_t len);
 
+    /// UDP で1データグラムに載る最大のバイト数（IPv4）。受信バッファをこの長さにしておけば、
+    /// 相手が何を送ってきても切り詰めは起きない。
+    static constexpr std::size_t kMaxDatagram = 65507;
+
+    /// receive() の結果。**バイト数ではなく状態を返す。**
+    ///
+    /// 以前は「>0 = バイト数、0 = 何も来ていない、-1 = エラー」だった。これだと
+    /// **0バイトのデータグラムが「何も来ていない」と区別できない** — 空のデータグラムは
+    /// 数えられずに消え、読み取りループがそこで抜けて、後ろに並んでいたぶんは次の周期まで
+    /// 読まれなかった（Windows / Linux の両方で実測）。長さは len で別に返す。
+    enum class Received {
+        Datagram,   ///< 1つ受け取った。len がそのバイト数（0 もありうる）
+        Nothing,    ///< 今は何も来ていない
+        Error,      ///< 失敗。lastError() を見ること
+    };
+
     /// データグラムを1つ受ける。ブロックしない。
-    ///   >0  受信バイト数
-    ///    0  今は何も来ていない
-    ///   -1  エラー（lastError() を見ること）
     /// cap は必ず最大ペイロード以上にすること。長いデータグラムは切り詰められ、
-    /// UDP では残りを後から取れない。
-    [[nodiscard]] long receive(unsigned char* buf, std::size_t cap);
+    /// UDP では残りを後から取れない。形式が分からない相手なら kMaxDatagram にする。
+    [[nodiscard]] Received receive(unsigned char* buf, std::size_t cap, std::size_t& len);
 
     /// 直近の失敗の理由。
     /// **send と receive が同じ1本を書く。** ソケット自体は全二重で、送信と受信を別スレッドに

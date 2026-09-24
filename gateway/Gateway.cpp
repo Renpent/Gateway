@@ -27,6 +27,26 @@ void Gateway::add(std::unique_ptr<Channel> channel) {
 }
 
 bool Gateway::openAll(const std::string& peerHost) {
+    // **ポートの重複は bind では捕まらない。** UdpSocket は SO_REUSEADDR を立てているので
+    // 2本目の bind も成功し、データグラムはどちらか一方にしか届かない。しかも**どちらに
+    // 届くかが OS で逆**で、Windows は先に bind したほう、Linux は後のほうが受け取る
+    // （両方で実測）。片方が黙って飢えるうえに、飢えるほうが環境で変わるので、開く前に止める。
+    //
+    // ICD のクラスは ICDgenerator のダイアログが重複を検出するが、手で番号を書くチャネル
+    // （FOM に無い独自データ）はその網にかからない。ここが全チャネル共通の最後の網。
+    for (std::size_t i = 0; i < m_channels.size(); ++i) {
+        for (std::size_t j = 0; j < i; ++j) {
+            if (m_channels[i]->binding().port == m_channels[j]->binding().port) {
+                std::printf("ポート %u が重複しています: [%s] と [%s]。"
+                            "重複すると片方にしか届かず、どちらに届くかは OS で変わります。\n",
+                            m_channels[i]->binding().port,
+                            trimRoot(m_channels[j]->binding().fomName),
+                            trimRoot(m_channels[i]->binding().fomName));
+                return false;
+            }
+        }
+    }
+
     m_pollIndex.clear();
     for (auto& ch : m_channels) {
         // 1件も入らないレコードは、開いてから毎周期黙って捨てられる。ここで止める。
