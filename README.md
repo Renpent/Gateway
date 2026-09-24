@@ -26,7 +26,7 @@ HLAGateway run <宛先IP|none> [Hz] [秒]  実運用の形。none なら受信�
 1. poll に待機時間 0 で聞き、来ているポートを知る        ← システムコール1回
 2. そのポートだけ読み切って復号し、HLA やアプリへ渡す     ← ノンブロッキング
 3. HLA 側から出てきたものを符号化して送る                ← 全クラス、毎周期
-4. 全チャネルの onTickEnd()（受け取ったコマンドの実行）    ← 登録は要らない
+4. 周期末の処理（受け取ったコマンドの実行など）           ← addTickEnd で登録
 5. 次の周期まで sleep                                    ← 待つのはここだけ
 ```
 
@@ -281,28 +281,68 @@ add<icdfom::Bar>(g, nullptr,     &barToHla);  // 受信のみ
 前者が毎周期こちらから取りに行く（pull）のに対し、後者は RTI のコールバックから
 押し込まれる（push）から。
 
+HLA ツールキットは `worldPtr->getXxxManager()->getYyy()` の形で呼び、`update()` や
+`sendInteraction()` は `getYyy()` が返すポインタのメソッドになっている。world はフェデレーションに
+join してからできるので、シングルトン（下の例では `CDb`）に置いて、**呼ばれたときに読む**。
+ラムダは何も掴まないので、配線は join より前に作ってよい。
+
 ```cpp
 // オブジェクト
 hla::CTRtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
-    [this] { return m_fed.getRemoteAircraft(); },   // Fetch: getRemoteXXX() を呼ぶだけ
+    [] { return CDb::getInstance().getWorld()->getObjectManager()->getRemoteAircraft(); },  // Fetch
     &toIcd                                          // Convert: 1インスタンス → 1レコード
 };
 hla::CTRtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
-    &keyOf,                                                              // どのインスタンスか
-    [this](const std::string& k) { return m_fed.registerAircraft(k); },  // 初見なら登録
-    &writeBack                                                           // 属性を書いて update
+    &keyOf,                                         // どのインスタンスか
+    [](const std::string& k) {                      // 初見なら登録
+        return CDb::getInstance().getWorld()->getObjectManager()->registerAircraft(k); },
+    &writeBack                                      // p->setXxx(...); p->update();
 };
 
 // インタラクション
 hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // 上限は既定でよい
 hla::CTRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
-    [this](const icdfom::WeaponFire& r) { m_fed.sendWeaponFire(toRti(r)); }
+    [](const icdfom::WeaponFire& r) {
+        auto* i = CDb::getInstance().getWorld()->getInteractionManager()->getWeaponFire();
+        fillRti(r, i);                              // パラメータを詰める
+        i->sendInteraction(); }
 };
 ```
 
-`Fetch` と `Create` だけ `std::function`（フェデレートを掴む必要がある）、残りは状態を持たない
-自由関数の想定で関数ポインタ。**クラスごとに書く中身はこの関数だけ** — オブジェクトなら
-`toIcd` / `keyOf` / `writeBack` の3本、インタラクションなら `toIcd` / `toRti` の2本。
+`Fetch` と `Create` と `Send` は `std::function`、残り（`Convert` / `KeyOf` / `Write`）は状態を持たない
+自由関数の想定で関数ポインタ。`update()` がポインタのメソッドなので、`writeBack` は world を
+必要としない。**クラスごとに書く中身はこの関数だけ** — オブジェクトなら `toIcd` / `keyOf` /
+`writeBack` の3本、インタラクションなら `toIcd` / `fillRti` の2本。
+
+**守る順番：** world が無い間にゲートウェイを回さないこと。world を null チェックせずに辿るので。
+
+```
+起動:  配線を作る → join → CDb に world を置く → openAll → run
+終了:  run が戻る → resign → CDb の world を外す
+```
+
+world を書き換えるのは周期ループが止まっているときだけなので、シングルトンにロックは要らない。
+
+### 変換に加えて、別の処理もしたいクラス
+
+HLA から受け取って UDP に流しつつ、そのデータで別の処理もしたいクラスは、**そのクラスの Fetch の
+中に書く**。取ってきたデータがそこにあるので、取り直す必要がない。
+
+```cpp
+hla::CTRtiObjectFromHla<icdfom::RadarBeam, their::RadarBeamPtr> beamFromHla{
+    [] {
+        auto beams = CDb::getInstance().getWorld()->getObjectManager()->getRemoteRadarBeam();
+        CRadarBeamExtra::apply(beams);   // 別の処理。world も CDb から取れる
+        return beams;                    // こちらはそのまま UDP に変換されて送られる
+    },
+    &toIcd };
+```
+
+処理の中身は `app/` に小さなクラスとして置けば、配線は Fetch の1行が増えるだけで済む。
+
+**Fetch が呼ばれるのは、そのチャネルが送信するときだけ。** 送信先の無い `run none` で立ち上げた
+ときや、送信側を繋いでいない（`fromHla` が null の）クラスでは呼ばれない。送信の有無に関係なく
+毎周期やりたい処理なら、`CGateway::addTickEnd` に登録する。
 
 `fireFromHla` は Fetch を取らない代わりに、**`receiveInteraction` のコールバック側にこの
 ポインタを渡して、その中で `push()` を呼ぶ**配線が別に要る。ゲートウェイで唯一ロックを持つ
@@ -462,10 +502,14 @@ tick():  [UDP 受信 → HLA へ]  [HLA から → UDP 送信]  [制御コマン
 効くが、そこでチャネルやソケットを変えると、後半のループと poll の対応表がずれる。積むのも反映
 するのも周期ループのスレッドなので、このキューにロックは要らない。
 
-反映する場所はハンドラの `onTickEnd()`。**登録は要らない** — `addRaw` で繋いだチャネルが毎周期
-自分のハンドラの `onTickEnd()` を呼ぶので、ハンドラをいくつ足しても呼ばれ忘れることがない（順番は
-チャネルを足した順）。以前は `CGateway` に処理を1つだけ登録する形で、ハンドラが増えたときに追記を
-忘れると、積まれたものが処理されずにキューが伸び続けた。
+反映する場所はハンドラの `onTickEnd()`。配線の `addRaw` がチャネルを足すときに
+`CGateway::addTickEnd` へ一緒に登録するので、**ハンドラをいくつ足しても呼ばれ忘れることがない**
+（順番は足した順）。`addTickEnd` はいくつでも登録でき、ハンドラ以外の周期末処理もここに足せる。
+送信の有無に関係なく毎周期呼ばれる（受信専用で立ち上げたときも）。
+
+周期末の処理を**チャネルの機能にはしていない**。周期末にやることがあるのは独自データのハンドラなど
+一部だけで、大半のチャネル（ICD のクラス）は受けて変換して流すだけなので、チャネルに持たせると
+ほとんどが空の実装になる。
 
 `CCommandHandler` で処理を書ける場所は3段ある：1コマンドずつなら `handle()`、その周期に届いた全部を
 まとめて見るなら `onTickEnd()`（届いた順に並んでいる）、周期をまたいで覚えておく状態はメンバ。

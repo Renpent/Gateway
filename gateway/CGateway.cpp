@@ -78,8 +78,8 @@ void CGateway::tick() {
     for (auto& ch : m_channels) ch->pumpOut();
 
     // 周期の終わり。受信・送信どちらのループも終わっているので、制御コマンドはここで反映する。
-    // 全チャネルに呼ぶので、ハンドラをいくつ足しても登録し忘れることがない。順番は足した順。
-    for (auto& ch : m_channels) ch->onTickEnd();
+    // 送信の有無に関係なく毎周期呼ぶ（受信専用で立ち上げたときも）。順番は足した順。
+    for (auto& fn : m_tickEnds) fn();
 }
 
 void CGateway::run(unsigned hz, unsigned seconds) {

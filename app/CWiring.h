@@ -30,8 +30,10 @@
 //   受信のみ addRaw<T>(g, &commandHandler);
 //
 // **コマンドの処理は tick() の最後。** 受け口は受信中にキューへ積むだけにして、周期の最後に
-// ハンドラの onTickEnd() がまとめて実行する（app/CCommandHandler.h）。onTickEnd() は addRaw で
-// 繋いだチャネルが毎周期呼ぶので、**ハンドラを足しても、ここに登録する行は増えない。**
+// ハンドラの onTickEnd() がまとめて実行する（app/CCommandHandler.h）。onTickEnd() は addRaw が
+// チャネルと一緒に CGateway::addTickEnd へ登録するので、**ハンドラを足しても行は増えない。**
+//
+// 周期末にやりたいことがハンドラ以外にあれば、build() の中で g.addTickEnd(...) を足す。
 
 #pragma once
 
@@ -119,8 +121,12 @@ private:
 
     /// FOM に無い独自データの受信口。ポートと名前は T の定数から決まる。
     template <class T>
+    ///
+    /// **ハンドラの周期末処理もここで一緒に登録する。** 別の行で登録する形にすると、ハンドラを
+    /// 足したときに書き忘れ、受信中に積んだものが処理されずにキューが伸び続ける。
     static void addRaw(gw::CGateway& g, gw::CTMessageHandler<T>* handler) {
         g.add(std::unique_ptr<gw::CChannel>(new gw::CTRawChannel<T>(handler)));
+        if (handler != nullptr) g.addTickEnd([handler] { handler->onTickEnd(); });
     }
 };
 

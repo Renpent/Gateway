@@ -87,12 +87,6 @@ public:
         return delivered;
     }
 
-    /// 周期の最後にハンドラへ伝える。受信中に積んだものを処理する機会はここだけなので、
-    /// **ハンドラがいくつあっても、それぞれが自分のチャネル経由で必ず呼ばれる。**
-    void onTickEnd() override {
-        if (m_handler != nullptr) m_handler->onTickEnd();
-    }
-
     /// 可変長。1データグラムに1メッセージ（CChannel の取り決めで 0 が「可変」）。
     [[nodiscard]] std::size_t getRecordSize() const noexcept override { return 0; }
     [[nodiscard]] std::size_t getCapacityInRecords() const noexcept override { return 1; }
