@@ -43,11 +43,13 @@ HLAGateway <宛先IP|none> [Hz] [秒]
 
 ```
 main.cpp          起動
-app/              配線（CWiring）と、FOM に無い独自データの型・処理（TCommand, CCommandHandler）
+app/              配線（スタブ用 CWiring / 本番用 CRtiWiring）と、FOM に無い独自データの型・処理
+rti/              本番の変換関数（ツールキットの型 ⇄ ICD の型）と、world を持つ CDb
 gateway/          周期ループ（CGateway）とチャネル（ICD のクラス用・独自データ用）
   udp/            ソケット、poll、データグラムの送信（CTUdpSender）と受信（CTUdpReceiver）
   hla/            HLA 側の継ぎ目（CTFromHla / CTToHla）と、RTI を呼ぶ器
 stub/             RTI の代わりに値を作る代用品。**本番には持っていかない**
+  toolkit/        偽の HLA ツールキット
 platform/         コンソールの文字コードとタイマ分解能（Windows のみ）
 icd/              ICDgenerator の生成物。手で編集しない
 ```
@@ -57,7 +59,7 @@ icd/              ICDgenerator の生成物。手で編集しない
 - `gateway/` は `app/` を見ない
 - `udp/` と `hla/` は互いを知らない
 - OS を知っているのは `gateway/udp/*.cpp` と `platform/*.cpp` だけ
-- RTI の型はどこにも出てこない
+- ツールキットの型が出てくるのは `rti/` と、それを繋ぐ `app/CRtiWiring.h` だけ
 
 **名前空間はフォルダで決まる。**
 
@@ -67,7 +69,9 @@ icd/              ICDgenerator の生成物。手で編集しない
 | `gateway/udp/` | `udp` |
 | `gateway/hla/` | `hla` |
 | `app/` | `app` |
+| `rti/` | `rti`（ツールキットは別名 `tk`） |
 | `stub/` | `stub` |
+| `stub/toolkit/` | `toolkit` |
 | `platform/` | `platform` |
 | `icd/`（生成物） | `icd` / `icdfom` |
 
@@ -98,7 +102,7 @@ icd/              ICDgenerator の生成物。手で編集しない
 - **ソースは UTF-8（BOM なし）+ CRLF。** `README.md` と `CMakeLists.txt` だけは LF。
   MSVC には `/utf-8` を渡してある
 
-## クラスを1つ足す
+## クラスを1つ足す（スタブで試す）
 
 **手で書くのは配線（`app/CWiring.h`）と、RTI が無い間の代用品だけ。** ID・ポート・ペイロードは
 生成物の定数から決まるので、どこにも数字を書かない。
@@ -177,14 +181,14 @@ stub::CDesignatorToHla designatorToHla;
 `build()` に1行足す：
 
 ```cpp
-add<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // 送受信
+addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // 送受信
 ```
 
 片方向のクラスは、要らないほうに `nullptr` を渡す。
 
 ```cpp
-add<icdfom::Foo>(g, &fooFromHla, nullptr);   // 送信のみ
-add<icdfom::Bar>(g, nullptr, &barToHla);     // 受信のみ
+addClass<icdfom::Foo>(g, &fooFromHla, nullptr);   // 送信のみ
+addClass<icdfom::Bar>(g, nullptr, &barToHla);     // 受信のみ
 ```
 
 **`T`（`<icdfom::Designator>`）は必ず明示すること。** `nullptr` からは型が決まらない。
@@ -207,71 +211,156 @@ HLAGateway 127.0.0.1 20 1
 
 ### 本番では
 
-`stub::` の2つを `hla::CTRti...` の器に差し替える（次の節）。クラスごとに書くのは変換関数だけ。
+`stub::` の2つを `hla::CTRti...` の器に、配線を `app/CRtiWiring.h` にする（次の節）。
 
-## 本番（RTI）での形
+## クラスを1つ足す（本番）
 
-`stub::` の代用品を `hla::CTRti...` の器に差し替える。HLA ツールキットが
-`worldPtr->getXxxManager()->getYyy()` の形で、`update()` や `sendInteraction()` が戻り値の
-ポインタのメソッドである前提。world は join してからできるので、シングルトン（下の例では `CDb`）に置き、
-**呼ばれたときに読む。**
+RTI に繋ぐときに書くファイルと、その雛形。**サンプルは Designator（オブジェクト）と
+WeaponFire（インタラクション）** で、偽のツールキットに対して動作を確認してある。
+
+### ファイル群
+
+| ファイル | 何 | クラスを足すとき |
+|---|---|---|
+| `rti/Toolkit.h` | ツールキットの入口。rti/ はここ経由でだけツールキットを見る | 触らない（本物に繋ぐときに1回だけ差し替え） |
+| `rti/CDb.h` | world を持つシングルトン | 触らない |
+| `rti/TypeConv.h/.cpp` | 入れ子のレコードと ID の変換（型ごと、クラス間で共有） | まだ無い型が出てきたら1組足す |
+| `rti/<Class>Rti.h/.cpp` | **そのクラスの変換関数** | **1クラスにつき1組、新しく書く** |
+| `app/CRtiWiring.h` | 本番の配線 | **メンバ2本と1行を足す** |
+| `stub/toolkit/Toolkit.h` | 偽のツールキット（本番には持っていかない） | 試すなら、そのクラスを足す |
+
+加えて、スタブのときと同じく ICDgenerator で `icd/` を生成し、`.cpp` をビルド設定に足す
+（「クラスを1つ足す（スタブで試す）」の①②）。
+
+### オブジェクトを足す（`rti/DesignatorRti.h/.cpp` が雛形）
+
+書く関数は5本。Fetch と Create は world を `CDb` から読む。
 
 ```cpp
-// オブジェクト：毎周期こちらから取りに行く
-hla::CTRtiObjectFromHla<icdfom::Aircraft, their::AircraftPtr> aircraftFromHla{
-    [] { return CDb::getInstance().getWorld()->getObjectManager()->getRemoteAircraft(); },  // Fetch
-    &toIcd                                          // 1インスタンス → 1レコード
-};
-hla::CTRtiObjectToHla<icdfom::Aircraft, their::AircraftPtr> aircraftToHla{
-    &keyOf,                                         // どのインスタンスか
-    [](const std::string& k) {                      // 初見なら登録
-        return CDb::getInstance().getWorld()->getObjectManager()->registerAircraft(k); },
-    &writeBack                                      // p->setXxx(...); p->update();
-};
-
-// インタラクション：RTI のコールバックから押し込まれる
-hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;   // コールバックの中で push() を呼ぶ
-hla::CTRtiInteractionToHla<icdfom::WeaponFire>   fireToHla{
-    [](const icdfom::WeaponFire& r) {
-        auto* i = CDb::getInstance().getWorld()->getInteractionManager()->getWeaponFire();
-        fillRti(r, i);
-        i->sendInteraction(); }
-};
+namespace rti {
+std::vector<tk::DesignatorPtr> getRemoteDesignator();                      // Fetch
+icdfom::Designator toIcd(const tk::DesignatorPtr& p);                       // HLA → ICD
+std::string keyOf(const icdfom::Designator& r);                             // どのインスタンスか
+tk::DesignatorPtr registerDesignator(const std::string& key);               // Create
+void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p);    // ICD → HLA、update
+}
 ```
 
-クラスごとに書くのは変換関数だけ：
+中身は属性ごとの代入を並べるだけ。入れ子のレコードと ID は `TypeConv` の `toIcd` / `toRti` に任せ、
+列挙は `static_cast` する。
 
-- オブジェクト：`toIcd` / `keyOf` / `writeBack` の3本
-- インタラクション：`toIcd` / `fillRti` の2本
+```cpp
+icdfom::Designator toIcd(const tk::DesignatorPtr& p) {
+    icdfom::Designator r{};
+    r.EntityIdentifier      = toIcd(p->getEntityIdentifier());          // 入れ子のレコード
+    r.HostObjectIdentifier  = toIcd(p->getHostObjectIdentifier());      // ID（文字列 → 文字の配列）
+    r.CodeName              = static_cast<icdfom::DesignatorCodeNameEnum16>(p->getCodeName());   // 列挙
+    r.DesignatorOutputPower = p->getDesignatorOutputPower();            // そのまま
+    ...
+    return r;
+}
 
-**起動と終了の順番。** world が無い間にゲートウェイを回さないこと（world を null チェックせずに辿るため）。
-
+void writeBack(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
+    p->setEntityIdentifier(toRti(r.EntityIdentifier));
+    ...
+    p->update();
+}
 ```
-起動:  配線を作る → join → CDb に world を置く → openAll → run
-終了:  run が戻る → resign → CDb の world を外す
+
+配線（`app/CRtiWiring.h`）：
+
+```cpp
+hla::CTRtiObjectFromHla<icdfom::Designator, tk::DesignatorPtr> designatorFromHla{
+    &rti::getRemoteDesignator, &rti::toIcd};
+hla::CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
+    &rti::keyOf, &rti::registerDesignator, &rti::writeBack};
+...
+addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // build() に
 ```
+
+### インタラクションを足す（`rti/WeaponFireRti.h/.cpp` が雛形）
+
+書く関数は4本。**HLA から来る向きは RTI のコールバック**なので、受信を登録する関数が要る。
+
+```cpp
+namespace rti {
+icdfom::WeaponFire toIcd(const tk::WeaponFire& i);                  // 受信したパラメータ → ICD
+void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);       // ICD → 送信するパラメータ
+void sendWeaponFire(const icdfom::WeaponFire& r);                   // Send：fillRti して sendInteraction
+void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue);   // 受信の登録
+}
+```
+
+```cpp
+void subscribeWeaponFire(hla::CTRtiInteractionFromHla<icdfom::WeaponFire>& queue) {
+    CDb::getInstance().getWorld()->getInteractionManager()->setWeaponFireCallback(
+        [&queue](const tk::WeaponFire& i) { queue.push(toIcd(i)); });   // RTI のスレッド
+}
+```
+
+配線：
+
+```cpp
+hla::CTRtiInteractionFromHla<icdfom::WeaponFire> fireFromHla;
+hla::CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&rti::sendWeaponFire};
+...
+addClass<icdfom::WeaponFire>(g, &fireFromHla, &fireToHla);   // build() に
+rti::subscribeWeaponFire(fireFromHla);                       // subscribe() に
+```
+
+### main の形
+
+world は join してからできるので、`CDb` に置いてから回す。**world が無い間にゲートウェイを回さないこと**
+（null チェックせずに辿るため）。
+
+```cpp
+app::CRtiWiring wiring;          // CGateway より先に宣言する（チャネルが借りているため）
+gw::CGateway gateway;
+wiring.build(gateway);
+
+/* join */
+rti::CDb::getInstance().setWorld(world);
+wiring.subscribe();              // インタラクションの受信を登録
+if (gateway.openAll(peer)) gateway.run(20, 0);
+/* resign */
+rti::CDb::getInstance().setWorld(nullptr);
+```
+
+いまの `main.cpp` はスタブの配線（`CWiring`）を使っている。`CRtiWiring` はビルドには入っているが、
+まだ main からは使っていない。
+
+### 本物のツールキットに繋ぐとき
+
+1. `rti/Toolkit.h` の2行を、本物のヘッダの include と名前空間の別名に差し替える
+2. `rti/` の変換関数を本物の綴りに合わせる。**偽物で仮に決めたのは次の4つ：**
+   - 属性はアクセサ（`getXxx` / `setXxx`）で触る
+   - 入れ子のレコードは FOM と同じ名前の構造体で返る
+   - 列挙は整数、`RTIobjectId` は `std::string`
+   - インタラクションの受信は `setWeaponFireCallback` で登録したコールバックに届く
+3. `stub/` を消し、main を `CRtiWiring` に切り替える
+
+**RTIobjectId の上限に注意。** ICD では上限（RPR FOM では16文字）のある配列になっている。
+これを超える ID のレコードは符号化に失敗し、送られない。上限は ICDgenerator の配列上限ダイアログで決める。
 
 ### スレッド
 
 ゲートウェイ本体は単一スレッドで、ロックがあるのは `CTRtiInteractionFromHla` だけ。
-インタラクションは RTI のスレッドのコールバックで届くので、次のようにする：
 
 - **コールバックの中で `T` に詰め替えてから `push()` する。** RTI のパラメータのバッファは、
   コールバックの間しか有効でないのが普通のため
 - 周期ループが `drain()` でまとめて持っていく
+- `CDb` の world を書き換えるのは周期ループが止まっているときだけなので、`CDb` にロックは要らない
 
 ### 変換に加えて、別の処理もしたいクラス
 
 **そのクラスの Fetch の中に書く。** 取ってきたデータがそこにあるので、取り直す必要がない。
 
 ```cpp
-hla::CTRtiObjectFromHla<icdfom::RadarBeam, their::RadarBeamPtr> beamFromHla{
-    [] {
-        auto beams = CDb::getInstance().getWorld()->getObjectManager()->getRemoteRadarBeam();
-        CRadarBeamExtra::apply(beams);   // 別の処理
-        return beams;                    // こちらは UDP に変換されて送られる
-    },
-    &toIcd };
+std::vector<tk::DesignatorPtr> getRemoteDesignator() {
+    auto list = CDb::getInstance().getWorld()->getObjectManager()->getRemoteDesignator();
+    CDesignatorExtra::apply(list);   // 別の処理
+    return list;                     // こちらは UDP に変換されて送られる
+}
 ```
 
 **Fetch が呼ばれるのは、そのチャネルが送信するときだけ。** 次のときには呼ばれない：
@@ -283,6 +372,8 @@ hla::CTRtiObjectFromHla<icdfom::RadarBeam, their::RadarBeamPtr> beamFromHla{
 
 ### 決まっていないこと
 
+- **鍵の選び方（`keyOf`）。** サンプルは `HostObjectIdentifier`。1つの母体に指示器が複数あるなら、
+  ほかのフィールドと組にする
 - **部分更新の扱い。** ICD は常に全属性ぶんの箱を送るので、送信側が持っていない属性はゼロで届く。
   前回値で埋めるか既定値で埋めるかは `writeBack` の中で決める
 - **インスタンスの削除。** `CTRtiObjectToHla` は一度登録したインスタンスを消さない

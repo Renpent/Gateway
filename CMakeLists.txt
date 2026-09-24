@@ -12,6 +12,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(HLAGateway
     main.cpp
+    rti/DesignatorRti.cpp
+    rti/TypeConv.cpp
+    rti/WeaponFireRti.cpp
     gateway/CGateway.cpp
     gateway/udp/CPoller.cpp
     gateway/udp/CUdpSocket.cpp

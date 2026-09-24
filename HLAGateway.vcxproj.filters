@@ -4,6 +4,9 @@
     <Filter Include="app">
       <UniqueIdentifier>{1a1b0a1e-0006-4000-9000-000000000006}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rti">
+      <UniqueIdentifier>{2b065902-d5ed-48fb-8fab-2e217d018bea}</UniqueIdentifier>
+    </Filter>
     <Filter Include="gateway">
       <UniqueIdentifier>{1a1b0a1e-0003-4000-9000-000000000003}</UniqueIdentifier>
     </Filter>
@@ -15,6 +18,9 @@
     </Filter>
     <Filter Include="stub">
       <UniqueIdentifier>{9c1f7a52-3b6d-4e08-8a41-2f7d5c0b6e93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stub\toolkit">
+      <UniqueIdentifier>{ea324627-2a33-45ea-bf0d-e98751625f72}</UniqueIdentifier>
     </Filter>
     <Filter Include="platform">
       <UniqueIdentifier>{1a1b0a1e-0001-4000-9000-000000000001}</UniqueIdentifier>
@@ -31,6 +37,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rti\DesignatorRti.cpp">
+      <Filter>rti</Filter>
+    </ClCompile>
+    <ClCompile Include="rti\TypeConv.cpp">
+      <Filter>rti</Filter>
+    </ClCompile>
+    <ClCompile Include="rti\WeaponFireRti.cpp">
+      <Filter>rti</Filter>
+    </ClCompile>
     <ClCompile Include="gateway\CGateway.cpp">
       <Filter>gateway</Filter>
     </ClCompile>
@@ -63,10 +78,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\AddChannel.h">
+      <Filter>app</Filter>
+    </ClInclude>
     <ClInclude Include="app\CCommandHandler.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="app\CControlHandler.h">
+      <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="app\CRtiWiring.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="app\CWiring.h">
@@ -77,6 +98,21 @@
     </ClInclude>
     <ClInclude Include="app\TControl.h">
       <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="rti\CDb.h">
+      <Filter>rti</Filter>
+    </ClInclude>
+    <ClInclude Include="rti\DesignatorRti.h">
+      <Filter>rti</Filter>
+    </ClInclude>
+    <ClInclude Include="rti\Toolkit.h">
+      <Filter>rti</Filter>
+    </ClInclude>
+    <ClInclude Include="rti\TypeConv.h">
+      <Filter>rti</Filter>
+    </ClInclude>
+    <ClInclude Include="rti\WeaponFireRti.h">
+      <Filter>rti</Filter>
     </ClInclude>
     <ClInclude Include="gateway\CChannel.h">
       <Filter>gateway</Filter>
@@ -146,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="stub\WeaponFireFixture.h">
       <Filter>stub</Filter>
+    </ClInclude>
+    <ClInclude Include="stub\toolkit\Toolkit.h">
+      <Filter>stub\toolkit</Filter>
     </ClInclude>
     <ClInclude Include="platform\Platform.h">
       <Filter>platform</Filter>

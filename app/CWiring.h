@@ -1,28 +1,22 @@
-// どのクラスをどちら向きに流すかを決める場所。**クラスを足すときに触るのはこのファイルだけ。**
+// スタブの配線。RTI が無いこの環境で動かすためのもので、main.cpp が使う。
+// **本番の配線は app/CRtiWiring.h**（同じ形で、stub:: の代わりに hla::CTRti... と rti/ の変換を繋ぐ）。
 //
-// ID・ポート・ペイロードは書かない。add<T> が生成物の定数（bindingOf<T>()）から決める。
+// ID・ポート・ペイロードは書かない。addClass<T> が生成物の定数（bindingOf<T>()）から決める。
 //
 // 送受信の相手（継ぎ目の実体）はこのクラスが値で持ち、チャネルは借りるだけ。
 // そのため CWiring は CGateway より長く生きる必要がある（main.cpp の宣言順）。
 //
-//   送受信    add<T>(g, &fromHla, &toHla);
-//   送信のみ  add<T>(g, &fromHla, nullptr);
-//   受信のみ  add<T>(g, nullptr,  &toHla);
+//   送受信     addClass<T>(g, &fromHla, &toHla);
+//   送信のみ   addClass<T>(g, &fromHla, nullptr);
+//   受信のみ   addClass<T>(g, nullptr,  &toHla);
 //   独自データ addRaw<T>(g, &handler);
 //
-// いまは RTI が無いので、送信側は stub/ の代用品。受信側は Designator（サンプル）だけ表示する
-// モックを繋ぎ、ほかは繋いでいない（受けた分は捨てる）。
-// 本番では hla::CTRtiObjectFromHla などに差し替える（README の「本番（RTI）での形」）。
+// 送信側は stub/ の代用品。受信側は Designator（サンプル）だけ表示するモックを繋ぎ、
+// ほかは繋いでいない（受けた分は捨てる）。
 
 #pragma once
 
-#include <memory>
-
 #include "../gateway/CGateway.h"
-#include "../gateway/CTClassChannel.h"
-#include "../gateway/CTMessageHandler.h"
-#include "../gateway/CTRawChannel.h"
-#include "../gateway/TClassBinding.h"
 #include "../icd/icd_classes.h"
 #include "../stub/CTConstantFromHla.h"
 #include "../stub/CDesignatorToHla.h"
@@ -30,6 +24,7 @@
 #include "../stub/DesignatorFixture.h"
 #include "../stub/RadarBeamFixture.h"
 #include "../stub/WeaponFireFixture.h"
+#include "AddChannel.h"
 #include "CCommandHandler.h"
 #include "CControlHandler.h"
 #include "TCommand.h"
@@ -54,29 +49,14 @@ public:
     CControlHandler controlHandler;   ///< 制御文字列の受け口
 
     void build(gw::CGateway& g) {
-        add<icdfom::RadarBeam>    (g, &beamFromHla,      nullptr);
-        add<icdfom::RadioReceiver>(g, &radioFromHla,     nullptr);
-        add<icdfom::MinefieldData>(g, &minefieldFromHla, nullptr);
-        add<icdfom::WeaponFire>   (g, &fireFromHla,      nullptr);
-        add<icdfom::Designator>   (g, &designatorFromHla, &designatorToHla);   // サンプル：送受信
+        addClass<icdfom::RadarBeam>    (g, &beamFromHla,       nullptr);
+        addClass<icdfom::RadioReceiver>(g, &radioFromHla,      nullptr);
+        addClass<icdfom::MinefieldData>(g, &minefieldFromHla,  nullptr);
+        addClass<icdfom::WeaponFire>   (g, &fireFromHla,       nullptr);
+        addClass<icdfom::Designator>   (g, &designatorFromHla, &designatorToHla);   // サンプル：送受信
 
         addRaw<app::TCommand>(g, &commandHandler);
         addRaw<app::TControl>(g, &controlHandler);
-    }
-
-private:
-    template <class T>
-    static void add(gw::CGateway& g, hla::CTFromHla<T>* fromHla, hla::CTToHla<T>* toHla) {
-        g.add(std::unique_ptr<gw::CChannel>(
-            new gw::CTClassChannel<T>(gw::bindingOf<T>(), fromHla, toHla)));
-    }
-
-    /// 独自データの受信口を足し、ハンドラの onTickEnd() も周期末処理に登録する
-    /// （別の行にすると書き忘れて、積んだものが処理されなくなる）。
-    template <class T>
-    static void addRaw(gw::CGateway& g, gw::CTMessageHandler<T>* handler) {
-        g.add(std::unique_ptr<gw::CChannel>(new gw::CTRawChannel<T>(handler)));
-        if (handler != nullptr) g.addTickEnd([handler] { handler->onTickEnd(); });
     }
 };
 

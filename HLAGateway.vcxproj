@@ -145,6 +145,9 @@
 
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rti\DesignatorRti.cpp" />
+    <ClCompile Include="rti\TypeConv.cpp" />
+    <ClCompile Include="rti\WeaponFireRti.cpp" />
     <ClCompile Include="gateway\CGateway.cpp" />
     <ClCompile Include="gateway\udp\CPoller.cpp" />
     <ClCompile Include="gateway\udp\CUdpSocket.cpp" />
@@ -157,11 +160,18 @@
     <ClCompile Include="icd\interaction\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="app\AddChannel.h" />
     <ClInclude Include="app\CCommandHandler.h" />
     <ClInclude Include="app\CControlHandler.h" />
+    <ClInclude Include="app\CRtiWiring.h" />
     <ClInclude Include="app\CWiring.h" />
     <ClInclude Include="app\TCommand.h" />
     <ClInclude Include="app\TControl.h" />
+    <ClInclude Include="rti\CDb.h" />
+    <ClInclude Include="rti\DesignatorRti.h" />
+    <ClInclude Include="rti\Toolkit.h" />
+    <ClInclude Include="rti\TypeConv.h" />
+    <ClInclude Include="rti\WeaponFireRti.h" />
     <ClInclude Include="gateway\CChannel.h" />
     <ClInclude Include="gateway\CGateway.h" />
     <ClInclude Include="gateway\CTClassChannel.h" />
@@ -185,6 +195,7 @@
     <ClInclude Include="stub\ObjectId.h" />
     <ClInclude Include="stub\RadarBeamFixture.h" />
     <ClInclude Include="stub\WeaponFireFixture.h" />
+    <ClInclude Include="stub\toolkit\Toolkit.h" />
     <ClInclude Include="platform\Platform.h" />
     <ClInclude Include="icd\icd_classes.h" />
     <ClInclude Include="icd\icd_codec.h" />
