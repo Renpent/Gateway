@@ -12,19 +12,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(HLAGateway
     main.cpp
-    rti/DesignatorRti.cpp
-    rti/TypeConv.cpp
-    rti/WeaponFireRti.cpp
-    gateway/CGateway.cpp
-    gateway/udp/CPoller.cpp
-    gateway/udp/CUdpSocket.cpp
-    platform/Platform.cpp
-    icd/icd_types.cpp
-    icd/object/Designator.cpp
-    icd/object/MinefieldData.cpp
-    icd/object/RadarBeam.cpp
-    icd/object/RadioReceiver.cpp
-    icd/interaction/WeaponFire.cpp
+    HLAConversion/DesignatorRti.cpp
+    HLAConversion/TypeConv.cpp
+    HLAConversion/WeaponFireRti.cpp
+    Core/CGateway.cpp
+    Core/UDP/CPoller.cpp
+    Core/UDP/CUdpSocket.cpp
+    Platform/Platform.cpp
+    ICD/icd_types.cpp
+    ICD/Object/Designator.cpp
+    ICD/Object/MinefieldData.cpp
+    ICD/Object/RadarBeam.cpp
+    ICD/Object/RadioReceiver.cpp
+    ICD/Interaction/WeaponFire.cpp
 )
 
 target_compile_options(HLAGateway PRIVATE

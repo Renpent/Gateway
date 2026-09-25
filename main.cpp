@@ -3,15 +3,15 @@
 //   HLAGateway <宛先IP|none> [Hz] [秒]
 //
 // 宛先が none なら受信専用。秒を省くか 0 にすると止まらない。
-// 配線（どのクラスを流すか）は app/CWiring.h。
+// 配線（どのクラスを流すか）は Wiring/CWiring.h。
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 
-#include "app/CWiring.h"
-#include "gateway/CGateway.h"
-#include "platform/Platform.h"
+#include "Core/CGateway.h"
+#include "Platform/Platform.h"
+#include "Wiring/CWiring.h"
 
 namespace {
 
@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
     {
         // **CWiring を先に宣言すること。** gateway のチャネルが wiring のメンバを借りているので、
         // 破棄（宣言の逆順）で gateway が先に消えるようにする。
-        app::CWiring wiring;
-        gw::CGateway gateway;
+        wiring::CWiring wiring;
+        core::CGateway gateway;
         wiring.build(gateway);
 
         if (gateway.openAll(peer)) {

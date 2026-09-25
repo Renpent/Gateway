@@ -1,220 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="app">
-      <UniqueIdentifier>{1a1b0a1e-0006-4000-9000-000000000006}</UniqueIdentifier>
+    <Filter Include="Wiring">
+      <UniqueIdentifier>{eb5d6042-92b4-42f0-910e-a540536882be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="rti">
-      <UniqueIdentifier>{2b065902-d5ed-48fb-8fab-2e217d018bea}</UniqueIdentifier>
+    <Filter Include="NonFOM">
+      <UniqueIdentifier>{501e4429-a2c5-4885-a281-51fda82432fb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gateway">
-      <UniqueIdentifier>{1a1b0a1e-0003-4000-9000-000000000003}</UniqueIdentifier>
+    <Filter Include="HLAConversion">
+      <UniqueIdentifier>{ccdbc6bf-44c4-4522-8320-a41e20fb2249}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gateway\hla">
-      <UniqueIdentifier>{158a0e9d-f5d7-4149-a834-e313f27562ee}</UniqueIdentifier>
+    <Filter Include="Core">
+      <UniqueIdentifier>{40006b8d-a266-4f09-b620-1f78679570aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gateway\udp">
-      <UniqueIdentifier>{1d5e5d58-7872-4bb6-9272-ce502cb7f639}</UniqueIdentifier>
+    <Filter Include="Core\HLA">
+      <UniqueIdentifier>{97a3353b-43a8-42f7-849a-38bab2ef2075}</UniqueIdentifier>
     </Filter>
-    <Filter Include="stub">
-      <UniqueIdentifier>{9c1f7a52-3b6d-4e08-8a41-2f7d5c0b6e93}</UniqueIdentifier>
+    <Filter Include="Core\UDP">
+      <UniqueIdentifier>{5b131fd7-bd23-4c14-9e4d-69225ba190c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="stub\toolkit">
-      <UniqueIdentifier>{ea324627-2a33-45ea-bf0d-e98751625f72}</UniqueIdentifier>
+    <Filter Include="Stub">
+      <UniqueIdentifier>{5b9a8349-0e86-4d46-8928-a43ffbad5af4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="platform">
-      <UniqueIdentifier>{1a1b0a1e-0001-4000-9000-000000000001}</UniqueIdentifier>
+    <Filter Include="Stub\Toolkit">
+      <UniqueIdentifier>{16b614f8-9112-4214-b738-2597875f494a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd">
-      <UniqueIdentifier>{1a1b0a1e-0005-4000-9000-000000000005}</UniqueIdentifier>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{fefd8e1b-447a-4e06-913e-87ee7ffa4218}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd\object">
-      <UniqueIdentifier>{2971aae2-2e23-4431-a7f4-f5e47bab811f}</UniqueIdentifier>
+    <Filter Include="ICD">
+      <UniqueIdentifier>{89e2ddea-b397-4692-8406-d2b5cbe238f3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd\interaction">
-      <UniqueIdentifier>{ead93732-a2eb-4332-b486-2be1026fd0fd}</UniqueIdentifier>
+    <Filter Include="ICD\Object">
+      <UniqueIdentifier>{368257ed-5b42-4256-afc1-065fbcd7fb87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ICD\Interaction">
+      <UniqueIdentifier>{615e485a-21b4-4b3f-b0f4-78627c142028}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="rti\DesignatorRti.cpp">
-      <Filter>rti</Filter>
+    <ClCompile Include="HLAConversion\DesignatorRti.cpp">
+      <Filter>HLAConversion</Filter>
     </ClCompile>
-    <ClCompile Include="rti\TypeConv.cpp">
-      <Filter>rti</Filter>
+    <ClCompile Include="HLAConversion\TypeConv.cpp">
+      <Filter>HLAConversion</Filter>
     </ClCompile>
-    <ClCompile Include="rti\WeaponFireRti.cpp">
-      <Filter>rti</Filter>
+    <ClCompile Include="HLAConversion\WeaponFireRti.cpp">
+      <Filter>HLAConversion</Filter>
     </ClCompile>
-    <ClCompile Include="gateway\CGateway.cpp">
-      <Filter>gateway</Filter>
+    <ClCompile Include="Core\CGateway.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="gateway\udp\CPoller.cpp">
-      <Filter>gateway\udp</Filter>
+    <ClCompile Include="Core\UDP\CPoller.cpp">
+      <Filter>Core\UDP</Filter>
     </ClCompile>
-    <ClCompile Include="gateway\udp\CUdpSocket.cpp">
-      <Filter>gateway\udp</Filter>
+    <ClCompile Include="Core\UDP\CUdpSocket.cpp">
+      <Filter>Core\UDP</Filter>
     </ClCompile>
-    <ClCompile Include="platform\Platform.cpp">
-      <Filter>platform</Filter>
+    <ClCompile Include="Platform\Platform.cpp">
+      <Filter>Platform</Filter>
     </ClCompile>
-    <ClCompile Include="icd\icd_types.cpp">
-      <Filter>icd</Filter>
+    <ClCompile Include="ICD\icd_types.cpp">
+      <Filter>ICD</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\Designator.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\Designator.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\MinefieldData.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\MinefieldData.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\RadarBeam.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\RadarBeam.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\RadioReceiver.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\RadioReceiver.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\interaction\WeaponFire.cpp">
-      <Filter>icd\interaction</Filter>
+    <ClCompile Include="ICD\Interaction\WeaponFire.cpp">
+      <Filter>ICD\Interaction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app\AddChannel.h">
-      <Filter>app</Filter>
+    <ClInclude Include="Wiring\AddChannel.h">
+      <Filter>Wiring</Filter>
     </ClInclude>
-    <ClInclude Include="app\CCommandHandler.h">
-      <Filter>app</Filter>
+    <ClInclude Include="Wiring\CRtiWiring.h">
+      <Filter>Wiring</Filter>
     </ClInclude>
-    <ClInclude Include="app\CControlHandler.h">
-      <Filter>app</Filter>
+    <ClInclude Include="Wiring\CWiring.h">
+      <Filter>Wiring</Filter>
     </ClInclude>
-    <ClInclude Include="app\CRtiWiring.h">
-      <Filter>app</Filter>
+    <ClInclude Include="NonFOM\CCommandHandler.h">
+      <Filter>NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="app\CWiring.h">
-      <Filter>app</Filter>
+    <ClInclude Include="NonFOM\CControlHandler.h">
+      <Filter>NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="app\TCommand.h">
-      <Filter>app</Filter>
+    <ClInclude Include="NonFOM\TCommand.h">
+      <Filter>NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="app\TControl.h">
-      <Filter>app</Filter>
+    <ClInclude Include="NonFOM\TControl.h">
+      <Filter>NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="rti\CDb.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\CDb.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="rti\CInteractionCallback.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\CInteractionCallback.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="rti\DesignatorRti.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\DesignatorRti.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="rti\Toolkit.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\Toolkit.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="rti\TypeConv.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\TypeConv.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="rti\WeaponFireRti.h">
-      <Filter>rti</Filter>
+    <ClInclude Include="HLAConversion\WeaponFireRti.h">
+      <Filter>HLAConversion</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CChannel.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\CChannel.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CGateway.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\CGateway.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CTClassChannel.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\CTClassChannel.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CTMessageHandler.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\CTMessageHandler.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\CTRawChannel.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\CTRawChannel.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\TClassBinding.h">
-      <Filter>gateway</Filter>
+    <ClInclude Include="Core\TClassBinding.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTFromHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTFromHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTRtiInteractionFromHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTRtiInteractionFromHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTRtiInteractionToHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTRtiInteractionToHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTRtiObjectFromHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTRtiObjectFromHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTRtiObjectToHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTRtiObjectToHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\hla\CTToHla.h">
-      <Filter>gateway\hla</Filter>
+    <ClInclude Include="Core\HLA\CTToHla.h">
+      <Filter>Core\HLA</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\udp\CPoller.h">
-      <Filter>gateway\udp</Filter>
+    <ClInclude Include="Core\UDP\CPoller.h">
+      <Filter>Core\UDP</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\udp\CTUdpReceiver.h">
-      <Filter>gateway\udp</Filter>
+    <ClInclude Include="Core\UDP\CTUdpReceiver.h">
+      <Filter>Core\UDP</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\udp\CTUdpSender.h">
-      <Filter>gateway\udp</Filter>
+    <ClInclude Include="Core\UDP\CTUdpSender.h">
+      <Filter>Core\UDP</Filter>
     </ClInclude>
-    <ClInclude Include="gateway\udp\CUdpSocket.h">
-      <Filter>gateway\udp</Filter>
+    <ClInclude Include="Core\UDP\CUdpSocket.h">
+      <Filter>Core\UDP</Filter>
     </ClInclude>
-    <ClInclude Include="stub\CDesignatorToHla.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\CDesignatorToHla.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\CTConstantFromHla.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\CTConstantFromHla.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\CTFixtureFromHla.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\CTFixtureFromHla.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\DesignatorFixture.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\DesignatorFixture.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\ObjectId.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\ObjectId.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\RadarBeamFixture.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\RadarBeamFixture.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\WeaponFireFixture.h">
-      <Filter>stub</Filter>
+    <ClInclude Include="Stub\WeaponFireFixture.h">
+      <Filter>Stub</Filter>
     </ClInclude>
-    <ClInclude Include="stub\toolkit\Toolkit.h">
-      <Filter>stub\toolkit</Filter>
+    <ClInclude Include="Stub\Toolkit\Toolkit.h">
+      <Filter>Stub\Toolkit</Filter>
     </ClInclude>
-    <ClInclude Include="platform\Platform.h">
-      <Filter>platform</Filter>
+    <ClInclude Include="Platform\Platform.h">
+      <Filter>Platform</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_classes.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_classes.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_codec.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_codec.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_types.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_types.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\Designator.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\Designator.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\MinefieldData.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\MinefieldData.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\RadarBeam.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\RadarBeam.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\RadioReceiver.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\RadioReceiver.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\interaction\WeaponFire.h">
-      <Filter>icd\interaction</Filter>
+    <ClInclude Include="ICD\Interaction\WeaponFire.h">
+      <Filter>ICD\Interaction</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
