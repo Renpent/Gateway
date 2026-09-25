@@ -12,9 +12,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(HLAGateway
     main.cpp
-    HLAConversion/DesignatorRti.cpp
-    HLAConversion/TypeConv.cpp
-    HLAConversion/WeaponFireRti.cpp
+    Wiring/FOM/DesignatorRti.cpp
+    Wiring/FOM/TypeConv.cpp
+    Wiring/FOM/WeaponFireRti.cpp
     Core/CGateway.cpp
     Core/UDP/CPoller.cpp
     Core/UDP/CUdpSocket.cpp

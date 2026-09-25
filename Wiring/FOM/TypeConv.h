@@ -9,10 +9,10 @@
 
 #include <string>
 
-#include "../ICD/icd_types.h"
+#include "../../ICD/icd_types.h"
 #include "Toolkit.h"
 
-namespace hlaconv {
+namespace fom {
 
 // RTIobjectId（ICD では文字の配列）<-> 文字列。
 // **ICD の上限（RTIobjectId は16文字）を超える ID は、そのレコードごと送られない。**
@@ -41,4 +41,4 @@ tk::EventIdentifierStruct toRti(const icdfom::EventIdentifierStruct& v);
 icdfom::EntityTypeStruct toIcd(const tk::EntityTypeStruct& v);
 tk::EntityTypeStruct toRti(const icdfom::EntityTypeStruct& v);
 
-}  // namespace hlaconv
+}  // namespace fom

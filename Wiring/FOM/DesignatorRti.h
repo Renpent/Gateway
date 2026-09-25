@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "../ICD/Object/Designator.h"
+#include "../../ICD/Object/Designator.h"
 #include "Toolkit.h"
 
-namespace hlaconv {
+namespace fom {
 
 /// Fetch：受信したインスタンスの一覧を取る。
 std::vector<tk::DesignatorPtr> getRemoteDesignator();
@@ -32,4 +32,4 @@ tk::DesignatorPtr registerDesignator(const std::string& key);
 /// Update：属性を書いて update する。
 void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);
 
-}  // namespace hlaconv
+}  // namespace fom

@@ -4,11 +4,11 @@
     <Filter Include="Wiring">
       <UniqueIdentifier>{eb5d6042-92b4-42f0-910e-a540536882be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NonFOM">
-      <UniqueIdentifier>{501e4429-a2c5-4885-a281-51fda82432fb}</UniqueIdentifier>
+    <Filter Include="Wiring\FOM">
+      <UniqueIdentifier>{453d9052-d25b-4fab-bb47-ba69149c6ddb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HLAConversion">
-      <UniqueIdentifier>{ccdbc6bf-44c4-4522-8320-a41e20fb2249}</UniqueIdentifier>
+    <Filter Include="Wiring\NonFOM">
+      <UniqueIdentifier>{615c2c8e-ca0d-481b-af96-9a5e788ba000}</UniqueIdentifier>
     </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{40006b8d-a266-4f09-b620-1f78679570aa}</UniqueIdentifier>
@@ -40,14 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="HLAConversion\DesignatorRti.cpp">
-      <Filter>HLAConversion</Filter>
+    <ClCompile Include="Wiring\FOM\DesignatorRti.cpp">
+      <Filter>Wiring\FOM</Filter>
     </ClCompile>
-    <ClCompile Include="HLAConversion\TypeConv.cpp">
-      <Filter>HLAConversion</Filter>
+    <ClCompile Include="Wiring\FOM\TypeConv.cpp">
+      <Filter>Wiring\FOM</Filter>
     </ClCompile>
-    <ClCompile Include="HLAConversion\WeaponFireRti.cpp">
-      <Filter>HLAConversion</Filter>
+    <ClCompile Include="Wiring\FOM\WeaponFireRti.cpp">
+      <Filter>Wiring\FOM</Filter>
     </ClCompile>
     <ClCompile Include="Core\CGateway.cpp">
       <Filter>Core</Filter>
@@ -90,35 +90,35 @@
     <ClInclude Include="Wiring\CWiring.h">
       <Filter>Wiring</Filter>
     </ClInclude>
-    <ClInclude Include="NonFOM\CCommandHandler.h">
-      <Filter>NonFOM</Filter>
+    <ClInclude Include="Wiring\FOM\CDb.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="NonFOM\CControlHandler.h">
-      <Filter>NonFOM</Filter>
+    <ClInclude Include="Wiring\FOM\CInteractionCallback.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="NonFOM\TCommand.h">
-      <Filter>NonFOM</Filter>
+    <ClInclude Include="Wiring\FOM\DesignatorRti.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="NonFOM\TControl.h">
-      <Filter>NonFOM</Filter>
+    <ClInclude Include="Wiring\FOM\Toolkit.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\CDb.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\FOM\TypeConv.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\CInteractionCallback.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\FOM\WeaponFireRti.h">
+      <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\DesignatorRti.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\NonFOM\CCommandHandler.h">
+      <Filter>Wiring\NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\Toolkit.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\NonFOM\CControlHandler.h">
+      <Filter>Wiring\NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\TypeConv.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\NonFOM\TCommand.h">
+      <Filter>Wiring\NonFOM</Filter>
     </ClInclude>
-    <ClInclude Include="HLAConversion\WeaponFireRti.h">
-      <Filter>HLAConversion</Filter>
+    <ClInclude Include="Wiring\NonFOM\TControl.h">
+      <Filter>Wiring\NonFOM</Filter>
     </ClInclude>
     <ClInclude Include="Core\CChannel.h">
       <Filter>Core</Filter>

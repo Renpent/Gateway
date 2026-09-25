@@ -3,7 +3,7 @@
 // ヘッダは無く、1データグラム = 1メッセージ。バイト列は T の parse() が読む。
 // 形式に合わないもの（parse が false）は捨てる。
 //
-// T に求めるもの（NonFOM/ に手書きする。実例は NonFOM/TCommand.h）：
+// T に求めるもの（Wiring/NonFOM/ に手書きする。実例は Wiring/NonFOM/TCommand.h）：
 //   static constexpr const char*   kName;   表示名
 //   static constexpr std::uint16_t kPort;   受信ポート。ICD のクラスと重ならないこと
 //   bool parse(const unsigned char* data, std::size_t len, T& out);

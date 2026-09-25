@@ -1,5 +1,5 @@
 // スタブの配線。RTI が無いこの環境で動かすためのもので、main.cpp が使う。
-// **本番の配線は Wiring/CRtiWiring.h**（同じ形で、stub:: の代わりに hla::CTRti... と HLAConversion/ の変換を繋ぐ）。
+// **本番の配線は Wiring/CRtiWiring.h**（同じ形で、stub:: の代わりに hla::CTRti... と Wiring/FOM/ の変換を繋ぐ）。
 //
 // ID・ポート・ペイロードは書かない。addClass<T> が生成物の定数（bindingOf<T>()）から決める。
 //
@@ -18,10 +18,6 @@
 
 #include "../Core/CGateway.h"
 #include "../ICD/icd_classes.h"
-#include "../NonFOM/CCommandHandler.h"
-#include "../NonFOM/CControlHandler.h"
-#include "../NonFOM/TCommand.h"
-#include "../NonFOM/TControl.h"
 #include "../Stub/CDesignatorToHla.h"
 #include "../Stub/CTConstantFromHla.h"
 #include "../Stub/CTFixtureFromHla.h"
@@ -29,6 +25,10 @@
 #include "../Stub/RadarBeamFixture.h"
 #include "../Stub/WeaponFireFixture.h"
 #include "AddChannel.h"
+#include "NonFOM/CCommandHandler.h"
+#include "NonFOM/CControlHandler.h"
+#include "NonFOM/TCommand.h"
+#include "NonFOM/TControl.h"
 
 namespace wiring {
 

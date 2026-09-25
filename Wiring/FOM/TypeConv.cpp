@@ -1,6 +1,6 @@
 #include "TypeConv.h"
 
-namespace hlaconv {
+namespace fom {
 
 icdfom::RTIobjectId toIcd(const std::string& s) { return icdfom::RTIobjectId(s.begin(), s.end()); }
 std::string toRti(const icdfom::RTIobjectId& v) { return std::string(v.begin(), v.end()); }
@@ -84,4 +84,4 @@ tk::EntityTypeStruct toRti(const icdfom::EntityTypeStruct& v) {
     return r;
 }
 
-}  // namespace hlaconv
+}  // namespace fom

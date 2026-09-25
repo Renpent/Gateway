@@ -3,7 +3,7 @@
 #include "CDb.h"
 #include "TypeConv.h"
 
-namespace hlaconv {
+namespace fom {
 
 std::vector<tk::DesignatorPtr> getRemoteDesignator() {
     return CDb::getInstance().getWorld()->getObjectManager()->getRemoteDesignator();
@@ -50,4 +50,4 @@ void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
     p->update();
 }
 
-}  // namespace hlaconv
+}  // namespace fom

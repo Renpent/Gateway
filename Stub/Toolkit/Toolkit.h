@@ -8,7 +8,7 @@
 //   p->getXxx() / p->setXxx(...) / p->update()          属性の読み書きと送信
 //   i->setXxx(...) / i->sendInteraction()               パラメータの詰め込みと送信
 //
-// **仮に決めたところ**（本物の綴りが分かったら HLAConversion/ の変換関数を合わせる）：
+// **仮に決めたところ**（本物の綴りが分かったら Wiring/FOM/ の変換関数を合わせる）：
 //   - 属性はアクセサ（getXxx / setXxx）で触る
 //   - 入れ子のレコードは FOM と同じ名前の構造体で返る
 //   - 列挙は整数、RTIobjectId は std::string

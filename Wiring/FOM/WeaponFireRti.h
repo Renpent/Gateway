@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "../ICD/Interaction/WeaponFire.h"
+#include "../../ICD/Interaction/WeaponFire.h"
 #include "Toolkit.h"
 
-namespace hlaconv {
+namespace fom {
 
 /// 受信したインタラクション -> 1レコード。**RTI のスレッドから呼ばれる**（コールバックの中）。
 icdfom::WeaponFire toIcd(const tk::WeaponFire& i);
@@ -21,4 +21,4 @@ void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);
 /// Send：パラメータを詰めて sendInteraction する。
 void sendWeaponFire(const icdfom::WeaponFire& r);
 
-}  // namespace hlaconv
+}  // namespace fom

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "../Core/CTMessageHandler.h"
+#include "../../Core/CTMessageHandler.h"
 #include "TCommand.h"
 
 namespace nonfom {

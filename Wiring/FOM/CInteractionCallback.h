@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "../Core/HLA/CTRtiInteractionFromHla.h"
-#include "../ICD/Interaction/WeaponFire.h"
+#include "../../Core/HLA/CTRtiInteractionFromHla.h"
+#include "../../ICD/Interaction/WeaponFire.h"
 #include "Toolkit.h"
 #include "WeaponFireRti.h"
 
-namespace hlaconv {
+namespace fom {
 
 class CInteractionCallback : public tk::InteractionCallback {
 public:
@@ -36,4 +36,4 @@ public:
     }
 };
 
-}  // namespace hlaconv
+}  // namespace fom

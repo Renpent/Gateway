@@ -3,7 +3,7 @@
 #include "CDb.h"
 #include "TypeConv.h"
 
-namespace hlaconv {
+namespace fom {
 
 icdfom::WeaponFire toIcd(const tk::WeaponFire& i) {
     icdfom::WeaponFire r{};
@@ -45,4 +45,4 @@ void sendWeaponFire(const icdfom::WeaponFire& r) {
     i->sendInteraction();
 }
 
-}  // namespace hlaconv
+}  // namespace fom

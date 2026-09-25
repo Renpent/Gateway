@@ -10,7 +10,7 @@
 
 #include "Toolkit.h"
 
-namespace hlaconv {
+namespace fom {
 
 class CDb {
 public:
@@ -28,4 +28,4 @@ private:
     tk::World* m_world = nullptr;   ///< join 後に置き、resign 前に外す
 };
 
-}  // namespace hlaconv
+}  // namespace fom
