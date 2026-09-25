@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "../../icd/icd_codec.h"
+#include "../../ICD/icd_codec.h"
 #include "CUdpSocket.h"
 
 namespace udp {

@@ -19,14 +19,14 @@
     <Filter Include="platform">
       <UniqueIdentifier>{1a1b0a1e-0001-4000-9000-000000000001}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd">
-      <UniqueIdentifier>{1a1b0a1e-0005-4000-9000-000000000005}</UniqueIdentifier>
+    <Filter Include="ICD">
+      <UniqueIdentifier>{3c7dfe60-1761-422c-b927-cf7510ca6a7a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd\object">
-      <UniqueIdentifier>{2971aae2-2e23-4431-a7f4-f5e47bab811f}</UniqueIdentifier>
+    <Filter Include="ICD\Object">
+      <UniqueIdentifier>{c7f3490e-b43c-4e3c-9440-6e0ba6535ab1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="icd\interaction">
-      <UniqueIdentifier>{ead93732-a2eb-4332-b486-2be1026fd0fd}</UniqueIdentifier>
+    <Filter Include="ICD\Interaction">
+      <UniqueIdentifier>{d714a87a-93a2-4954-a43f-dfcfe30f8ee0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -43,20 +43,20 @@
     <ClCompile Include="platform\Platform.cpp">
       <Filter>platform</Filter>
     </ClCompile>
-    <ClCompile Include="icd\icd_types.cpp">
-      <Filter>icd</Filter>
+    <ClCompile Include="ICD\icd_types.cpp">
+      <Filter>ICD</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\MinefieldData.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\MinefieldData.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\RadarBeam.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\RadarBeam.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\object\RadioReceiver.cpp">
-      <Filter>icd\object</Filter>
+    <ClCompile Include="ICD\Object\RadioReceiver.cpp">
+      <Filter>ICD\Object</Filter>
     </ClCompile>
-    <ClCompile Include="icd\interaction\WeaponFire.cpp">
-      <Filter>icd\interaction</Filter>
+    <ClCompile Include="ICD\Interaction\WeaponFire.cpp">
+      <Filter>ICD\Interaction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -153,26 +153,26 @@
     <ClInclude Include="platform\Platform.h">
       <Filter>platform</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_classes.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_classes.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_codec.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_codec.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\icd_types.h">
-      <Filter>icd</Filter>
+    <ClInclude Include="ICD\icd_types.h">
+      <Filter>ICD</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\MinefieldData.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\MinefieldData.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\RadarBeam.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\RadarBeam.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\object\RadioReceiver.h">
-      <Filter>icd\object</Filter>
+    <ClInclude Include="ICD\Object\RadioReceiver.h">
+      <Filter>ICD\Object</Filter>
     </ClInclude>
-    <ClInclude Include="icd\interaction\WeaponFire.h">
-      <Filter>icd\interaction</Filter>
+    <ClInclude Include="ICD\Interaction\WeaponFire.h">
+      <Filter>ICD\Interaction</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@
 
 #include "hla/CTFromHla.h"
 #include "hla/CTToHla.h"
-#include "../icd/icd_codec.h"
+#include "../ICD/icd_codec.h"
 #include "udp/CUdpSocket.h"
 #include "CChannel.h"
 #include "TClassBinding.h"

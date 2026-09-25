@@ -99,7 +99,7 @@ gateway/          周期ループ（CGateway）とチャネル。ICD のクラ�
   hla/            HLA 側の継ぎ目。インタフェース（CTFromHla / CTToHla）と、RTI を呼ぶ器
 stub/             RTI が無い環境で動かすための代用品。**本番には持っていかない**
 platform/         コンソールの文字コードとタイマ分解能
-icd/              ICDgenerator の生成物。手で編集しない（共有ファイル + object/ + interaction/）
+ICD/              ICDgenerator の生成物。手で編集しない（共有ファイル + Object/ + Interaction/）
 ```
 
 依存は上から下への一方向で、**逆流させないこと**が唯一の構造上の規則。`gateway/` の直下は
@@ -107,7 +107,7 @@ icd/              ICDgenerator の生成物。手で編集しない（共有フ�
 `gateway/` からは見えない。
 
 **名前空間はフォルダで決まる（1フォルダ1名前空間）。** `gateway/` → `gw`、`gateway/udp/` → `udp`、
-`gateway/hla/` → `hla`、`app/` → `app`、`stub/` → `stub`、`platform/` → `platform`。生成物の `icd/` だけは
+`gateway/hla/` → `hla`、`app/` → `app`、`stub/` → `stub`、`platform/` → `platform`。生成物の `ICD/` だけは
 ICDgenerator の決まり（ランタイムは `icd`、型とクラスは `icdfom`）に従う。**名前は名前空間を外しても
 意味が通るようにしてある** — たとえば UDP 側の送受信は `CTUdpSender` / `CTUdpReceiver` で、HLA の
 publish / subscribe（向きが逆）と取り違えない。
@@ -128,7 +128,7 @@ publish / subscribe（向きが逆）と取り違えない。
 - `gateway/` と `gateway/hla/` はソケットの型を知らない（`udp::CUdpSocket` と `udp::CPoller` しか見えない）
 - `gateway/` のどこも RTI の型を知らない（RTI を呼ぶのは配線で渡す関数だけ）
 - `gateway/` は `app/` を見ない。アプリ側への口（`gw::CTMessageHandler`）も `gateway/` に置いてある
-- `icd/` は何も知らない。OS ヘッダも RTI も include していない
+- `ICD/` は何も知らない。OS ヘッダも RTI も include していない
 
 OS を知っているのは **`gateway/udp/*.cpp` と `platform/*.cpp` だけ**。ヘッダには winsock も
 `<sys/socket.h>` も現れない（`CUdpSocket` がハンドルを `std::intptr_t` で持っているのはそのため
@@ -143,7 +143,7 @@ OS を知っているのは **`gateway/udp/*.cpp` と `platform/*.cpp` だけ**�
 | 何 | ICD のクラス | FOM に無い独自データ |
 | 形式を決めたのは | こちら（ICD） | **相手** |
 | バイト列 | 12バイトヘッダ + 固定長レコード | ヘッダ無し。1データグラム = 1メッセージ |
-| 型の出どころ | ICDgenerator の生成物（`icd/`） | 手書き |
+| 型の出どころ | ICDgenerator の生成物（`ICD/`） | 手書き |
 | 手元の相手 | HLA（`hla::CTFromHla` / `CTToHla`） | アプリ（`gw::CTMessageHandler`） |
 | 向き | 送受信 | いまは受信のみ |
 
@@ -165,7 +165,7 @@ OS を知っているのは **`gateway/udp/*.cpp` と `platform/*.cpp` だけ**�
 `class` にした）、値の入れ物は構造体。関数だけのファイル（`platform/Platform.h`、
 `stub/RadarBeamFixture.h` など）と `main.cpp` には型が無いので、名前はそのまま。
 
-**生成物（`icd/`）は対象外。** `icdfom::RadarBeam` のようにレコードの型名は FOM のクラス名そのままで、
+**生成物（`ICD/`）は対象外。** `icdfom::RadarBeam` のようにレコードの型名は FOM のクラス名そのままで、
 ICD の行から grep で辿れることと、参照モードで HLA ツールの型名と一致することを優先している。
 
 **メンバを返すだけの関数は `get〜`、設定するだけの関数は `set〜`。** 引数を取らず、値を返す
@@ -175,7 +175,7 @@ ICD の行から grep で辿れることと、参照モードで HLA ツール�
 
 `get〜` にしていないもの：真偽を返す判定（`isOpen()`、`canSend()` — `is`/`can` の形のまま）、
 動作（`pumpIn()`、`tick()`、`onTickEnd()`）、複数の受け口を集計する `verifyResult()`、
-生成物 `icd/` の関数（`w.ok()`、`reader.hasNext()` など）。
+生成物 `ICD/` の関数（`w.ok()`、`reader.hasNext()` など）。
 
 表示名は型名と別。`app::TCommand` の統計表の名前は `"Command"` のまま（ICD のクラスも、表示は
 C++ の型名ではなく FOM 名）。
@@ -196,7 +196,7 @@ Snapshot / Event はオブジェクト / インタラクションへの訳が毎
 例外は1つ。`TUdpReceiveStats` は `CChannel::getInStats()` がテンプレートでない参照を返すので
 `CTUdpReceiver<T>` の中に置けない（入れ子にすると `T` ごとに別の型になる）。
 
-`Federate.h` と `icd/icd_classes.h` はクラスを持たないまとめ include で、
+`Federate.h` と `ICD/icd_classes.h` はクラスを持たないまとめ include で、
 前者は CTFromHla/CTToHla 共通のスレッド取り決めを、後者は全生成クラスを1行で入れる役目を持つ。
 
 ### メンバ変数の書き方
@@ -218,7 +218,7 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 
 ### 全クラスを名指しするのは配線1箇所だけ
 
-`app/CWiring.h` が `icd/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
+`app/CWiring.h` が `ICD/icd_classes.h`（生成物のまとめ include）を1行入れる。ICD にクラスを足せば
 このヘッダが追随するので、手で並べたリストがずれることがない。**1クラスだけを扱うコードは
 そのクラスのヘッダを直接** include すること（`stub/WeaponFireFixture.h` がその例）。
 
@@ -236,9 +236,9 @@ ICD の行から grep で辿れる条件であり、参照モードでツール�
 ### ① ICDgenerator 側
 
 GUI で対象クラスにチェック → ID/Port ダイアログで番号を振る（`連番を振る` は見えている行に効く）
-→ MTU を選ぶ → C++ 生成。これで `icd/object/<Class>.h`（インタラクションなら
-`icd/interaction/<Class>.h`）に `kClassId` `kPort` `kPayload`
-`kIsInteraction` `kFomName` が入り、まとめ include の `icd/icd_classes.h` も追随する。
+→ MTU を選ぶ → C++ 生成。これで `ICD/Object/<Class>.h`（インタラクションなら
+`ICD/Interaction/<Class>.h`）に `kClassId` `kPort` `kPayload`
+`kIsInteraction` `kFomName` が入り、まとめ include の `ICD/icd_classes.h` も追随する。
 **CWiring に include を足す必要はない。**
 
 生成が止まるのは2通りだけで、どちらもクラス名と理由を出す — 可変レコードを含む場合と、
@@ -396,7 +396,7 @@ FOM のクラスではない UDP データ — たとえば別のシステムが
 
 ### 足し方
 
-**① 型を1つ手書きする。** 置き場所は `app/<名前>.h`、名前空間は `app`（`icd/` は再生成で丸ごと
+**① 型を1つ手書きする。** 置き場所は `app/<名前>.h`、名前空間は `app`（`ICD/` は再生成で丸ごと
 差し替わるので、手書きを置いてはいけない）。求めるのは定数2つと関数1つ。
 実例は `app/TCommand.h`（下の「コマンド文字列」）。
 
@@ -418,7 +418,7 @@ bool parse(const unsigned char* data, std::size_t len, TCommand& out);
 ```
 
 `parse` は `TCommand` と同じ名前空間に置くこと（`CTRawChannel` が ADL で拾う）。相手の形式が
-ビッグエンディアンのバイナリなら、`icd/icd_codec.h` の `icd::Reader` がそのまま使える。
+ビッグエンディアンのバイナリなら、`ICD/icd_codec.h` の `icd::Reader` がそのまま使える。
 
 **② 受け口を1つ書く。** `gw::CTMessageHandler<T>` を実装する。名前は `Handler` で終える。
 実例は `app/CCommandHandler.h`。
@@ -614,23 +614,23 @@ MinGW だけ悪いのは、libstdc++ の `sleep_until` の実装が `timeBeginPe
 受けないため。**周期そのものはどれも正確**（絶対時刻で刻んでいるので、位相がぶれるだけで
 レートはずれない）。本番が Linux なら気にしなくてよいし、Windows なら MSVC で建てること。
 
-## `icd/` の再生成
+## `ICD/` の再生成
 
 ICD が変わったら、生成物を**丸ごと差し替える**。手を入れた変更は次の再生成で消える。
 
-ICDgenerator の GUI で対象クラスを選び、C++ 生成の出力先をこのリポジトリの `icd/` にする。
+ICDgenerator の GUI で対象クラスを選び、C++ 生成の出力先をこのリポジトリの `ICD/` にする。
 クラスを増減したら `HLAGateway.vcxproj` と `CMakeLists.txt` のソース一覧を合わせること。
 
 ```
-icd/
+ICD/
   icd_codec.h        ランタイム（全クラス共通）
   icd_types.h/.cpp   選んだクラスが使う列挙・レコード・配列の型
   icd_classes.h      全クラスのまとめ include（配線用）
-  object/            オブジェクトクラス。1クラスにつき <Class>.h / <Class>.cpp
-  interaction/       インタラクションクラス。同上
+  Object/            オブジェクトクラス。1クラスにつき <Class>.h / <Class>.cpp
+  Interaction/       インタラクションクラス。同上
 ```
 
-共有ファイルはルートに、クラスは FOM 上の種類で `object/` と `interaction/` に分けて置かれる。
+共有ファイルはルートに、クラスは FOM 上の種類で `Object/` と `Interaction/` に分けて置かれる。
 クラスのヘッダは1つ上の `../icd_types.h` を include する。**生成器は既存のファイルを消さない**ので、
 選択から外したクラスや、フォルダを分ける前（すべてルートに並んでいた頃）のファイルは手で消すこと。
 ID・ポート・MTU は生成物が持っている（各クラスの `kClassId` / `kPort` / `kPayload`）ので、

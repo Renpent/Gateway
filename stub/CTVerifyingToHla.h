@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <vector>
 
-#include "../icd/icd_codec.h"
+#include "../ICD/icd_codec.h"
 #include "../gateway/hla/CTToHla.h"
 
 namespace stub {

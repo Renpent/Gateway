@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "../icd/icd_types.h"
+#include "../ICD/icd_types.h"
 
 namespace stub {
 

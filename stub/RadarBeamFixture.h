@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <string>
 
-#include "../icd/object/RadarBeam.h"
+#include "../ICD/Object/RadarBeam.h"
 #include "ObjectId.h"
 
 namespace stub {

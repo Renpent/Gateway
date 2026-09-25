@@ -149,11 +149,11 @@
     <ClCompile Include="gateway\udp\CPoller.cpp" />
     <ClCompile Include="gateway\udp\CUdpSocket.cpp" />
     <ClCompile Include="platform\Platform.cpp" />
-    <ClCompile Include="icd\icd_types.cpp" />
-    <ClCompile Include="icd\object\MinefieldData.cpp" />
-    <ClCompile Include="icd\object\RadarBeam.cpp" />
-    <ClCompile Include="icd\object\RadioReceiver.cpp" />
-    <ClCompile Include="icd\interaction\WeaponFire.cpp" />
+    <ClCompile Include="ICD\icd_types.cpp" />
+    <ClCompile Include="ICD\Object\MinefieldData.cpp" />
+    <ClCompile Include="ICD\Object\RadarBeam.cpp" />
+    <ClCompile Include="ICD\Object\RadioReceiver.cpp" />
+    <ClCompile Include="ICD\Interaction\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\CCommandHandler.h" />
@@ -187,13 +187,13 @@
     <ClInclude Include="stub\RadarBeamFixture.h" />
     <ClInclude Include="stub\WeaponFireFixture.h" />
     <ClInclude Include="platform\Platform.h" />
-    <ClInclude Include="icd\icd_classes.h" />
-    <ClInclude Include="icd\icd_codec.h" />
-    <ClInclude Include="icd\icd_types.h" />
-    <ClInclude Include="icd\object\MinefieldData.h" />
-    <ClInclude Include="icd\object\RadarBeam.h" />
-    <ClInclude Include="icd\object\RadioReceiver.h" />
-    <ClInclude Include="icd\interaction\WeaponFire.h" />
+    <ClInclude Include="ICD\icd_classes.h" />
+    <ClInclude Include="ICD\icd_codec.h" />
+    <ClInclude Include="ICD\icd_types.h" />
+    <ClInclude Include="ICD\Object\MinefieldData.h" />
+    <ClInclude Include="ICD\Object\RadarBeam.h" />
+    <ClInclude Include="ICD\Object\RadioReceiver.h" />
+    <ClInclude Include="ICD\Interaction\WeaponFire.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -55,7 +55,7 @@
 #include "../stub/CTVerifyingToHla.h"
 #include "../stub/WeaponFireFixture.h"
 // ここだけが全クラスを名指しする。生成物なので、ICD にクラスを足せば自動で追随する。
-#include "../icd/icd_classes.h"
+#include "../ICD/icd_classes.h"
 
 namespace app {
 

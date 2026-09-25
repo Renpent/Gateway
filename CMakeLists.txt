@@ -16,11 +16,11 @@ add_executable(HLAGateway
     gateway/udp/CPoller.cpp
     gateway/udp/CUdpSocket.cpp
     platform/Platform.cpp
-    icd/icd_types.cpp
-    icd/object/MinefieldData.cpp
-    icd/object/RadarBeam.cpp
-    icd/object/RadioReceiver.cpp
-    icd/interaction/WeaponFire.cpp
+    ICD/icd_types.cpp
+    ICD/Object/MinefieldData.cpp
+    ICD/Object/RadarBeam.cpp
+    ICD/Object/RadioReceiver.cpp
+    ICD/Interaction/WeaponFire.cpp
 )
 
 target_compile_options(HLAGateway PRIVATE

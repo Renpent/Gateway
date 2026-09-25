@@ -10,8 +10,8 @@
 //
 // MTU 9000 → 全クラス kPayload = icd::kJumboPayload（8900 B）
 
-#include "object/RadarBeam.h"  // ID 1 / Port 24001 : HLAobjectRoot.EmitterBeam.RadarBeam
-#include "object/RadioReceiver.h"  // ID 2 / Port 24002 : HLAobjectRoot.EmbeddedSystem.RadioReceiver
-#include "object/MinefieldData.h"  // ID 3 / Port 24003 : HLAobjectRoot.EmbeddedSystem.MinefieldData
-#include "interaction/WeaponFire.h"  // ID 4 / Port 24004 : HLAinteractionRoot.WeaponFire
+#include "Object/RadarBeam.h"  // ID 1 / Port 24001 : HLAobjectRoot.EmitterBeam.RadarBeam
+#include "Object/RadioReceiver.h"  // ID 2 / Port 24002 : HLAobjectRoot.EmbeddedSystem.RadioReceiver
+#include "Object/MinefieldData.h"  // ID 3 / Port 24003 : HLAobjectRoot.EmbeddedSystem.MinefieldData
+#include "Interaction/WeaponFire.h"  // ID 4 / Port 24004 : HLAinteractionRoot.WeaponFire
 
