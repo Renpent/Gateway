@@ -12,11 +12,9 @@
 #include "../../Core/CTMessageHandler.h"
 #include "TCommand.h"
 
-namespace nonfom {
-
-class CCommandHandler : public core::CTMessageHandler<nonfom::TCommand> {
+class CCommandHandler : public CTMessageHandler<TCommand> {
 public:
-    void accept(const nonfom::TCommand& command) override { m_pending.push_back(command.text); }
+    void accept(const TCommand& command) override { m_pending.push_back(command.text); }
 
     /// 届いた順に処理して、キューを空にする。
     void onTickEnd() override {
@@ -33,4 +31,3 @@ private:
     std::vector<std::string> m_pending;   ///< accept が積み、onTickEnd が空にする
 };
 
-}  // namespace nonfom

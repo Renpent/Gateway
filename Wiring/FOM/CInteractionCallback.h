@@ -4,8 +4,8 @@
 // それを1回だけ継承し、**ゲートウェイで流すものだけ**実装する（実装しないものは何もしない）。
 //
 // 流すインタラクション1つにつき、次の2つを足す：
-//   1. そのクラスのキュー（hla::CTRtiInteractionFromHla<T>）を public メンバに
-//   2. 仮想関数の override。受け取ったパラメータを toIcd で変換して、1 のキューに push する
+//   1. そのクラスのキュー（CTRtiInteractionFromHla<T>）を public メンバに
+//   2. 仮想関数の override。受け取ったパラメータを <Class>Rti::toIcd で変換して、1 のキューに push する
 //
 // キューは配線（Wiring/CRtiWiring.h）が addClass に渡し、周期ループが毎周期 drain して UDP に送る。
 //
@@ -21,19 +21,16 @@
 #include "../../Core/HLA/CTRtiInteractionFromHla.h"
 #include "../../ICD/Interaction/WeaponFire.h"
 #include "Toolkit.h"
-#include "WeaponFireRti.h"
-
-namespace fom {
+#include "CWeaponFireRti.h"
 
 class CInteractionCallback : public tk::InteractionCallback {
 public:
     // ── キュー（流すインタラクション1つにつき1つ） ─────────────────────
-    hla::CTRtiInteractionFromHla<icdfom::WeaponFire> weaponFireFromHla;   ///< WeaponFire のキュー
+    CTRtiInteractionFromHla<icdfom::WeaponFire> weaponFireFromHla;   ///< WeaponFire のキュー
 
     // ── 実装する仮想関数（流すものだけ） ──────────────────────────────
     void onWeaponFire(const tk::WeaponFire& interaction) override {
-        weaponFireFromHla.push(toIcd(interaction));
+        weaponFireFromHla.push(CWeaponFireRti::toIcd(interaction));
     }
 };
 
-}  // namespace fom

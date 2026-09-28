@@ -4,8 +4,6 @@
 #include <cstdio>
 #include <thread>
 
-namespace core {
-
 void CGateway::add(std::unique_ptr<CChannel> channel) {
     m_channels.push_back(std::move(channel));
 }
@@ -75,4 +73,3 @@ void CGateway::run(unsigned hz, unsigned seconds) {
     }
 }
 
-}  // namespace core

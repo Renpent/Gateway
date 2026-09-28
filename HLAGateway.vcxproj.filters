@@ -40,13 +40,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Wiring\FOM\DesignatorRti.cpp">
+    <ClCompile Include="Wiring\FOM\CDesignatorRti.cpp">
       <Filter>Wiring\FOM</Filter>
     </ClCompile>
-    <ClCompile Include="Wiring\FOM\TypeConv.cpp">
+    <ClCompile Include="Wiring\FOM\CTypeConv.cpp">
       <Filter>Wiring\FOM</Filter>
     </ClCompile>
-    <ClCompile Include="Wiring\FOM\WeaponFireRti.cpp">
+    <ClCompile Include="Wiring\FOM\CWeaponFireRti.cpp">
       <Filter>Wiring\FOM</Filter>
     </ClCompile>
     <ClCompile Include="Core\CGateway.cpp">
@@ -58,7 +58,7 @@
     <ClCompile Include="Core\UDP\CUdpSocket.cpp">
       <Filter>Core\UDP</Filter>
     </ClCompile>
-    <ClCompile Include="Platform\Platform.cpp">
+    <ClCompile Include="Platform\CPlatform.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="ICD\icd_types.cpp">
@@ -81,10 +81,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Wiring\AddChannel.h">
+    <ClInclude Include="Wiring\CRtiWiring.h">
       <Filter>Wiring</Filter>
     </ClInclude>
-    <ClInclude Include="Wiring\CRtiWiring.h">
+    <ClInclude Include="Wiring\CStubWiring.h">
       <Filter>Wiring</Filter>
     </ClInclude>
     <ClInclude Include="Wiring\CWiring.h">
@@ -93,19 +93,19 @@
     <ClInclude Include="Wiring\FOM\CDb.h">
       <Filter>Wiring\FOM</Filter>
     </ClInclude>
+    <ClInclude Include="Wiring\FOM\CDesignatorRti.h">
+      <Filter>Wiring\FOM</Filter>
+    </ClInclude>
     <ClInclude Include="Wiring\FOM\CInteractionCallback.h">
       <Filter>Wiring\FOM</Filter>
     </ClInclude>
-    <ClInclude Include="Wiring\FOM\DesignatorRti.h">
+    <ClInclude Include="Wiring\FOM\CTypeConv.h">
+      <Filter>Wiring\FOM</Filter>
+    </ClInclude>
+    <ClInclude Include="Wiring\FOM\CWeaponFireRti.h">
       <Filter>Wiring\FOM</Filter>
     </ClInclude>
     <ClInclude Include="Wiring\FOM\Toolkit.h">
-      <Filter>Wiring\FOM</Filter>
-    </ClInclude>
-    <ClInclude Include="Wiring\FOM\TypeConv.h">
-      <Filter>Wiring\FOM</Filter>
-    </ClInclude>
-    <ClInclude Include="Wiring\FOM\WeaponFireRti.h">
       <Filter>Wiring\FOM</Filter>
     </ClInclude>
     <ClInclude Include="Wiring\NonFOM\CCommandHandler.h">
@@ -192,7 +192,7 @@
     <ClInclude Include="Stub\Toolkit\Toolkit.h">
       <Filter>Stub\Toolkit</Filter>
     </ClInclude>
-    <ClInclude Include="Platform\Platform.h">
+    <ClInclude Include="Platform\CPlatform.h">
       <Filter>Platform</Filter>
     </ClInclude>
     <ClInclude Include="ICD\icd_classes.h">

@@ -13,8 +13,6 @@
 
 #include "CTFromHla.h"
 
-namespace hla {
-
 template <class T, class ObjPtr>
 class CTRtiObjectFromHla : public CTFromHla<T> {
 public:
@@ -36,4 +34,3 @@ private:
     Convert m_convert;   ///< 1インスタンス -> 1レコードの詰め替え
 };
 
-}  // namespace hla

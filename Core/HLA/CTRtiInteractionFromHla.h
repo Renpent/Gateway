@@ -15,8 +15,6 @@
 
 #include "CTFromHla.h"
 
-namespace hla {
-
 template <class T>
 class CTRtiInteractionFromHla : public CTFromHla<T> {
 public:
@@ -42,4 +40,3 @@ private:
     std::vector<T> m_queue;   ///< コールバックが積み、drain が丸ごと持っていく
 };
 
-}  // namespace hla

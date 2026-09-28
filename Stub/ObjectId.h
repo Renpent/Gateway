@@ -9,10 +9,7 @@
 
 #include "../ICD/icd_types.h"
 
-namespace stub {
-
-inline icdfom::RTIobjectId objectId(const std::string& s) {
+inline icdfom::RTIobjectId makeObjectId(const std::string& s) {
     return icdfom::RTIobjectId(s.begin(), s.end());
 }
 
-}  // namespace stub

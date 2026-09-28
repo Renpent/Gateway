@@ -11,8 +11,6 @@
 
 #include "UDP/CUdpSocket.h"
 
-namespace core {
-
 class CChannel {
 public:
     virtual ~CChannel() = default;
@@ -23,7 +21,7 @@ public:
     /// このチャネル専用の UDP ポート。**全チャネルで重複してはいけない。**
     [[nodiscard]] virtual std::uint16_t getPort() const noexcept = 0;
 
-    [[nodiscard]] virtual udp::CUdpSocket& getSocket() noexcept = 0;
+    [[nodiscard]] virtual CUdpSocket& getSocket() noexcept = 0;
 
     /// 受信ポートを bind し、送信先を設定する。peerHost が空なら受信専用。
     [[nodiscard]] virtual bool open(const std::string& peerHost) = 0;
@@ -35,4 +33,3 @@ public:
     virtual void pumpOut() = 0;
 };
 
-}  // namespace core

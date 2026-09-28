@@ -11,8 +11,6 @@
 #include "../ICD/Interaction/WeaponFire.h"
 #include "ObjectId.h"
 
-namespace stub {
-
 /// i 番目の WeaponFire。RPR FOM の「誰が何を何に向けて撃ったか」を一通り埋める。
 inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
     const float f = static_cast<float>(i);
@@ -20,7 +18,7 @@ inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
 
     // 通し番号。レコード自身が何件目かを持つ唯一の場所。
     v.EventIdentifier.EventCount = static_cast<icdfom::UnsignedInteger16>(i);
-    v.EventIdentifier.IssuingObjectIdentifier = objectId("FED-1");
+    v.EventIdentifier.IssuingObjectIdentifier = makeObjectId("FED-1");
 
     v.FireControlSolutionRange = 1500.0f + f;
     v.FireMissionIndex         = static_cast<icdfom::UnsignedInteger32>(i / 4);
@@ -29,9 +27,9 @@ inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
     v.FiringLocation.Y = 2.0e6 - static_cast<double>(i);
     v.FiringLocation.Z = 4.5e6;
 
-    v.FiringObjectIdentifier   = objectId("PLTFRM-" + std::to_string(i % 8));
-    v.MunitionObjectIdentifier = objectId("MUN-" + std::to_string(i));
-    v.TargetObjectIdentifier   = objectId("TGT-" + std::to_string(i % 3));
+    v.FiringObjectIdentifier   = makeObjectId("PLTFRM-" + std::to_string(i % 8));
+    v.MunitionObjectIdentifier = makeObjectId("MUN-" + std::to_string(i));
+    v.TargetObjectIdentifier   = makeObjectId("TGT-" + std::to_string(i % 3));
 
     v.FuseType    = icdfom::FuseTypeEnum16::UltraQuick;
     v.WarheadType = icdfom::WarheadTypeEnum16::Other;
@@ -56,4 +54,3 @@ inline icdfom::WeaponFire makeWeaponFire(std::size_t i) {
     return v;
 }
 
-}  // namespace stub

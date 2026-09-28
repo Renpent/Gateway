@@ -10,8 +10,6 @@
 
 #include "CTToHla.h"
 
-namespace hla {
-
 template <class T>
 class CTRtiInteractionToHla : public CTToHla<T> {
 public:
@@ -25,4 +23,3 @@ private:
     Send m_send;   ///< 詰め替え + sendInteraction
 };
 
-}  // namespace hla

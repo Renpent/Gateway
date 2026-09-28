@@ -3,25 +3,21 @@
 //   HLAGateway <宛先IP|none> [Hz] [秒]
 //
 // 宛先が none なら受信専用。秒を省くか 0 にすると止まらない。
-// 配線（どのクラスを流すか）は Wiring/CWiring.h。
+// 配線（どのクラスを流すか）は Wiring/CStubWiring.h。
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 
 #include "Core/CGateway.h"
-#include "Platform/Platform.h"
-#include "Wiring/CWiring.h"
+#include "Platform/CPlatform.h"
+#include "Wiring/CStubWiring.h"
 
-namespace {
-
-unsigned toUnsigned(const char* s, unsigned fallback) {
+static unsigned toUnsigned(const char* s, unsigned fallback) {
     if (s == nullptr) return fallback;
     const long v = std::strtol(s, nullptr, 10);
     return v >= 0 ? static_cast<unsigned>(v) : fallback;
 }
-
-}  // namespace
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -29,7 +25,7 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    platform::initPlatform();
+    CPlatform::init();
 
     const std::string peer = (std::string(argv[1]) == "none") ? "" : argv[1];
     const unsigned hz = toUnsigned(argc > 2 ? argv[2] : nullptr, 20);
@@ -37,10 +33,10 @@ int main(int argc, char** argv) {
 
     int rc = 1;
     {
-        // **CWiring を先に宣言すること。** gateway のチャネルが wiring のメンバを借りているので、
+        // **配線を先に宣言すること。** gateway のチャネルが wiring のメンバを借りているので、
         // 破棄（宣言の逆順）で gateway が先に消えるようにする。
-        wiring::CWiring wiring;
-        core::CGateway gateway;
+        CStubWiring wiring;
+        CGateway gateway;
         wiring.build(gateway);
 
         if (gateway.openAll(peer)) {
@@ -50,6 +46,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    platform::shutdownPlatform();
+    CPlatform::shutdown();
     return rc;
 }

@@ -10,8 +10,6 @@
 #include "../../ICD/icd_codec.h"
 #include "CUdpSocket.h"
 
-namespace udp {
-
 template <class T>
 class CTUdpReceiver {
 public:
@@ -45,4 +43,3 @@ private:
     std::vector<unsigned char> m_buf;   ///< 受信バッファ。長さは payload
 };
 
-}  // namespace udp

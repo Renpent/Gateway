@@ -14,8 +14,6 @@
 
 #include "CTToHla.h"
 
-namespace hla {
-
 template <class T, class ObjPtr, class Key = std::string>
 class CTRtiObjectToHla : public CTToHla<T> {
 public:
@@ -45,4 +43,3 @@ private:
     std::map<Key, ObjPtr> m_instances;  ///< 鍵 -> 登録したインスタンス
 };
 
-}  // namespace hla

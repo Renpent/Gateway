@@ -19,8 +19,6 @@
 #include "CChannel.h"
 #include "UDP/CPoller.h"
 
-namespace core {
-
 class CGateway {
 public:
     /// チャネルを登録する。開くのは openAll。
@@ -42,8 +40,7 @@ private:
     std::vector<std::unique_ptr<CChannel>> m_channels;  ///< 登録されたチャネル。所有する
     std::vector<std::function<void()>> m_tickEnds;      ///< 周期の最後に呼ぶ処理。足した順
     std::vector<std::size_t> m_pollIndex;               ///< m_channels の添字 -> m_poller の添字
-    udp::CPoller m_poller;                              ///< 全チャネルのソケットをまとめて見張る
+    CPoller m_poller;                              ///< 全チャネルのソケットをまとめて見張る
     bool m_opened = false;                              ///< openAll が成功したか。false なら tick は何もしない
 };
 
-}  // namespace core

@@ -43,7 +43,7 @@ HLAGateway <宛先IP|none> [Hz] [秒]
 
 ```
 main.cpp          起動
-Wiring/           配線。どのクラスをどちら向きに流すか（スタブ用 CWiring / 本番用 CRtiWiring）
+Wiring/           配線。どのクラスをどちら向きに流すか（基底 CWiring、スタブ用 CStubWiring、本番用 CRtiWiring）
   FOM/            FOM クラスの本番の変換関数（ツールキットの型 ⇄ ICD の型）と、world を持つ CDb
   NonFOM/         FOM に無い独自データの型と処理（TCommand / TControl とハンドラ）
 Core/             ゲートウェイの中核。周期ループ（CGateway）とチャネル
@@ -75,20 +75,24 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 - OS を知っているのは `Core/UDP/*.cpp` と `Platform/*.cpp` だけ
 - ツールキットの型が出てくるのは `Wiring/FOM/` と、それを繋ぐ `Wiring/CRtiWiring.h` だけ
 
-**名前空間はフォルダ名の小文字。** フォルダ名は頭文字を大文字にし、略語は全部大文字にする。
+**手書きのコードは名前空間を使わない。** 実環境の別のツールのヘッダがグローバルで
+`using namespace xxx;` しており、xxx の中にこちらの名前空間と同じ名前（`core`・`hla`・`udp` など）が
+あると、`hla::CTFromHla` のように書いた所がすべて「曖昧」というエラーになるため（同じ状況を再現して確認した）。
 
-| フォルダ | 名前空間 |
+- 型はすべてグローバル。名前が重ならないように、型の接頭辞（`C` / `CT` / `T`）を付ける
+- ばらばらの関数は、クラスの static 関数にまとめる（`CTypeConv::toIcd`、`CDesignatorRti::keyOf`、
+  `CPlatform::init`）。`toIcd` や `keyOf` のような短い名前をグローバルに並べないため
+- 無名の名前空間も使わず、`.cpp` の中だけの関数と変数は `static` にする
+
+名前空間が残っているのは次の2つだけで、どちらもこちらの手書きの名前空間ではない。
+
+| 名前空間 | なぜ残すか |
 |---|---|
-| `Wiring/` | `wiring` |
-| `Wiring/FOM/` | `fom`（ツールキットは別名 `tk`） |
-| `Wiring/NonFOM/` | `nonfom` |
-| `Core/` | `core` |
-| `Core/UDP/` | `udp` |
-| `Core/HLA/` | `hla` |
-| `Stub/` | `stub` |
-| `Stub/Toolkit/` | `toolkit` |
-| `Platform/` | `platform` |
-| `ICD/`（生成物） | `icd` / `icdfom` |
+| `icd` / `icdfom`（`ICD/`） | 生成物。ICD の型は FOM のクラス名そのまま（`icdfom::Designator`）で、ツールキット側にも同じ名前の型があるので、外すと確実にぶつかる |
+| `tk`（`Wiring/FOM/Toolkit.h`） | ツールキット（相手）の名前空間を指す別名。偽のツールキットは本物に合わせて `namespace toolkit` の中にある |
+
+**こちらのクラス名と同じ名前のクラスが xxx にあると、そこはぶつかる。** そのときはぶつかった
+クラスだけ名前を変える。
 
 周期ループから見えるのは `CChannel` だけで、実装は2つある。
 
@@ -97,7 +101,7 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 | 何 | ICD のクラス | FOM に無い独自データ |
 | バイト列 | 12バイトヘッダ + 固定長レコード | 相手が決めた形式。1データグラム = 1メッセージ |
 | 型 | 生成物（`ICD/`） | 手書き（`Wiring/NonFOM/`） |
-| 手元の相手 | HLA（`hla::CTFromHla` / `CTToHla`） | アプリ（`core::CTMessageHandler`） |
+| 手元の相手 | HLA（`CTFromHla` / `CTToHla`） | アプリ（`CTMessageHandler`） |
 | 向き | 送受信 | 受信のみ |
 
 ## 書き方の決まり
@@ -106,7 +110,7 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 |---|---|---|
 | クラス | `C` | `CGateway`、`CUdpSocket` |
 | クラステンプレート | `CT` | `CTClassChannel<T>`、`CTFromHla<T>` |
-| 構造体・列挙 | `T` | `TClassBinding`、`nonfom::TCommand` |
+| 構造体・列挙 | `T` | `TClassBinding`、`TCommand` |
 
 - **ファイル名は型名と同じ。** 1ファイル1クラス
 - **生成物（`ICD/`）には接頭辞を付けない。** FOM のクラス名のまま
@@ -119,7 +123,7 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 
 ## クラスを1つ足す（スタブで試す）
 
-**手で書くのは配線（`Wiring/CWiring.h`）と、RTI が無い間の代用品だけ。** ID・ポート・ペイロードは
+**手で書くのは配線（`Wiring/CStubWiring.h`）と、RTI が無い間の代用品だけ。** ID・ポート・ペイロードは
 生成物の定数から決まるので、どこにも数字を書かない。
 
 サンプルとして `Designator`（レーザー指示器、1件 115 B、ID 5 / port 24005）を足してある。
@@ -150,26 +154,26 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 
 RTI が無い間は `Stub/` に代用品を置く。
 
-**送信元（HLA → UDP）：** 値を作る関数を1本書き、`stub::CTFixtureFromHla` に渡す。
-値に意味が要らなければ、関数を書かずに `stub::CTConstantFromHla<T>{1}`（既定構築の値を毎周期1件）でもよい。
+**送信元（HLA → UDP）：** 値を作る関数を1本書き、`CTFixtureFromHla` に渡す。
+値に意味が要らなければ、関数を書かずに `CTConstantFromHla<T>{1}`（既定構築の値を毎周期1件）でもよい。
 
 ```cpp
 // Stub/DesignatorFixture.h
 inline icdfom::Designator makeDesignator(std::size_t i) {
     icdfom::Designator d{};
-    d.HostObjectIdentifier = objectId("DSG-" + std::to_string(i % 2));
+    d.HostObjectIdentifier = makeObjectId("DSG-" + std::to_string(i % 2));
     d.DesignatorSpotLocation.X = 4.0e6 + 10.0 * static_cast<double>(i / 2);
     ...
     return d;
 }
 ```
 
-**受け口（UDP → HLA）：** `hla::CTToHla<T>` を実装する。名前は `〜ToHla` で終える。
-サンプルの `Stub/CDesignatorToHla.h` はモックで、本番の `hla::CTRtiObjectToHla` と同じ流れ
+**受け口（UDP → HLA）：** `CTToHla<T>` を実装する。名前は `〜ToHla` で終える。
+サンプルの `Stub/CDesignatorToHla.h` はモックで、本番の `CTRtiObjectToHla` と同じ流れ
 （鍵でインスタンスを決める → 初見なら登録 → 属性を書く）を、HLA に書く代わりに表示で真似している。
 
 ```cpp
-class CDesignatorToHla : public hla::CTToHla<icdfom::Designator> {
+class CDesignatorToHla : public CTToHla<icdfom::Designator> {
 public:
     void accept(const icdfom::Designator& d) override {
         const std::string key(d.HostObjectIdentifier.begin(), d.HostObjectIdentifier.end());
@@ -184,13 +188,13 @@ private:
 - **`accept()` はブロックしないこと。** 周期ループのスレッドから呼ばれる
 - **レコードはこの呼び出しの間だけ有効。** 後で使うならコピーする
 
-### ④ 配線に足す（`Wiring/CWiring.h`）
+### ④ 配線に足す（`Wiring/CStubWiring.h`）
 
 メンバを足す：
 
 ```cpp
-stub::CTFixtureFromHla<icdfom::Designator> designatorFromHla{stub::makeDesignator, 1};
-stub::CDesignatorToHla designatorToHla;
+CTFixtureFromHla<icdfom::Designator> designatorFromHla{makeDesignator, 1};
+CDesignatorToHla designatorToHla;
 ```
 
 `build()` に1行足す：
@@ -226,7 +230,7 @@ HLAGateway 127.0.0.1 20 1
 
 ### 本番では
 
-`stub::` の2つを `hla::CTRti...` の器に、配線を `Wiring/CRtiWiring.h` にする（次の節）。
+`Stub/` の2つを `CTRti...` の器に、配線を `Wiring/CRtiWiring.h` にする（次の節）。
 
 ## クラスを1つ足す（本番）
 
@@ -239,8 +243,8 @@ WeaponFire（インタラクション）** で、偽のツールキットに対�
 |---|---|---|
 | `Wiring/FOM/Toolkit.h` | ツールキットの入口。Wiring/FOM/ はここ経由でだけツールキットを見る | 触らない（本物に繋ぐときに1回だけ差し替え） |
 | `Wiring/FOM/CDb.h` | world を持つシングルトン | 触らない |
-| `Wiring/FOM/TypeConv.h/.cpp` | 入れ子のレコードと ID の変換（型ごと、クラス間で共有） | まだ無い型が出てきたら1組足す |
-| `Wiring/FOM/<Class>Rti.h/.cpp` | **そのクラスの変換関数** | **1クラスにつき1組、新しく書く** |
+| `Wiring/FOM/CTypeConv.h/.cpp` | 入れ子のレコードと ID の変換（型ごと、クラス間で共有） | まだ無い型が出てきたら1組足す |
+| `Wiring/FOM/C<Class>Rti.h/.cpp` | **そのクラスの変換関数** | **1クラスにつき1組、新しく書く** |
 | `Wiring/FOM/CInteractionCallback.h` | インタラクションの受信コールバック（全クラスで1つ） | **インタラクションならキューと override を1つずつ足す** |
 | `Wiring/CRtiWiring.h` | 本番の配線 | **メンバ2本と1行を足す** |
 | `Stub/Toolkit/Toolkit.h` | 偽のツールキット（本番には持っていかない） | 試すなら、そのクラスを足す |
@@ -248,36 +252,37 @@ WeaponFire（インタラクション）** で、偽のツールキットに対�
 加えて、スタブのときと同じく ICDgenerator で `ICD/` を生成し、`.cpp` をビルド設定に足す
 （「クラスを1つ足す（スタブで試す）」の①②）。
 
-### オブジェクトを足す（`Wiring/FOM/DesignatorRti.h/.cpp` が雛形）
+### オブジェクトを足す（`Wiring/FOM/CDesignatorRti.h/.cpp` が雛形）
 
-書く関数は5本。Fetch と Create は world を `CDb` から読む。
+書く関数は5本で、クラス1つの static 関数として並べる。Fetch と Create は world を `CDb` から読む。
 
 ```cpp
-namespace fom {
-std::vector<tk::DesignatorPtr> getRemoteDesignator();                      // Fetch
-icdfom::Designator toIcd(const tk::DesignatorPtr& p);                       // HLA → ICD
-std::string keyOf(const icdfom::Designator& r);                             // どのインスタンスか
-tk::DesignatorPtr registerDesignator(const std::string& key);               // Create
-void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);   // ICD → HLA、update
-}
+class CDesignatorRti {
+public:
+    static std::vector<tk::DesignatorPtr> getRemoteDesignator();                         // Fetch
+    static icdfom::Designator toIcd(const tk::DesignatorPtr& p);                          // HLA → ICD
+    static std::string keyOf(const icdfom::Designator& r);                                // どのインスタンスか
+    static tk::DesignatorPtr registerDesignator(const std::string& key);                  // Create
+    static void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);  // ICD → HLA、update
+};
 ```
 
-中身は属性ごとの代入を並べるだけ。入れ子のレコードと ID は `TypeConv` の `toIcd` / `toRti` に任せ、
+中身は属性ごとの代入を並べるだけ。入れ子のレコードと ID は `CTypeConv::toIcd` / `CTypeConv::toRti` に任せ、
 列挙は `static_cast` する。
 
 ```cpp
-icdfom::Designator toIcd(const tk::DesignatorPtr& p) {
+icdfom::Designator CDesignatorRti::toIcd(const tk::DesignatorPtr& p) {
     icdfom::Designator r{};
-    r.EntityIdentifier      = toIcd(p->getEntityIdentifier());          // 入れ子のレコード
-    r.HostObjectIdentifier  = toIcd(p->getHostObjectIdentifier());      // ID（文字列 → 文字の配列）
+    r.EntityIdentifier      = CTypeConv::toIcd(p->getEntityIdentifier());          // 入れ子のレコード
+    r.HostObjectIdentifier  = CTypeConv::toIcd(p->getHostObjectIdentifier());      // ID（文字列 → 文字の配列）
     r.CodeName              = static_cast<icdfom::DesignatorCodeNameEnum16>(p->getCodeName());   // 列挙
     r.DesignatorOutputPower = p->getDesignatorOutputPower();            // そのまま
     ...
     return r;
 }
 
-void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
-    p->setEntityIdentifier(toRti(r.EntityIdentifier));
+void CDesignatorRti::updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
+    p->setEntityIdentifier(CTypeConv::toRti(r.EntityIdentifier));
     ...
     p->update();
 }
@@ -286,15 +291,15 @@ void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {
 配線（`Wiring/CRtiWiring.h`）：
 
 ```cpp
-hla::CTRtiObjectFromHla<icdfom::Designator, tk::DesignatorPtr> designatorFromHla{
-    &fom::getRemoteDesignator, &fom::toIcd};
-hla::CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
-    &fom::keyOf, &fom::registerDesignator, &fom::updateDesignator};
+CTRtiObjectFromHla<icdfom::Designator, tk::DesignatorPtr> designatorFromHla{
+    &CDesignatorRti::getRemoteDesignator, &CDesignatorRti::toIcd};
+CTRtiObjectToHla<icdfom::Designator, tk::DesignatorPtr> designatorToHla{
+    &CDesignatorRti::keyOf, &CDesignatorRti::registerDesignator, &CDesignatorRti::updateDesignator};
 ...
 addClass<icdfom::Designator>(g, &designatorFromHla, &designatorToHla);   // build() に
 ```
 
-### インタラクションを足す（`Wiring/FOM/WeaponFireRti.h/.cpp` と `Wiring/FOM/CInteractionCallback.h` が雛形）
+### インタラクションを足す（`Wiring/FOM/CWeaponFireRti.h/.cpp` と `Wiring/FOM/CInteractionCallback.h` が雛形）
 
 **HLA から来る向きは RTI のコールバック。** ツールキットが生成するコールバックのクラスには
 FOM の全インタラクションの仮想関数が並んでいるので、`Wiring/FOM/CInteractionCallback.h` でそれを1回だけ
@@ -302,14 +307,15 @@ FOM の全インタラクションの仮想関数が並んでいるので、`Wir
 
 1インタラクションにつき書くもの：
 
-**① 変換関数3本（`Wiring/FOM/<Class>Rti.h/.cpp`）**
+**① 変換関数3本（`Wiring/FOM/C<Class>Rti.h/.cpp`、static 関数）**
 
 ```cpp
-namespace fom {
-icdfom::WeaponFire toIcd(const tk::WeaponFire& i);                  // 受信したパラメータ → レコード
-void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);       // レコード → 送信するパラメータ
-void sendWeaponFire(const icdfom::WeaponFire& r);                   // Send：fillRti して sendInteraction
-}
+class CWeaponFireRti {
+public:
+    static icdfom::WeaponFire toIcd(const tk::WeaponFire& i);                // 受信したパラメータ → レコード
+    static void fillRti(const icdfom::WeaponFire& r, tk::WeaponFire* i);     // レコード → 送信するパラメータ
+    static void sendWeaponFire(const icdfom::WeaponFire& r);                 // Send：fillRti して sendInteraction
+};
 ```
 
 **② `Wiring/FOM/CInteractionCallback.h` に、キュー1つと override 1つ**
@@ -317,10 +323,10 @@ void sendWeaponFire(const icdfom::WeaponFire& r);                   // Send：fi
 ```cpp
 class CInteractionCallback : public tk::InteractionCallback {
 public:
-    hla::CTRtiInteractionFromHla<icdfom::WeaponFire> weaponFireFromHla;   // キュー
+    CTRtiInteractionFromHla<icdfom::WeaponFire> weaponFireFromHla;   // キュー
 
     void onWeaponFire(const tk::WeaponFire& interaction) override {       // RTI のスレッド
-        weaponFireFromHla.push(toIcd(interaction));
+        weaponFireFromHla.push(CWeaponFireRti::toIcd(interaction));
     }
 };
 ```
@@ -332,7 +338,7 @@ public:
 **③ 配線（`Wiring/CRtiWiring.h`）に、送信のメンバ1つと build() の1行**
 
 ```cpp
-hla::CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&fom::sendWeaponFire};
+CTRtiInteractionToHla<icdfom::WeaponFire> fireToHla{&CWeaponFireRti::sendWeaponFire};
 ...
 addClass<icdfom::WeaponFire>(g, &interactions.weaponFireFromHla, &fireToHla);   // build() に
 ```
@@ -348,20 +354,20 @@ world は join してからできるので、`CDb` に置いてから回す。**
 （null チェックせずに辿るため）。
 
 ```cpp
-wiring::CRtiWiring wiring;          // CGateway より先に宣言する（チャネルが借りているため）
-core::CGateway gateway;
+CRtiWiring wiring;                 // CGateway より先に宣言する（チャネルが借りているため）
+CGateway gateway;
 wiring.build(gateway);
 
 /* join */
-fom::CDb::getInstance().setWorld(world);
+CDb::getInstance().setWorld(world);
 wiring.subscribe();              // インタラクションの受信コールバックを登録
 if (gateway.openAll(peer)) gateway.run(20, 0);
 /* resign */
-fom::CDb::getInstance().setWorld(nullptr);
+CDb::getInstance().setWorld(nullptr);
 // wiring はここより後まで生きていること（コールバックをツールキットに貸しているため）
 ```
 
-いまの `main.cpp` はスタブの配線（`CWiring`）を使っている。`CRtiWiring` はビルドには入っているが、
+いまの `main.cpp` はスタブの配線（`CStubWiring`）を使っている。`CRtiWiring` はビルドには入っているが、
 まだ main からは使っていない。
 
 ### 本物のツールキットに繋ぐとき
@@ -419,10 +425,10 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator() {
 別のシステムが送ってくるコマンドのように、**相手が形式を決めていて、12バイトヘッダも無い** UDP データも
 受けられる。
 
-1. **型を `Wiring/NonFOM/` に手書きする。** `kName`・`kPort` と、同じ名前空間の
-   `bool parse(const unsigned char*, std::size_t, T&)` を持たせる。
+1. **型を `Wiring/NonFOM/` に手書きする。** `kName`・`kPort` と、static 関数
+   `static bool parse(const unsigned char*, std::size_t, T&)` を持たせる。
    形式に合わなければ `false` を返す（捨てられる）
-2. **受け口を書く。** `core::CTMessageHandler<T>` を実装する
+2. **受け口を書く。** `CTMessageHandler<T>` を実装する
 3. **配線に1行足す。** `addRaw<T>(g, &handler);`
 
    ハンドラの `onTickEnd()` も、このとき周期末処理に登録される。
@@ -430,7 +436,7 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator() {
 **受け口では積むだけにして、処理は `onTickEnd()` で行う。** `accept()` は受信の最中に呼ばれるので、
 そこでゲートウェイの状態を変えると回しているループが壊れる。コマンドが効くのは次の周期から。
 
-### コマンド文字列（`nonfom::TCommand`）
+### コマンド文字列（`TCommand`）
 
 形式は仮で、1データグラム = 1コマンド、中身は char の並び。最初の NUL で切り、末尾の改行を落とす。
 `"STOP"`・`"STOP\0\0…"`・`"STOP\r\n"` はどれも `"STOP"` として受ける。
@@ -442,7 +448,7 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator() {
 python -c "import socket; socket.socket(2,2).sendto(b'STOP', ('127.0.0.1', 24100))"
 ```
 
-### 制御文字列（`nonfom::TControl`）
+### 制御文字列（`TControl`）
 
 形式は `TCommand` と同じ（仮）で、ポートは 24101（仮）。受け口は `Wiring/NonFOM/CControlHandler.h`。
 

@@ -15,11 +15,9 @@
 #include "../../Core/CTMessageHandler.h"
 #include "TControl.h"
 
-namespace nonfom {
-
-class CControlHandler : public core::CTMessageHandler<nonfom::TControl> {
+class CControlHandler : public CTMessageHandler<TControl> {
 public:
-    void accept(const nonfom::TControl& control) override { m_pending.push_back(control.text); }
+    void accept(const TControl& control) override { m_pending.push_back(control.text); }
 
     /// 届いた順に処理して、キューを空にする。
     void onTickEnd() override {
@@ -50,4 +48,3 @@ private:
     bool m_running = false;               ///< モックの状態。START で true、STOP / RESET で false
 };
 
-}  // namespace nonfom

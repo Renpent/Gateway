@@ -4,8 +4,6 @@
 
 #pragma once
 
-namespace hla {
-
 template <class T>
 class CTToHla {
 public:
@@ -16,4 +14,3 @@ public:
     virtual void accept(const T& record) = 0;
 };
 
-}  // namespace hla

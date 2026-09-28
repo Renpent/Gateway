@@ -19,14 +19,12 @@ static bool setNonBlocking(socket_t s) {
     return ::ioctlsocket(s, FIONBIO, &on) == 0;
 }
 
-namespace {
-/// Winsock の初期化と終了。プロセスで1回。
-struct WinsockScope {
-    WinsockScope() { WSADATA d; WSAStartup(MAKEWORD(2, 2), &d); }
-    ~WinsockScope() { WSACleanup(); }
+/// Winsock の初期化と終了。プロセスで1回（静的オブジェクトの寿命に任せる）。
+struct TWinsockScope {
+    TWinsockScope() { WSADATA d; WSAStartup(MAKEWORD(2, 2), &d); }
+    ~TWinsockScope() { WSACleanup(); }
 };
-WinsockScope g_winsock;
-}  // namespace
+static TWinsockScope g_winsock;
 
 #else
 #  include <arpa/inet.h>
@@ -45,12 +43,7 @@ static bool setNonBlocking(socket_t s) {
 }
 #endif
 
-namespace udp {
-namespace {
-
-socket_t asSocket(std::intptr_t h) { return static_cast<socket_t>(h); }
-
-}  // namespace
+static socket_t asSocket(std::intptr_t h) { return static_cast<socket_t>(h); }
 
 CUdpSocket::~CUdpSocket() { close(); }
 
@@ -135,4 +128,3 @@ long CUdpSocket::receive(unsigned char* buf, std::size_t cap) {
     return static_cast<long>(got);
 }
 
-}  // namespace udp

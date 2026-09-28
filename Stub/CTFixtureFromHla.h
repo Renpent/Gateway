@@ -10,10 +10,8 @@
 
 #include "../Core/HLA/CTFromHla.h"
 
-namespace stub {
-
 template <class T>
-class CTFixtureFromHla : public hla::CTFromHla<T> {
+class CTFixtureFromHla : public CTFromHla<T> {
 public:
     using Fixture = T (*)(std::size_t);   ///< i 件目の値を作る関数
 
@@ -29,4 +27,3 @@ private:
     std::size_t m_next = 0;   ///< 次に作る値の添字
 };
 
-}  // namespace stub

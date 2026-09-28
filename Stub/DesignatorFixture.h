@@ -12,8 +12,6 @@
 #include "../ICD/Object/Designator.h"
 #include "ObjectId.h"
 
-namespace stub {
-
 /// i 番目の Designator。
 inline icdfom::Designator makeDesignator(std::size_t i) {
     const std::size_t unit = i % 2;              // どちらの指示器か
@@ -23,14 +21,14 @@ inline icdfom::Designator makeDesignator(std::size_t i) {
     d.EntityIdentifier.FederateIdentifier.SiteID = 1;
     d.EntityIdentifier.FederateIdentifier.ApplicationID = 1;
     d.EntityIdentifier.EntityNumber = static_cast<icdfom::UnsignedInteger16>(100 + unit);
-    d.HostObjectIdentifier = objectId("DSG-" + std::to_string(unit));
+    d.HostObjectIdentifier = makeObjectId("DSG-" + std::to_string(unit));
 
     d.RelativePosition.BodyXDistance = 1.5f;
     d.RelativePosition.BodyYDistance = 0.0f;
     d.RelativePosition.BodyZDistance = -0.5f;
 
     d.CodeName = icdfom::DesignatorCodeNameEnum16::Other;
-    d.DesignatedObjectIdentifier = objectId("TGT-" + std::to_string(unit));
+    d.DesignatedObjectIdentifier = makeObjectId("TGT-" + std::to_string(unit));
     d.DesignatorCode = icdfom::DesignatorCodeEnum16::Other;
     d.DesignatorEmissionWavelength = 1.064f;     // Nd:YAG
     d.DesignatorOutputPower = 10.0f + static_cast<float>(unit);
@@ -42,4 +40,3 @@ inline icdfom::Designator makeDesignator(std::size_t i) {
     return d;
 }
 
-}  // namespace stub

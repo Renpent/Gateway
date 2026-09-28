@@ -15,25 +15,22 @@
 #include <cstdint>
 #include <string>
 
-namespace nonfom {
-
 struct TCommand {
     std::string text;   ///< コマンド本体。NUL と末尾の改行は除いてある
 
     static constexpr const char*   kName = "Command";   ///< 表示名
     static constexpr std::uint16_t kPort = 24100;       ///< 受信ポート（仮）。ICD のクラスと重ならないこと
+
+    /// 1データグラムをコマンド1つとして読む。空なら false（捨てられる）。
+    /// CTRawChannel が T::parse として呼ぶ。例外は投げない。
+    static bool parse(const unsigned char* data, std::size_t len, TCommand& out) {
+        std::size_t n = 0;
+        while (n < len && data[n] != '\0') ++n;
+        while (n > 0 && (data[n - 1] == '\n' || data[n - 1] == '\r')) --n;
+
+        if (n == 0) return false;
+        out.text.assign(reinterpret_cast<const char*>(data), n);
+        return true;
+    }
 };
 
-/// 1データグラムをコマンド1つとして読む。空なら false（捨てられる）。
-/// CTRawChannel が ADL で拾うので、TCommand と同じ名前空間に置く。
-inline bool parse(const unsigned char* data, std::size_t len, TCommand& out) {
-    std::size_t n = 0;
-    while (n < len && data[n] != '\0') ++n;
-    while (n > 0 && (data[n - 1] == '\n' || data[n - 1] == '\r')) --n;
-
-    if (n == 0) return false;
-    out.text.assign(reinterpret_cast<const char*>(data), n);
-    return true;
-}
-
-}  // namespace nonfom

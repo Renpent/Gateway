@@ -1,4 +1,4 @@
-#include "Platform.h"
+#include "CPlatform.h"
 
 #ifdef _WIN32
 #  ifndef WIN32_LEAN_AND_MEAN
@@ -13,15 +13,11 @@
 #  endif
 #endif
 
-namespace platform {
-
 #ifdef _WIN32
-namespace {
-bool g_timerRaised = false;
-}
+static bool g_timerRaised = false;   ///< timeBeginPeriod が成功したか（戻すときに見る）
 #endif
 
-void initPlatform() {
+void CPlatform::init() {
 #ifdef _WIN32
     // 65001 = UTF-8。標準出力がファイルへリダイレクトされているとコンソールが無いので
     // 失敗するが、その場合は UTF-8 のバイト列がそのまま書かれるだけで問題ない。
@@ -31,7 +27,7 @@ void initPlatform() {
 #endif
 }
 
-void shutdownPlatform() {
+void CPlatform::shutdown() {
 #ifdef _WIN32
     if (g_timerRaised) {
         ::timeEndPeriod(1);
@@ -40,4 +36,3 @@ void shutdownPlatform() {
 #endif
 }
 
-}  // namespace platform

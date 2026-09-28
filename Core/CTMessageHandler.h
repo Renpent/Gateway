@@ -11,8 +11,6 @@
 
 #pragma once
 
-namespace core {
-
 template <class T>
 class CTMessageHandler {
 public:
@@ -25,4 +23,3 @@ public:
     virtual void onTickEnd() {}
 };
 
-}  // namespace core

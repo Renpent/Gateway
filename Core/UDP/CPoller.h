@@ -9,8 +9,6 @@
 #include <cstdint>
 #include <vector>
 
-namespace udp {
-
 class CUdpSocket;
 
 class CPoller {
@@ -29,4 +27,3 @@ private:
     std::vector<unsigned char> m_ready;    ///< 直前の poll で読めたか（1 = 読める）
 };
 
-}  // namespace udp

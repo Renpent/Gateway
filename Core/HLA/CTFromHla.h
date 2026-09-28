@@ -9,8 +9,6 @@
 
 #include <vector>
 
-namespace hla {
-
 template <class T>
 class CTFromHla {
 public:
@@ -20,4 +18,3 @@ public:
     virtual void drain(std::vector<T>& out) = 0;
 };
 
-}  // namespace hla

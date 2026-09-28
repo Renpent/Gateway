@@ -11,8 +11,6 @@
 #include "../../ICD/icd_codec.h"
 #include "CUdpSocket.h"
 
-namespace udp {
-
 template <class T>
 class CTUdpSender {
 public:
@@ -41,4 +39,3 @@ private:
     icd::DatagramWriter<T> m_writer;    ///< m_buf にレコードを積む。flush のたびに作り直す
 };
 
-}  // namespace udp

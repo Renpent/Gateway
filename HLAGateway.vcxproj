@@ -145,13 +145,13 @@
 
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Wiring\FOM\DesignatorRti.cpp" />
-    <ClCompile Include="Wiring\FOM\TypeConv.cpp" />
-    <ClCompile Include="Wiring\FOM\WeaponFireRti.cpp" />
+    <ClCompile Include="Wiring\FOM\CDesignatorRti.cpp" />
+    <ClCompile Include="Wiring\FOM\CTypeConv.cpp" />
+    <ClCompile Include="Wiring\FOM\CWeaponFireRti.cpp" />
     <ClCompile Include="Core\CGateway.cpp" />
     <ClCompile Include="Core\UDP\CPoller.cpp" />
     <ClCompile Include="Core\UDP\CUdpSocket.cpp" />
-    <ClCompile Include="Platform\Platform.cpp" />
+    <ClCompile Include="Platform\CPlatform.cpp" />
     <ClCompile Include="ICD\icd_types.cpp" />
     <ClCompile Include="ICD\Object\Designator.cpp" />
     <ClCompile Include="ICD\Object\MinefieldData.cpp" />
@@ -160,15 +160,15 @@
     <ClCompile Include="ICD\Interaction\WeaponFire.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Wiring\AddChannel.h" />
     <ClInclude Include="Wiring\CRtiWiring.h" />
+    <ClInclude Include="Wiring\CStubWiring.h" />
     <ClInclude Include="Wiring\CWiring.h" />
     <ClInclude Include="Wiring\FOM\CDb.h" />
+    <ClInclude Include="Wiring\FOM\CDesignatorRti.h" />
     <ClInclude Include="Wiring\FOM\CInteractionCallback.h" />
-    <ClInclude Include="Wiring\FOM\DesignatorRti.h" />
+    <ClInclude Include="Wiring\FOM\CTypeConv.h" />
+    <ClInclude Include="Wiring\FOM\CWeaponFireRti.h" />
     <ClInclude Include="Wiring\FOM\Toolkit.h" />
-    <ClInclude Include="Wiring\FOM\TypeConv.h" />
-    <ClInclude Include="Wiring\FOM\WeaponFireRti.h" />
     <ClInclude Include="Wiring\NonFOM\CCommandHandler.h" />
     <ClInclude Include="Wiring\NonFOM\CControlHandler.h" />
     <ClInclude Include="Wiring\NonFOM\TCommand.h" />
@@ -197,7 +197,7 @@
     <ClInclude Include="Stub\RadarBeamFixture.h" />
     <ClInclude Include="Stub\WeaponFireFixture.h" />
     <ClInclude Include="Stub\Toolkit\Toolkit.h" />
-    <ClInclude Include="Platform\Platform.h" />
+    <ClInclude Include="Platform\CPlatform.h" />
     <ClInclude Include="ICD\icd_classes.h" />
     <ClInclude Include="ICD\icd_codec.h" />
     <ClInclude Include="ICD\icd_types.h" />

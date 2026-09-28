@@ -12,8 +12,6 @@
 #include <cstdint>
 #include <string>
 
-namespace udp {
-
 class CUdpSocket {
 public:
     CUdpSocket() = default;
@@ -59,4 +57,3 @@ private:
     std::uint16_t m_peerPort = 0;   ///< 送信先ポート（0 = 送信先なし。ネットワークバイトオーダー）
 };
 
-}  // namespace udp

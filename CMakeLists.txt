@@ -12,13 +12,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(HLAGateway
     main.cpp
-    Wiring/FOM/DesignatorRti.cpp
-    Wiring/FOM/TypeConv.cpp
-    Wiring/FOM/WeaponFireRti.cpp
+    Wiring/FOM/CDesignatorRti.cpp
+    Wiring/FOM/CTypeConv.cpp
+    Wiring/FOM/CWeaponFireRti.cpp
     Core/CGateway.cpp
     Core/UDP/CPoller.cpp
     Core/UDP/CUdpSocket.cpp
-    Platform/Platform.cpp
+    Platform/CPlatform.cpp
     ICD/icd_types.cpp
     ICD/Object/Designator.cpp
     ICD/Object/MinefieldData.cpp

@@ -10,8 +10,6 @@
 
 #include "Toolkit.h"
 
-namespace fom {
-
 class CDb {
 public:
     static CDb& getInstance() {
@@ -28,4 +26,3 @@ private:
     tk::World* m_world = nullptr;   ///< join 後に置き、resign 前に外す
 };
 
-}  // namespace fom

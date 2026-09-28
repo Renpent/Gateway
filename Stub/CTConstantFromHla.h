@@ -10,10 +10,8 @@
 
 #include "../Core/HLA/CTFromHla.h"
 
-namespace stub {
-
 template <class T>
-class CTConstantFromHla : public hla::CTFromHla<T> {
+class CTConstantFromHla : public CTFromHla<T> {
 public:
     explicit CTConstantFromHla(std::size_t perDrain) : m_perDrain(perDrain) {}
 
@@ -25,4 +23,3 @@ private:
     std::size_t m_perDrain;   ///< 1回の drain で渡す件数
 };
 
-}  // namespace stub

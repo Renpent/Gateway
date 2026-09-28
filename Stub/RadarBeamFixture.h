@@ -11,8 +11,6 @@
 #include "../ICD/Object/RadarBeam.h"
 #include "ObjectId.h"
 
-namespace stub {
-
 /// i 番目の RadarBeam。
 inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
     const float f = static_cast<float>(i);
@@ -27,10 +25,10 @@ inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
     b.BeamParameterIndex     = static_cast<icdfom::UnsignedInteger16>(100 + i);
     b.EffectiveRadiatedPower = 42.5f + f;
     b.EmissionFrequency      = 9.3e9f;
-    b.EmitterSystemIdentifier = objectId("EMIT-" + std::to_string(i));
+    b.EmitterSystemIdentifier = makeObjectId("EMIT-" + std::to_string(i));
 
     b.EventIdentifier.EventCount = static_cast<icdfom::UnsignedInteger16>(i);
-    b.EventIdentifier.IssuingObjectIdentifier = objectId("FED-1");
+    b.EventIdentifier.IssuingObjectIdentifier = makeObjectId("FED-1");
 
     b.FrequencyRange           = 1.0e6f;
     b.PulseRepetitionFrequency = 1000.0f + f;
@@ -42,9 +40,8 @@ inline icdfom::RadarBeam makeRadarBeam(std::size_t i) {
     // 上限3本の可変長配列。件数を回ごとに変えて、詰め物（ゼロ埋め）の側も動かす。
     b.TrackObjectIdentifiers.clear();
     for (std::size_t k = 0; k < (i % 4); ++k) {
-        b.TrackObjectIdentifiers.push_back(objectId("TRK-" + std::to_string(k)));
+        b.TrackObjectIdentifiers.push_back(makeObjectId("TRK-" + std::to_string(k)));
     }
     return b;
 }
 
-}  // namespace stub

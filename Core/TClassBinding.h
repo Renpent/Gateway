@@ -8,8 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace core {
-
 struct TClassBinding {
     std::uint32_t classId;   ///< データグラム先頭に入るクラス識別子
     std::uint16_t port;      ///< このクラス専用の UDP ポート（送受信とも同じ番号）
@@ -23,4 +21,3 @@ constexpr TClassBinding bindingOf() noexcept {
     return TClassBinding{T::kClassId, T::kPort, T::kPayload, T::kFomName};
 }
 
-}  // namespace core

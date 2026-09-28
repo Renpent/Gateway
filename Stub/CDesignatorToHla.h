@@ -3,7 +3,7 @@
 //
 // Designator の受け口（モック）。UDP から受けたレコードを HLA へ書く代わりに表示する。
 //
-// 本番の hla::CTRtiObjectToHla と同じ流れにしてある：
+// 本番の CTRtiObjectToHla と同じ流れにしてある：
 //   1. 鍵（HostObjectIdentifier）でどのインスタンスかを決める
 //   2. 初めて見る鍵なら登録する（本番では registerObjectInstance）
 //   3. 属性を書いて update する（本番では p->setXxx(...); p->update();）
@@ -17,9 +17,7 @@
 #include "../Core/HLA/CTToHla.h"
 #include "../ICD/Object/Designator.h"
 
-namespace stub {
-
-class CDesignatorToHla : public hla::CTToHla<icdfom::Designator> {
+class CDesignatorToHla : public CTToHla<icdfom::Designator> {
 public:
     void accept(const icdfom::Designator& d) override {
         const std::string key(d.HostObjectIdentifier.begin(), d.HostObjectIdentifier.end());
@@ -36,4 +34,3 @@ private:
     std::set<std::string> m_registered;   ///< 登録済みの鍵（本番では鍵 -> インスタンスの対応表）
 };
 
-}  // namespace stub
