@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "../../ICD/Object/Designator.h"
@@ -23,13 +22,14 @@ public:
     /// Convert：1インスタンス -> 1レコード。
     static icdfom::Designator toIcd(const tk::DesignatorPtr& p);
 
-    /// KeyOf：このレコードがどのインスタンスのものか。
-    /// **鍵の選び方は ICD 側の判断で、まだ決まっていない。** ここでは HostObjectIdentifier にしてある
-    /// （1つの母体に指示器が複数あるなら、ほかのフィールドと組にする）。
-    static std::string keyOf(const icdfom::Designator& r);
+    /// KeyOf：このレコードがどのインスタンスのものか。戻り値の型は鍵の型（既定は int）と同じにする。
+    /// **鍵の選び方は ICD 側の判断。** ここでは指示器自身の EntityIdentifier.EntityNumber にしてある
+    /// （複数のサイト・アプリから届いて番号がぶつかるなら、SiteID・ApplicationID と組にして
+    /// std::uint64_t や std::tuple の鍵にする）。
+    static int keyOf(const icdfom::Designator& r);
 
     /// Create：初めて見る鍵でインスタンスを登録する。失敗したら空。
-    static tk::DesignatorPtr registerDesignator(const std::string& key);
+    static tk::DesignatorPtr registerDesignator(int key);
 
     /// Update：属性を書いて update する。
     static void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);

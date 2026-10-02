@@ -4,17 +4,21 @@
 // 初めて見る鍵なら Create で登録し、以後は同じインスタンスに Update する（属性を書いて update）。
 //
 // **インスタンスの削除は扱わない。** 一度登録したインスタンスは残り続ける。
+//
+// 鍵の型は既定で int。ほかの型にするときは3つ目の引数で指定する（std::uint64_t、std::string、
+// std::tuple など。std::map のキーにするので < で比べられること）。
+// **KeyOf の戻り値は鍵の型とぴったり同じにすること**（関数ポインタで受けるため）。
+// Create の引数は鍵の型から変換できれば通る（int の値渡しでも const int& でもよい）。
 
 #pragma once
 
 #include <functional>
 #include <map>
-#include <string>
 #include <utility>
 
 #include "CTToHla.h"
 
-template <class T, class ObjPtr, class Key = std::string>
+template <class T, class ObjPtr, class Key = int>
 class CTRtiObjectToHla : public CTToHla<T> {
 public:
     using KeyOf = Key (*)(const T&);                        ///< レコード -> インスタンスの鍵

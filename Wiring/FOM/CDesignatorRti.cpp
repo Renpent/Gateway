@@ -1,5 +1,7 @@
 #include "CDesignatorRti.h"
 
+#include <string>
+
 #include "CDb.h"
 #include "CTypeConv.h"
 
@@ -24,10 +26,12 @@ icdfom::Designator CDesignatorRti::toIcd(const tk::DesignatorPtr& p) {
     return r;
 }
 
-std::string CDesignatorRti::keyOf(const icdfom::Designator& r) { return CTypeConv::toRti(r.HostObjectIdentifier); }
+int CDesignatorRti::keyOf(const icdfom::Designator& r) { return r.EntityIdentifier.EntityNumber; }
 
-tk::DesignatorPtr CDesignatorRti::registerDesignator(const std::string& key) {
-    return CDb::getInstance().getWorld()->getObjectManager()->registerDesignator(key);
+tk::DesignatorPtr CDesignatorRti::registerDesignator(int key) {
+    // インスタンス名はフェデレーション全体で一意である必要がある。名前を任せられる API なら任せてよい
+    return CDb::getInstance().getWorld()->getObjectManager()->registerDesignator(
+        "Designator-" + std::to_string(key));
 }
 
 void CDesignatorRti::updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p) {

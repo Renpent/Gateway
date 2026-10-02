@@ -261,8 +261,8 @@ class CDesignatorRti {
 public:
     static std::vector<tk::DesignatorPtr> getRemoteDesignator();                         // Fetch
     static icdfom::Designator toIcd(const tk::DesignatorPtr& p);                          // HLA → ICD
-    static std::string keyOf(const icdfom::Designator& r);                                // どのインスタンスか
-    static tk::DesignatorPtr registerDesignator(const std::string& key);                  // Create
+    static int keyOf(const icdfom::Designator& r);                                        // どのインスタンスか
+    static tk::DesignatorPtr registerDesignator(int key);                                 // Create
     static void updateDesignator(const icdfom::Designator& r, const tk::DesignatorPtr& p);  // ICD → HLA、update
 };
 ```
@@ -287,6 +287,11 @@ void CDesignatorRti::updateDesignator(const icdfom::Designator& r, const tk::Des
     p->update();
 }
 ```
+
+鍵の型は既定で `int`（`CTRtiObjectToHla` の3つ目のテンプレート引数）。**`keyOf` の戻り値は鍵の型と
+ぴったり同じにする**（関数ポインタで受けるため）。ほかの型にするなら、配線で
+`CTRtiObjectToHla<icdfom::Xxx, tk::XxxPtr, std::uint64_t>` のように指定する。`std::map` のキーに
+するので、`<` で比べられる型であること（整数・`std::string`・`std::tuple` はそのまま使える）。
 
 配線（`Wiring/CRtiWiring.h`）：
 
@@ -414,8 +419,8 @@ std::vector<tk::DesignatorPtr> getRemoteDesignator() {
 
 ### 決まっていないこと
 
-- **鍵の選び方（`keyOf`）。** サンプルは `HostObjectIdentifier`。1つの母体に指示器が複数あるなら、
-  ほかのフィールドと組にする
+- **鍵の選び方（`keyOf`）。** サンプルは指示器自身の `EntityIdentifier.EntityNumber`。複数のサイト・
+  アプリから届いて番号がぶつかるなら、`SiteID`・`ApplicationID` と組にして広い型の鍵にする
 - **部分更新の扱い。** ICD は常に全属性ぶんの箱を送るので、送信側が持っていない属性はゼロで届く。
   前回値で埋めるか既定値で埋めるかは `updateDesignator` の中で決める
 - **インスタンスの削除。** `CTRtiObjectToHla` は一度登録したインスタンスを消さない
