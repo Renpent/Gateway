@@ -19,3 +19,6 @@ CMakeFiles/
 *.pdb
 *.ilk
 build_linux/
+
+# 実行時のログ（CChannelLog）
+log/

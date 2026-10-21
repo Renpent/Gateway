@@ -148,6 +148,7 @@
     <ClCompile Include="Wiring\FOM\CDesignatorRti.cpp" />
     <ClCompile Include="Wiring\FOM\CTypeConv.cpp" />
     <ClCompile Include="Wiring\FOM\CWeaponFireRti.cpp" />
+    <ClCompile Include="Core\CChannelLog.cpp" />
     <ClCompile Include="Core\CGateway.cpp" />
     <ClCompile Include="Core\UDP\CPoller.cpp" />
     <ClCompile Include="Core\UDP\CUdpSocket.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="Wiring\NonFOM\TCommand.h" />
     <ClInclude Include="Wiring\NonFOM\TControl.h" />
     <ClInclude Include="Core\CChannel.h" />
+    <ClInclude Include="Core\CChannelLog.h" />
     <ClInclude Include="Core\CGateway.h" />
     <ClInclude Include="Core\CTClassChannel.h" />
     <ClInclude Include="Core\CTMessageHandler.h" />

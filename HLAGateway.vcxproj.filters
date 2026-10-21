@@ -49,6 +49,9 @@
     <ClCompile Include="Wiring\FOM\CWeaponFireRti.cpp">
       <Filter>Wiring\FOM</Filter>
     </ClCompile>
+    <ClCompile Include="Core\CChannelLog.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="Core\CGateway.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -121,6 +124,9 @@
       <Filter>Wiring\NonFOM</Filter>
     </ClInclude>
     <ClInclude Include="Core\CChannel.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\CChannelLog.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\CGateway.h">

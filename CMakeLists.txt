@@ -15,6 +15,7 @@ add_executable(HLAGateway
     Wiring/FOM/CDesignatorRti.cpp
     Wiring/FOM/CTypeConv.cpp
     Wiring/FOM/CWeaponFireRti.cpp
+    Core/CChannelLog.cpp
     Core/CGateway.cpp
     Core/UDP/CPoller.cpp
     Core/UDP/CUdpSocket.cpp

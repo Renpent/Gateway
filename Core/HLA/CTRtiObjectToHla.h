@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <cstdio>
 #include <functional>
 #include <map>
 #include <utility>
@@ -34,7 +35,10 @@ public:
         auto it = m_instances.find(key);
         if (it == m_instances.end()) {
             ObjPtr obj = m_create(key);
-            if (!obj) return;   // 登録できなければ捨てる。次に届いたときに再び試す
+            if (!obj) {   // 登録できなければ捨てる。次に届いたときに再び試す
+                std::printf("[%s] インスタンスを登録できません（次に届いたときに再び試す）\n", T::kFomName);
+                return;
+            }
             it = m_instances.insert(std::make_pair(key, obj)).first;
         }
         m_update(record, it->second);

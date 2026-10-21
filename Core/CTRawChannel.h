@@ -2,6 +2,7 @@
 //
 // ヘッダは無く、1データグラム = 1メッセージ。バイト列は T::parse() が読む。
 // 形式に合わないもの（parse が false）は捨てる。
+// ログ：1データグラムごとに1行、log/<kName>_<起動時刻>.log に書く（CChannelLog）。
 //
 // T に求めるもの（Wiring/NonFOM/ に手書きする。実例は Wiring/NonFOM/TCommand.h）：
 //   static constexpr const char*   kName;   表示名
@@ -18,6 +19,7 @@
 
 #include "UDP/CUdpSocket.h"
 #include "CChannel.h"
+#include "CChannelLog.h"
 #include "CTMessageHandler.h"
 
 template <class T>
@@ -34,7 +36,10 @@ public:
 
     /// 受信専用なので送信先は持たない。
     [[nodiscard]] bool open(const std::string& /*peerHost*/) override {
-        return m_sock.open(T::kPort, "", 0);
+        if (!m_sock.open(T::kPort, "", 0)) return false;
+        m_log.open(T::kName);
+        m_log.write("開始 port=%u（受信のみ）", static_cast<unsigned>(T::kPort));
+        return true;
     }
 
     void pumpIn() override {
@@ -43,7 +48,11 @@ public:
             if (got <= 0) return;
 
             T message{};   // 毎回作り直す。parse が途中で失敗したときに前の中身が残らないように
-            if (!T::parse(m_buf.data(), static_cast<std::size_t>(got), message)) continue;
+            if (!T::parse(m_buf.data(), static_cast<std::size_t>(got), message)) {
+                m_log.error("受 形式に合わないので捨てた %ld B", got);
+                continue;
+            }
+            m_log.write("受 %ld B", got);
             if (m_handler != nullptr) m_handler->accept(message);
         }
     }
@@ -54,5 +63,6 @@ private:
     CTMessageHandler<T>* m_handler;     ///< アプリ側の受け口。借り物で、null なら捨てる
     CUdpSocket m_sock;             ///< このメッセージ専用のソケット（受信のみ）
     std::vector<unsigned char> m_buf;   ///< 受信バッファ。UDP の最大長
+    CChannelLog m_log;             ///< このメッセージのログファイル
 };
 
