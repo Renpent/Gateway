@@ -1,9 +1,9 @@
 // 自動生成 — 編集しないこと。
-// FOMのデータ型
+// FOMのデータ型（電文との変換）
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
-#include "icd_types.h"
+#include "icd_types_codec.h"
 
 namespace icdfom {
 

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../icd_types.h"
+#include "../icd_types_codec.h"
 
 namespace icdfom {
 
@@ -29,7 +29,7 @@ struct RadioReceiver {
 };
 
 static_assert(RadioReceiver::kEncodedSize + icd::kHeaderSize <= RadioReceiver::kPayload,
-              "RadioReceiver: 1件がペイロードに収まりません。ICDgenerator の MTU か配列上限を見直してください");
+              "RadioReceiver: 1件がペイロードに収まりません。ICDgenerator の MTU・配列上限・送る属性を見直してください");
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, RadioReceiver& v);
 void encode(icd::Writer& w, const RadioReceiver& v);

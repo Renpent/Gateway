@@ -162,7 +162,7 @@ FOM に無い独自データは `NonFOM/` に型とハンドラを書き、ど�
 これで次のものが出る。include を手で足す必要はない。
 
 - `ICD/Object/Designator.h/.cpp`（インタラクションなら `ICD/Interaction/`）
-- `ICD/icd_types.h/.cpp` に、このクラスが使う型が足される
+- `ICD/icd_types.h` にこのクラスが使う型の定義が、`ICD/icd_types_codec.h/.cpp` にその型と電文との変換が足される
 - `ICD/icd_classes.h` にこのクラスの include が足される
 
 **生成が止まるのは2通り：** 可変レコードを含むクラスと、1件が MTU に収まらないクラス。
@@ -518,13 +518,15 @@ ICD が変わったら、ICDgenerator の C++ 生成の出力先をこのリポ�
 ```
 ICD/
   icd_codec.h        ランタイム（全クラス共通）
-  icd_types.h/.cpp   選んだクラスが使う型
+  icd_types.h        選んだクラスが使う型の定義だけ（構造体・列挙・typedef）。CTypeConv はこれだけ見ればよい
+  icd_types_codec.h/.cpp  その型と電文との変換（encode / decode）
   icd_classes.h      全クラスのまとめ include（配線用）
   Object/            オブジェクトクラス（<Class>.h / .cpp）
   Interaction/       インタラクションクラス
 ```
 
-- **生成器は既存のファイルを消さない。** 選択から外したクラスは手で消す
+- **生成器は既存のファイルを消さない。** 選択から外したクラスは手で消す。型の変換が `icd_types_codec.cpp` に
+  分かれる前の ICD から差し替えるときは、残った `icd_types.cpp` も消して、プロジェクトのソースの一覧を差し替える
 - **1件が MTU に収まらないクラスは ICDgenerator が生成を拒否する。** 生成ヘッダの `static_assert` も
   コンパイル時に止める
 

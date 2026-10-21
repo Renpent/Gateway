@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../icd_types.h"
+#include "../icd_types_codec.h"
 
 namespace icdfom {
 
@@ -34,7 +34,7 @@ struct Designator {
 };
 
 static_assert(Designator::kEncodedSize + icd::kHeaderSize <= Designator::kPayload,
-              "Designator: 1件がペイロードに収まりません。ICDgenerator の MTU か配列上限を見直してください");
+              "Designator: 1件がペイロードに収まりません。ICDgenerator の MTU・配列上限・送る属性を見直してください");
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, Designator& v);
 void encode(icd::Writer& w, const Designator& v);

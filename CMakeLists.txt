@@ -20,7 +20,7 @@ add_executable(HLAGateway
     Core/UDP/CPoller.cpp
     Core/UDP/CUdpSocket.cpp
     Platform/CPlatform.cpp
-    ICD/icd_types.cpp
+    ICD/icd_types_codec.cpp
     ICD/Object/Designator.cpp
     ICD/Object/MinefieldData.cpp
     ICD/Object/RadarBeam.cpp

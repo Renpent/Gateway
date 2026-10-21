@@ -64,7 +64,7 @@
     <ClCompile Include="Platform\CPlatform.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
-    <ClCompile Include="ICD\icd_types.cpp">
+    <ClCompile Include="ICD\icd_types_codec.cpp">
       <Filter>ICD</Filter>
     </ClCompile>
     <ClCompile Include="ICD\Object\Designator.cpp">
@@ -208,6 +208,9 @@
       <Filter>ICD</Filter>
     </ClInclude>
     <ClInclude Include="ICD\icd_types.h">
+      <Filter>ICD</Filter>
+    </ClInclude>
+    <ClInclude Include="ICD\icd_types_codec.h">
       <Filter>ICD</Filter>
     </ClInclude>
     <ClInclude Include="ICD\Object\Designator.h">
