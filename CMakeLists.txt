@@ -16,7 +16,7 @@ add_executable(HLAGateway
     gateway/udp/CPoller.cpp
     gateway/udp/CUdpSocket.cpp
     platform/Platform.cpp
-    ICD/icd_types.cpp
+    ICD/icd_types_codec.cpp
     ICD/Object/MinefieldData.cpp
     ICD/Object/RadarBeam.cpp
     ICD/Object/RadioReceiver.cpp

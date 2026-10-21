@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../icd_types.h"
+#include "../icd_types_codec.h"
 
 namespace icdfom {
 
@@ -39,7 +39,7 @@ struct RadarBeam {
 };
 
 static_assert(RadarBeam::kEncodedSize + icd::kHeaderSize <= RadarBeam::kPayload,
-              "RadarBeam: 1件がペイロードに収まりません。ICDgenerator の MTU か配列上限を見直してください");
+              "RadarBeam: 1件がペイロードに収まりません。ICDgenerator の MTU・配列上限・送る属性を見直してください");
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, RadarBeam& v);
 void encode(icd::Writer& w, const RadarBeam& v);

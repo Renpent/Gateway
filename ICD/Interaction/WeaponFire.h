@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../icd_types.h"
+#include "../icd_types_codec.h"
 
 namespace icdfom {
 
@@ -35,7 +35,7 @@ struct WeaponFire {
 };
 
 static_assert(WeaponFire::kEncodedSize + icd::kHeaderSize <= WeaponFire::kPayload,
-              "WeaponFire: 1件がペイロードに収まりません。ICDgenerator の MTU か配列上限を見直してください");
+              "WeaponFire: 1件がペイロードに収まりません。ICDgenerator の MTU・配列上限・送る属性を見直してください");
 
 [[nodiscard]] icd::Result decode(icd::Reader& r, WeaponFire& v);
 void encode(icd::Writer& w, const WeaponFire& v);

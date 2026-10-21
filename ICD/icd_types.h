@@ -1,20 +1,16 @@
 // 自動生成 — 編集しないこと。
-// FOMのデータ型
+// FOMのデータ型（定義）
 //
 // ICDgenerator が FOM から生成。C++17 / ビッグエンディアン / レコードは固定長。
 
 #pragma once
 
-#include "icd_codec.h"
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
 namespace icdfom {
-
-// The runtime's primitive and container codecs. Generated types are found through
-// argument-dependent lookup; these are not, so they are named explicitly.
-using icd::decode;
-using icd::encode;
-using icd::fixedSize;
-using icd::wireSize;
 
 /// FOM: AngleRadianFloat32  [radian (rad)]
 typedef float AngleRadianFloat32;
@@ -48,23 +44,6 @@ enum class BeamFunctionCodeEnum8 : uint8_t {
     Time_SharedJamming = 25,  ///< FOM: "Time-SharedJamming"
 };
 
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, BeamFunctionCodeEnum8& v) {
-    uint8_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<BeamFunctionCodeEnum8>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, BeamFunctionCodeEnum8 v) {
-    icd::encode(w, static_cast<uint8_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::BeamFunctionCodeEnum8> { static constexpr std::size_t value = 1; };
-}
-namespace icdfom {
-
 /// FOM: Octet
 typedef uint8_t Octet;
 
@@ -90,9 +69,6 @@ struct EventIdentifierStruct {
     static constexpr std::size_t kEncodedSize = 20;
 };
 
-[[nodiscard]] icd::Result decode(icd::Reader& r, EventIdentifierStruct& v);
-void encode(icd::Writer& w, const EventIdentifierStruct& v);
-
 /// FOM: TimeMicrosecondFloat32  [microsecond]
 typedef float TimeMicrosecondFloat32;
 
@@ -106,23 +82,6 @@ enum class RPRboolean : uint8_t {
     True = 1,
 };
 
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, RPRboolean& v) {
-    uint8_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<RPRboolean>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, RPRboolean v) {
-    icd::encode(w, static_cast<uint8_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::RPRboolean> { static constexpr std::size_t value = 1; };
-}
-namespace icdfom {
-
 /// FOM: RTIobjectIdArray  cardinality=Dynamic encoding=HLAvariableArray
 typedef std::vector<RTIobjectId> RTIobjectIdArray;
 
@@ -133,18 +92,12 @@ struct FederateIdentifierStruct {
     static constexpr std::size_t kEncodedSize = 4;
 };
 
-[[nodiscard]] icd::Result decode(icd::Reader& r, FederateIdentifierStruct& v);
-void encode(icd::Writer& w, const FederateIdentifierStruct& v);
-
 /// FOM: EntityIdentifierStruct
 struct EntityIdentifierStruct {
     FederateIdentifierStruct FederateIdentifier;  ///< FOM: FederateIdentifier : FederateIdentifierStruct
     UnsignedInteger16 EntityNumber;  ///< FOM: EntityNumber : UnsignedInteger16
     static constexpr std::size_t kEncodedSize = 6;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, EntityIdentifierStruct& v);
-void encode(icd::Writer& w, const EntityIdentifierStruct& v);
 
 /// FOM: MeterFloat32  [meter (m)]
 typedef float MeterFloat32;
@@ -157,9 +110,6 @@ struct RelativePositionStruct {
     static constexpr std::size_t kEncodedSize = 12;
 };
 
-[[nodiscard]] icd::Result decode(icd::Reader& r, RelativePositionStruct& v);
-void encode(icd::Writer& w, const RelativePositionStruct& v);
-
 /// FOM: ReceiverOperationalStatusEnum16
 /// 値は ReceiverOperationalStatusEnum16::<列挙子名>。
 enum class ReceiverOperationalStatusEnum16 : uint16_t {
@@ -167,23 +117,6 @@ enum class ReceiverOperationalStatusEnum16 : uint16_t {
     OnButNotReceiving = 1,
     OnAndReceiving = 2,
 };
-
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, ReceiverOperationalStatusEnum16& v) {
-    uint16_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<ReceiverOperationalStatusEnum16>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, ReceiverOperationalStatusEnum16 v) {
-    icd::encode(w, static_cast<uint16_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::ReceiverOperationalStatusEnum16> { static constexpr std::size_t value = 2; };
-}
-namespace icdfom {
 
 /// FOM: DepthMeterFloat32  [meter (m)]
 typedef float DepthMeterFloat32;
@@ -203,23 +136,6 @@ enum class MinefieldFusingEnum32 : uint32_t {
     TripWire = 6,
 };
 
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, MinefieldFusingEnum32& v) {
-    uint32_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<MinefieldFusingEnum32>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, MinefieldFusingEnum32 v) {
-    icd::encode(w, static_cast<uint32_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::MinefieldFusingEnum32> { static constexpr std::size_t value = 4; };
-}
-namespace icdfom {
-
 /// FOM: OctetArray3  cardinality=3 encoding=HLAfixedArray
 typedef std::array<Octet, 3> OctetArray3;
 
@@ -231,9 +147,6 @@ struct MineFusingStruct {
     OctetArray3 Padding;  ///< FOM: Padding : OctetArray3
     static constexpr std::size_t kEncodedSize = 12;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, MineFusingStruct& v);
-void encode(icd::Writer& w, const MineFusingStruct& v);
 
 /// FOM: MineFusingStructLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<MineFusingStruct> MineFusingStructLengthlessArray;
@@ -250,9 +163,6 @@ struct ClockTimeStruct {
     TimestampUnsignedInteger32 TimePastTheHour;  ///< FOM: TimePastTheHour : TimestampUnsignedInteger32
     static constexpr std::size_t kEncodedSize = 8;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, ClockTimeStruct& v);
-void encode(icd::Writer& w, const ClockTimeStruct& v);
 
 /// FOM: ClockTimeStructLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<ClockTimeStruct> ClockTimeStructLengthlessArray;
@@ -274,9 +184,6 @@ struct WorldLocationStruct {
     static constexpr std::size_t kEncodedSize = 24;
 };
 
-[[nodiscard]] icd::Result decode(icd::Reader& r, WorldLocationStruct& v);
-void encode(icd::Writer& w, const WorldLocationStruct& v);
-
 /// FOM: WorldLocationStructLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<WorldLocationStruct> WorldLocationStructLengthlessArray;
 
@@ -287,9 +194,6 @@ struct OrientationStruct {
     AngleRadianFloat32 Phi;  ///< FOM: Phi : AngleRadianFloat32
     static constexpr std::size_t kEncodedSize = 12;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, OrientationStruct& v);
-void encode(icd::Writer& w, const OrientationStruct& v);
 
 /// FOM: OrientationStructLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<OrientationStruct> OrientationStructLengthlessArray;
@@ -305,9 +209,6 @@ struct EntityTypeStruct {
     Octet Extra;  ///< FOM: Extra : Octet
     static constexpr std::size_t kEncodedSize = 8;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, EntityTypeStruct& v);
-void encode(icd::Writer& w, const EntityTypeStruct& v);
 
 /// FOM: UnsignedInteger8
 typedef uint8_t UnsignedInteger8;
@@ -338,23 +239,6 @@ enum class MinefieldPaintSchemeEnum32 : uint32_t {
     Yellow = 17,
     Brown = 18,
 };
-
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, MinefieldPaintSchemeEnum32& v) {
-    uint32_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<MinefieldPaintSchemeEnum32>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, MinefieldPaintSchemeEnum32 v) {
-    icd::encode(w, static_cast<uint32_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::MinefieldPaintSchemeEnum32> { static constexpr std::size_t value = 4; };
-}
-namespace icdfom {
 
 /// FOM: MinefieldPaintSchemeLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<MinefieldPaintSchemeEnum32> MinefieldPaintSchemeLengthlessArray;
@@ -409,23 +293,6 @@ enum class MinefieldSensorTypeEnum32 : uint32_t {
     Physical_ProbeNoMetalContent = 28674,
     Multispectral_Generic = 32768,
 };
-
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, MinefieldSensorTypeEnum32& v) {
-    uint32_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<MinefieldSensorTypeEnum32>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, MinefieldSensorTypeEnum32 v) {
-    icd::encode(w, static_cast<uint32_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::MinefieldSensorTypeEnum32> { static constexpr std::size_t value = 4; };
-}
-namespace icdfom {
 
 /// FOM: MinefieldSensorTypeLengthlessArray  cardinality=Dynamic encoding=RPRlengthlessArray
 typedef std::vector<MinefieldSensorTypeEnum32> MinefieldSensorTypeLengthlessArray;
@@ -543,23 +410,6 @@ enum class FuseTypeEnum16 : uint16_t {
     MechanicalTail = 9620,
 };
 
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, FuseTypeEnum16& v) {
-    uint16_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<FuseTypeEnum16>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, FuseTypeEnum16 v) {
-    icd::encode(w, static_cast<uint16_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::FuseTypeEnum16> { static constexpr std::size_t value = 2; };
-}
-namespace icdfom {
-
 /// FOM: VelocityMeterPerSecondFloat32  [meter per second (m/s)]
 typedef float VelocityMeterPerSecondFloat32;
 
@@ -570,9 +420,6 @@ struct VelocityVectorStruct {
     VelocityMeterPerSecondFloat32 ZVelocity;  ///< FOM: ZVelocity : VelocityMeterPerSecondFloat32
     static constexpr std::size_t kEncodedSize = 12;
 };
-
-[[nodiscard]] icd::Result decode(icd::Reader& r, VelocityVectorStruct& v);
-void encode(icd::Writer& w, const VelocityVectorStruct& v);
 
 /// FOM: WarheadTypeEnum16
 /// 値は WarheadTypeEnum16::<列挙子名>。
@@ -646,23 +493,6 @@ enum class WarheadTypeEnum16 : uint16_t {
     BiologicalGeneticallyModifiedMicroOrganisms = 9400,
     BiologicalToxin = 9500,
 };
-
-[[nodiscard]] inline icd::Result decode(icd::Reader& r, WarheadTypeEnum16& v) {
-    uint16_t raw = 0;
-    if (const icd::Result rc = icd::decode(r, raw); rc != icd::Result::Ok) return rc;
-    v = static_cast<WarheadTypeEnum16>(raw);
-    return icd::Result::Ok;
-}
-
-inline void encode(icd::Writer& w, WarheadTypeEnum16 v) {
-    icd::encode(w, static_cast<uint16_t>(v));
-}
-
-}  // namespace icdfom
-namespace icd {
-template <> struct FixedSize<icdfom::WarheadTypeEnum16> { static constexpr std::size_t value = 2; };
-}
-namespace icdfom {
 
 }  // namespace icdfom
 
